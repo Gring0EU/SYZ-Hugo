@@ -1,0 +1,356 @@
+ticker,name,category,source,venue,aum_usd_m,first_price,coverage,bloomberg
+AIAI.L,L&G ARTIFICIAL INTELLIGENCE,AI & Automation,thematic,London,,2023-01-03,1.0,AIAI LN Equity
+BOTZ.SW,Global X Robotics & Artificial Intelligence UCITS ETF USD Acc,AI & Automation,extra,SIX Swiss,198.29735829032708,2023-01-03,1.0,
+INTL.L,WisdomTree Artificial Intelligence UCITS ETF - USD Acc,AI & Automation,extra,London,1833.9944481219177,2023-01-03,1.0,
+ROBG.L,ROBG.L,AI & Automation,extra,London,1702.2,2023-01-03,1.0,
+XAIX.DE,X ARTIFICIAL INTEL BIG DA 1C,AI & Automation,thematic,Xetra,,2023-01-03,1.0,XAIX GY Equity
+EMGB.L,VanEck J.P. Morgan EM Local Currency Bond UCITS ETF A USD,Bonds — Cash & EM Debt,extra,London,323.0363021784439,2023-01-03,1.0,
+ERNA.L,ERNA.L,Bonds — Cash & EM Debt,extra,London,,2023-01-03,1.0,
+JLOC.L,JPMorgan Emerging Markets Local Currency Bond UCITS ETF,Bonds — Cash & EM Debt,ucits,London,,2025-03-17,0.394,JLOC LN Equity
+XEON.DE,Xtrackers EUR Overnight Rate Swap UCITS ETF,Bonds — Cash & EM Debt,ucits,Xetra,,2023-01-03,1.0,XEON GY Equity
+AGGU.L,iShares Core Global Aggregate Bond UCITS ETF,Bonds — Government & Aggregate,ucits,London,,2023-01-03,1.0,AGGU LN Equity
+CBU0.L,iShares USD Treasury Bond 7-10yr UCITS ETF USD,Bonds — Government & Aggregate,ucits,London,,2023-01-03,1.0,CBU0 LN Equity
+CBU7.L,iShares USD Treasury Bond 3-7yr UCITS ETF,Bonds — Government & Aggregate,ucits,London,,2023-01-03,1.0,CBU7 LN Equity
+CSBGU7.SW,CSBGU7.SW,Bonds — Government & Aggregate,extra,SIX Swiss,,2023-01-03,1.0,
+DTLA.L,iShares $ Treasury Bond 20+yr UCITS ETF,Bonds — Government & Aggregate,extra,London,,2023-01-03,1.0,
+EMAAA.MI,Amundi Euro Highest Rated Macro-Weighted Government Bond UCITS ETF Acc,Bonds — Government & Aggregate,extra,Milan,306.8751105689354,2023-01-03,1.0,
+EUNA.DE,EUNA.DE,Bonds — Government & Aggregate,extra,Xetra,,2023-01-03,1.0,
+IBCI.DE,iShares EUR Inflation Linked Govt Bond UCITS ETF,Bonds — Government & Aggregate,ucits,Xetra,,2023-01-03,1.0,IBCI GY Equity
+IBTA.L,iShares USD Treasury Bond 1-3yr UCITS ETF,Bonds — Government & Aggregate,ucits,London,,2023-01-03,1.0,IBTA LN Equity
+IDTP.L,iShares USD TIPS UCITS ETF,Bonds — Government & Aggregate,ucits,London,,2023-01-03,1.0,IDTP LN Equity
+IUAA.L,iShares US Aggregate Bond UCITS ETF,Bonds — Government & Aggregate,ucits,London,,2023-01-03,1.0,IUAA LN Equity
+MTE.PA,Lyxor Euro Government Bond 10-15Y DR UCITS ETF,Bonds — Government & Aggregate,ucits,Paris,,2023-01-03,1.0,MTE FP Equity
+MTXX.L,Amundi Core Euro Government Bond UCITS ETF Acc,Bonds — Government & Aggregate,extra,London,2376.8541172744444,2023-01-03,1.0,
+TFRP.L,WisdomTree USD Floating Rate Treasury Bond UCITS ETF - USD Acc,Bonds — Government & Aggregate,extra,London,293.3175439341507,2023-01-03,1.0,
+VAGF.DE,Vanguard Global Aggregate Bond UCITS ETF EUR Hedged Accumulation,Bonds — Government & Aggregate,extra,Xetra,,2023-01-03,1.0,
+VEMA.L,Vanguard USD Emerging Markets Government Bond UCITS ETF USD Accumulation,Bonds — Government & Aggregate,extra,London,2121.5413708356627,2023-01-03,1.0,
+X1G.MI,Amundi Index Solutions - Amundi Euro Lowest Rated IG Government Bond UCITS ETF-C,Bonds — Government & Aggregate,extra,Milan,1532.148875370087,2023-01-03,1.0,
+IHYA.L,iShares USD High Yield Corp Bond UCITS ETF,Bonds — High Yield & Subordinated,ucits,London,,2023-01-03,1.0,IHYA LN Equity
+TAHY.L,Tabula Haitong Asia ex-Japan High Yield Corp USD Bond UCITS ETF,Bonds — High Yield & Subordinated,ucits,London,,2023-01-03,1.0,TAHY LN Equity
+CLOA.DE,Invesco EUR AAA CLO UCITS ETF,Bonds — Investment Grade & Structured,ucits,Xetra,,2025-02-10,0.421,CLOA GY Equity
+ICLU.L,Invesco USD AAA CLO UCITS ETF,Bonds — Investment Grade & Structured,ucits,London,,2025-02-10,0.421,ICLU LN Equity
+IEXA.DE,iShares € Corp Bond ex-Financials UCITS ETF EUR (Acc),Bonds — Investment Grade & Structured,extra,Xetra,1125.764288576126,2023-01-03,1.0,
+IMBA.L,iShares US Mortgage Backed Securities UCITS ETF,Bonds — Investment Grade & Structured,ucits,London,,2023-01-03,1.0,IMBA LN Equity
+LQDA.L,iShares USD Corp Bond UCITS ETF,Bonds — Investment Grade & Structured,ucits,London,,2023-01-03,1.0,LQDA LN Equity
+SDIA.L,iShares USD Short Duration Corp Bond UCITS ETF,Bonds — Investment Grade & Structured,ucits,London,,2023-01-03,1.0,SDIA LN Equity
+SECA.DE,iShares Euro Govt Bond Climate UCITS ETF,Bonds — Investment Grade & Structured,ucits,Xetra,,2023-01-03,1.0,SECA GY Equity
+VDCA.L,Vanguard USD Corporate 1-3 Year Bond UCITS ETF,Bonds — Investment Grade & Structured,ucits,London,,2023-01-03,1.0,VDCA LN Equity
+XBEC.SW,Xtrackers II EUR Corporate Bond UCITS ETF 1C,Bonds — Investment Grade & Structured,extra,SIX Swiss,5764.751215527466,2023-01-03,1.0,
+XHYA.DE,Xtrackers II EUR High Yield Corporate Bond UCITS ETF 1C,Bonds — Investment Grade & Structured,extra,Xetra,3237.470697013977,2023-01-03,1.0,
+ANRJ.L,Amundi Global Hydrogen UCITS ETF - Acc,Clean Energy & Water,extra,London,304.01494913835523,2023-01-03,1.0,
+BATT.L,BATT.L,Clean Energy & Water,extra,London,781.2,2023-01-03,1.0,
+GLGG.L,L&G Clean Water UCITS ETF,Clean Energy & Water,extra,London,1025.6097742323302,2023-01-03,1.0,
+H2OA.AS,iShares Global Water UCITS ETF,Clean Energy & Water,extra,Amsterdam,2564.1844465629274,2023-01-03,1.0,
+HTWG.L,L&G Hydrogen Economy UCITS ETF,Clean Energy & Water,extra,London,633.0921895713882,2023-01-03,1.0,
+HTWO.L,HTWO.L,Clean Energy & Water,extra,London,463.9,2023-01-03,1.0,
+RENG.L,L&G Clean Energy UCITS ETF USD Acc,Clean Energy & Water,extra,London,1015.3578604098512,2023-01-03,1.0,
+VOLT.L,WT BATTERY SOLUTIONS-USD ACC,Clean Energy & Water,thematic,London,,2023-01-03,1.0,VOLT LN Equity
+WATC.SW,Amundi MSCI Water UCITS ETF Acc,Clean Energy & Water,extra,SIX Swiss,1980.43404953476,2023-01-03,1.0,
+BCOG.L,L&G All Commodities UCITS ETF,Commodities & Agriculture,extra,London,605.7856052396927,2023-01-03,1.0,
+C099.DE,Amundi Bloomberg Equal-weight Commodity ex-Agriculture UCITS ETF Euro Hedged Acc,Commodities & Agriculture,extra,Xetra,2024.7561749515687,2023-01-03,1.0,
+CMFP.L,L&G Longer Dated All Commodities UCITS ETF,Commodities & Agriculture,extra,London,1282.0118247290495,2023-01-03,1.0,
+CMOD.L,INVESCO BLOOMBERG COMMODITY,Commodities & Agriculture,thematic,London,,2023-01-03,1.0,CMOD LN Equity
+COMG.L,Amundi Bloomberg Equal-weight Commodity ex-Agriculture UCITS ETF Acc,Commodities & Agriculture,extra,London,2366.282338849274,2023-01-03,1.0,
+GSG,ISHARES S&P GSCI COMMODITY I,Commodities & Agriculture,thematic,US / other,,2023-01-03,1.0,GSG US Equity
+HOGS.L,WT LEAN HOGS,Commodities & Agriculture,thematic,London,,2023-01-03,1.0,HOGS LN Equity
+WCOA.L,WISDOMTREE ENH CMDTY-USD ACC,Commodities & Agriculture,thematic,London,,2023-01-03,1.0,WCOA LN Equity
+WXAG.L,WT ENHANCED COMM XAG USD ACC,Commodities & Agriculture,thematic,London,,2023-01-03,1.0,WXAG LN Equity
+XAAG.DE,Invesco Bloomberg Commodity ex-Agriculture UCITS ETF,Commodities & Agriculture,extra,Xetra,679.1736821834106,2023-01-03,1.0,
+ESPO.L,ESPO.L,Consumer & Leisure,extra,London,590.1,2023-01-03,1.0,
+WEED,ROUNDHILL CANNABIS ETF,Consumer & Leisure,thematic,US / other,,2023-01-03,1.0,WEED US Equity
+ABTC.SW,21SHARES BITCOIN SINGLE,Crypto & Blockchain,thematic,SIX Swiss,,2023-01-03,1.0,ABTC SW Equity
+AETH.SW,21SHARES ETHEREUM STAKING ET,Crypto & Blockchain,thematic,SIX Swiss,,2023-01-03,1.0,AETH SW Equity
+ASOL.SW,21SHARES SOLANA STAKING ETP,Crypto & Blockchain,thematic,SIX Swiss,,2023-01-03,1.0,ASOL SW Equity
+BCHN.L,Invesco CoinShares Global Blockchain UCITS ETF,Crypto & Blockchain,extra,London,975.7,2023-01-03,1.0,
+BCHS.L,Invesco CoinShares Global Blockchain UCITS ETF,Crypto & Blockchain,extra,London,1331.6616765386048,2023-01-03,1.0,
+BKCH.L,GLOB X BLOCKCHAIN UCITS ETF,Crypto & Blockchain,thematic,London,,2023-01-03,1.0,BKCH LN Equity
+DAGB.L,VanEck Crypto& Blockchain Innovators ETF A USD Acc,Crypto & Blockchain,extra,London,697.7772062794189,2023-01-03,1.0,
+DAPP.L,DAPP.L,Crypto & Blockchain,extra,London,511.3,2023-01-03,1.0,
+FBTC,FIDELITY WISE ORIGIN BITCOIN,Crypto & Blockchain,thematic,US / other,,2024-01-11,0.719,FBTC US Equity
+HODLX.SW,21SH CRYTO BAK 10 CR ETP,Crypto & Blockchain,thematic,SIX Swiss,,2023-01-03,1.0,HODLX SW Equity
+IB1T.DE,ISHARES BITCOIN ETP,Crypto & Blockchain,thematic,Xetra,,2025-03-24,0.388,IB1T GY Equity
+IBIT,ISHARES BITCOIN TRUST ETF,Crypto & Blockchain,thematic,US / other,,2024-01-11,0.719,IBIT US Equity
+DFNS.L,VANECK DEFENSE ETF,Defence & Aerospace,thematic,London,,2023-03-31,0.931,DFNS LN Equity
+NATO.L,FUTURE OF DEFENCE UCITS ETF,Defence & Aerospace,thematic,London,,2023-07-03,0.865,NATO LN Equity
+CCAU.L,ISHARES MSCI CANADA ACC,Developed Market Indices,thematic,London,,2023-01-03,1.0,CCAU LN Equity
+CW8.PA,Amundi Index Solutions - Amundi MSCI World Swap UCITS ETF EUR Acc,Developed Market Indices,extra,Paris,,2023-01-03,1.0,
+EUMD.L,ISHARES MSCI ERP MID CAP-ACC,Developed Market Indices,thematic,London,,2023-01-03,1.0,EUMD LN Equity
+EXUS.L,Xtrackers MSCI World ex USA UCITS ETF 1C USD,Developed Market Indices,extra,London,7524.9,2024-03-06,0.677,
+FWRA.L,Invesco FTSE All-World UCITS ETF USD Accumulation,Developed Market Indices,extra,London,,2023-06-26,0.871,
+GOGB.L,VanEck Morningstar Global Wide Moat UCITS ETF,Developed Market Indices,extra,London,234.5499568656884,2023-01-03,1.0,
+LGGG.L,L&G Global Equity UCITS ETF,Developed Market Indices,extra,London,2395.596855318237,2023-01-03,1.0,
+R2US.L,SS SPDR RUSSELL 2000 US SMAL,Developed Market Indices,thematic,London,,2023-01-03,1.0,R2US LN Equity
+SPPW.DE,State Street SPDR MSCI World UCITS ETF,Developed Market Indices,extra,Xetra,,2023-01-03,1.0,
+SPYI.DE,State Street SPDR MSCI All Country World Investable Market UCITS ETF,Developed Market Indices,extra,Xetra,7949.2,2023-01-03,1.0,
+VALW.L,State Street SPDR MSCI World Value UCITS ETF,Developed Market Indices,extra,London,269.24408584562303,2023-01-03,1.0,
+VHVE.L,Vanguard FTSE Developed World UCITS ETF USD Accumulation,Developed Market Indices,extra,London,11284.5,2023-01-03,1.0,
+VWCE.DE,Vanguard FTSE All-World UCITS ETF USD Accumulation,Developed Market Indices,extra,Xetra,79553.0,2023-01-03,1.0,
+WLDS.L,iShares MSCI World Small Cap UCITS ETF USD (Acc),Developed Market Indices,extra,London,8476.0,2023-01-03,1.0,
+XDWD.L,Xtrackers MSCI World UCITS ETF 1C,Developed Market Indices,extra,London,,2023-01-03,1.0,
+XXSC.DE,X MSCI EUROPE SMALL CAP 1C,Developed Market Indices,thematic,Xetra,,2023-01-03,1.0,XXSC GY Equity
+ZPRS.DE,ZPRS.DE,Developed Market Indices,extra,Xetra,1984.2,2023-01-03,1.0,
+APEX.MI,Amundi MSCI AC Asia Ex Japan UCITS ETF Acc,Emerging Markets,extra,Milan,454.66646732376864,2023-01-03,1.0,
+BOVA11.SA,ISHARES IBOVESPA,Emerging Markets,thematic,US / other,,2023-01-03,1.0,BOVA11 BZ Equity
+CSNDX.SW,CSNDX.SW,Emerging Markets,extra,SIX Swiss,,2023-01-03,1.0,
+FLXI.DE,Franklin FTSE India UCITS ETF,Emerging Markets,extra,Xetra,2043.4,2023-01-03,1.0,
+HCHS.L,HSBC MSCI China UCITS ETF,Emerging Markets,extra,London,1539.9835002695618,2023-01-03,1.0,
+HEMC.L,HSBC MSCI Emerging Markets UCITS ETF,Emerging Markets,extra,London,7839.725934366455,2023-01-03,1.0,
+LCCN.SW,Amundi MSCI China UCITS ETF,Emerging Markets,extra,SIX Swiss,905.6745184422226,2023-01-03,1.0,
+SPYM.DE,State Street SPDR MSCI Emerging Markets UCITS ETF,Emerging Markets,extra,Xetra,2507.431852846924,2023-01-03,1.0,
+VFEA.L,Vanguard FTSE Emerging Markets UCITS ETF USD Accumulation,Emerging Markets,extra,London,5893.9,2023-01-03,1.0,
+XCS5.DE,Xtrackers MSCI India Swap UCITS ETF 1C,Emerging Markets,extra,Xetra,698.5889330481263,2023-01-03,1.0,
+XCS6.DE,XCS6.DE,Emerging Markets,extra,Xetra,2024.5,2023-01-03,1.0,
+XKS2.L,Xtrackers MSCI Korea UCITS ETF 1C,Emerging Markets,extra,London,799.0636167221833,2023-01-03,1.0,
+XMAS.DE,XMAS.DE,Emerging Markets,extra,Xetra,752.7,2023-01-03,1.0,
+XMEX.SW,Xtrackers MSCI Mexico UCITS ETF 1C,Emerging Markets,extra,SIX Swiss,418.8181409222717,2023-01-03,1.0,
+XMME.DE,Xtrackers MSCI Emerging Markets UCITS ETF 1C,Emerging Markets,extra,Xetra,14132.4,2023-01-03,1.0,
+XMMS.L,Xtrackers MSCI Emerging Markets UCITS ETF 1C,Emerging Markets,extra,London,19287.820868015624,2023-01-03,1.0,
+NUKL.DE,NUKL.DE,Energy & Nuclear,extra,Xetra,2138.1,2023-02-03,0.975,
+U-U.TO,SPROTT PHYSICAL URANIUM TR,Energy & Nuclear,thematic,US / other,,2023-01-03,1.0,U-U CN Equity
+URNM.L,URNM.L,Energy & Nuclear,extra,London,331.9,2023-01-03,1.0,
+URNU.L,GLOBAL X URANIUM UCITS USD-A,Energy & Nuclear,thematic,London,,2023-01-03,1.0,URNU LN Equity
+YCA.L,YELLOW CAKE PLC,Energy & Nuclear,thematic,London,,2023-01-03,1.0,YCA LN Equity
+AEJL.L,Amundi MSCI AC Asia Pacific Ex Japan UCITS ETF Acc,Equities — Asia Pacific,extra,London,1074.3168028519744,2023-01-03,1.0,
+CSJP.MI,iShares VII PLC - iShares MSCI Japan ETF USD Acc,Equities — Asia Pacific,extra,Milan,1958.68378248349,2023-01-03,1.0,
+HMJS.PA,HSBC MSCI JAPAN UCITS ETF,Equities — Asia Pacific,extra,Paris,293.4558702012329,2023-01-03,1.0,
+IAUS.L,iShares MSCI Australia UCITS ETF,Equities — Asia Pacific,ucits,London,,2023-01-03,1.0,IAUS LN Equity
+IJPA.L,iShares Core MSCI Japan IMI UCITS ETF,Equities — Asia Pacific,ucits,London,,2023-01-03,1.0,IJPA LN Equity
+LGAG.L,L&G Asia Pacific ex Japan Equity UCITS ETF,Equities — Asia Pacific,extra,London,1071.6699276320496,2023-01-03,1.0,
+LGJG.L,L&G Japan Equity UCITS ETF,Equities — Asia Pacific,extra,London,1310.9877843438262,2023-01-03,1.0,
+SJPA.L,SJPA.L,Equities — Asia Pacific,extra,London,,2023-01-03,1.0,
+SJPD.AS,iShares Core MSCI Japan IMI UCITS ETF,Equities — Asia Pacific,ucits,Amsterdam,,2023-01-03,1.0,SJPD NA Equity
+SPYA.DE,State Street SPDR MSCI EM Asia UCITS ETF,Equities — Asia Pacific,extra,Xetra,1903.946183429352,2023-01-03,1.0,
+4BRZ.DE,iShares MSCI Brazil UCITS ETF DE,Equities — Emerging Markets,ucits,Xetra,,2023-01-03,1.0,4BRZ GY Equity
+CEMA.L,iShares MSCI EM Asia UCITS ETF,Equities — Emerging Markets,ucits,London,,2023-01-03,1.0,CEMA LN Equity
+CMEX.AS,iShares MSCI Mexico Capped UCITS ETF,Equities — Emerging Markets,ucits,Amsterdam,,2023-01-03,1.0,CMEX NA Equity
+CNYA.L,iShares MSCI China A UCITS ETF,Equities — Emerging Markets,ucits,London,,2023-01-03,1.0,CNYA LN Equity
+CPXJ.L,iShares Core MSCI Pacific ex-Japan UCITS ETF,Equities — Emerging Markets,ucits,London,,2023-01-03,1.0,CPXJ LN Equity
+EIMI.L,iShares Core MSCI EM IMI UCITS ETF,Equities — Emerging Markets,ucits,London,,2023-01-03,1.0,EIMI LN Equity
+EMMV.L,iShares Edge MSCI EM Minimum Volatility UCITS ETF,Equities — Emerging Markets,ucits,London,,2023-01-03,1.0,EMMV LN Equity
+EXCH.AS,iShares MSCI EM EX-China UCITS ETF,Equities — Emerging Markets,ucits,Amsterdam,,2023-01-03,1.0,EXCH NA Equity
+ICHN.AS,iShares MSCI China UCITS ETF,Equities — Emerging Markets,ucits,Amsterdam,,2023-01-03,1.0,ICHN NA Equity
+IKSA.L,iShares MSCI Saudi Arabia Capped UCITS ETF,Equities — Emerging Markets,ucits,London,,2023-01-03,1.0,IKSA LN Equity
+NDIA.L,iShares MSCI India UCITS ETF,Equities — Emerging Markets,ucits,London,,2023-01-03,1.0,NDIA LN Equity
+CACC.PA,Amundi CAC 40 UCITS ETF Acc,Equities — Europe,extra,Paris,5259.391977769531,2023-01-03,1.0,
+CEC.PA,Amundi MSCI Eastern Europe Ex Russia UCITS ETF Acc,Equities — Europe,extra,Paris,783.4955463919983,2023-01-03,1.0,
+CN1.PA,Amundi Index Solutions - Amundi MSCI Nordic UCITS ETF-C,Equities — Europe,extra,Paris,351.49197665196226,2023-01-03,1.0,
+CSEMU.SW,iShares Core MSCI EMU UCITS ETF,Equities — Europe,ucits,SIX Swiss,,2023-01-03,1.0,CSEMU SW Equity
+CUKS.L,iShares MSCI UK Small Cap UCITS ETF,Equities — Europe,ucits,London,,2023-01-03,1.0,CUKS LN Equity
+DBXD.DE,Xtrackers DAX UCITS ETF,Equities — Europe,ucits,Xetra,,2023-01-03,1.0,XDAX GY Equity
+EURO.SW,State Street SPDR MSCI EMU UCITS ETF,Equities — Europe,extra,SIX Swiss,448.4944194106064,2023-01-03,1.0,
+EXSA.DE,iShares STOXX Europe 600 UCITS ETF DE,Equities — Europe,ucits,Xetra,,2023-01-03,1.0,SXXPIEX GY Equity
+EXSG.DE,iShares EURO STOXX Select Dividend 30 UCITS ETF DE,Equities — Europe,ucits,Xetra,,2023-01-03,1.0,SD3EEX GY Equity
+FTEU.L,First Trust Eurozone AlphaDEX® UCITS ETF,Equities — Europe,extra,London,127.8,2023-01-03,1.0,
+IEQU.MI,iShares Edge MSCI Europe Quality Factor UCITS ETF,Equities — Europe,ucits,Milan,,2023-01-03,1.0,IEQU IM Equity
+IMAE.AS,iShares Core MSCI Europe UCITS ETF EUR Acc,Equities — Europe,ucits,Amsterdam,,2023-01-03,1.0,IMAE NA Equity
+ISF.L,iShares Core FTSE 100 UCITS ETF,Equities — Europe,ucits,London,,2023-01-03,1.0,ISF LN Equity
+ISFD.L,iShares Core FTSE 100 UCITS ETF,Equities — Europe,ucits,London,,2023-01-03,1.0,ISFD LN Equity
+ITAMID.MI,Lyxor FTSE Italia PMI PIR 2020 DR UCITS ETF,Equities — Europe,ucits,Milan,,2023-01-03,1.0,ITAMID IM Equity
+JREZ.L,JPMorgan Eurozone Research Enhanced Equity UCITS ETF,Equities — Europe,ucits,London,,2023-01-03,1.0,JREZ LN Equity
+LGEU.L,L&G Europe ex UK Equity UCITS ETF,Equities — Europe,extra,London,539.9470056785202,2023-01-03,1.0,
+LGUK.L,L&G UK Equity UCITS ETF,Equities — Europe,extra,London,266.3328550221901,2023-01-03,1.0,
+MEUD.PA,Amundi Core Stoxx Europe 600 UCITS ETF Acc,Equities — Europe,extra,Paris,,2024-02-19,0.69,
+MEUG.L,Amundi MSCI Europe UCITS ETF Acc,Equities — Europe,extra,London,842.652374963913,2023-01-03,1.0,
+RIEG.L,L&G MSCI Europe Select UCITS ETF - EUR Accumulating ETF,Equities — Europe,extra,London,888.8759545437622,2023-01-03,1.0,
+SMEA.L,SMEA.L,Equities — Europe,extra,London,15882.0,2023-01-03,0.913,
+SPYW.DE,SPDR S&P Euro Dividend Aristocrats UCITS ETF,Equities — Europe,ucits,Xetra,,2023-01-03,1.0,SPYW GY Equity
+XDAX.L,Xtrackers DAX UCITS ETF 1C,Equities — Europe,extra,London,9806.672078393069,2023-01-03,1.0,
+XESC.DE,Xtrackers Euro Stoxx 50 UCITS ETF 1C,Equities — Europe,extra,Xetra,12395.8,2023-01-03,1.0,
+XMEU.DE,XMEU.DE,Equities — Europe,extra,Xetra,,2023-01-03,1.0,
+XSXE.DE,Xtrackers Stoxx Europe 600 UCITS ETF 2C - EUR Hedged,Equities — Europe,extra,Xetra,6513.41105027417,2023-01-03,1.0,
+ACWD.L,SPDR MSCI ACWI UCITS ETF,Equities — Global,ucits,London,,2023-01-03,1.0,ACWD LN Equity
+IQGA.L,Invesco Global Enhanced Equity UCITS ETF,Equities — Global,ucits,London,,2025-05-19,0.348,IQGA LN Equity
+IWQU.L,iShares Edge MSCI World Quality Factor UCITS ETF,Equities — Global,ucits,London,,2023-01-03,1.0,IWQU LN Equity
+IWVL.L,iShares Edge MSCI World Value Factor UCITS ETF,Equities — Global,ucits,London,,2023-01-03,1.0,IWVL LN Equity
+MVOL.L,iShares Edge MSCI World Minimum Volatility UCITS ETF,Equities — Global,ucits,London,,2023-01-03,1.0,MVOL LN Equity
+EUSRI.PA,AMUNDI INDEX MSCI EUROPE SRI PAB ETF,Equities — Sustainable,ucits,Paris,,2023-01-03,1.0,EUSRI FP Equity
+SUAS.L,iShares MSCI USA SRI UCITS ETF,Equities — Sustainable,ucits,London,,2023-01-03,1.0,SUAS LN Equity
+AGED.L,iShares Ageing Population UCITS ETF,Equities — Thematics,ucits,London,,2023-01-03,1.0,AGED LN Equity
+AIRR.AS,FT American Industrial Renaissance UCITS ETF,Equities — Thematics,ucits,Amsterdam,,2025-07-02,0.314,AIRR NA Equity
+ARKK.L,ARK Innovation ETF,Equities — Thematics,ucits,London,,2024-04-22,0.643,ARKK LN Equity
+CITY.AS,iShares Smart City Infrastructure UCITS ETF,Equities — Thematics,ucits,Amsterdam,,2023-01-03,1.0,CITY NA Equity
+CTEC.AS,iShares MSCI China Tech UCITS ETF,Equities — Thematics,ucits,Amsterdam,,2023-01-03,1.0,CTEC NA Equity
+ECAR.L,iShares Electric Vehicles & Driving Technology UCITS ETF,Equities — Thematics,ucits,London,,2023-01-03,1.0,ECAR LN Equity
+GOAI.PA,Amundi STOXX Global Artificial Intelligence UCITS ETF,Equities — Thematics,ucits,Paris,,2023-01-03,1.0,GOAI FP Equity
+GRDU.L,FT Nasdaq Smart Grid Infrastructure UCITS ETF,Equities — Thematics,ucits,London,,2023-01-03,1.0,GRDU LN Equity
+HEAL.L,iShares Healthcare Innovation UCITS ETF,Equities — Thematics,ucits,London,,2023-01-03,1.0,HEAL LN Equity
+JEDI.L,VanEck Space Innovators UCITS ETF,Equities — Thematics,ucits,London,,2023-01-03,1.0,JEDI LN Equity
+LITU.L,Global X Lithium & Battery Tech UCITS ETF,Equities — Thematics,ucits,London,,2023-01-03,1.0,LITU LN Equity
+LOCK.L,iShares Digital Security UCITS ETF,Equities — Thematics,ucits,London,,2023-01-03,1.0,LOCK LN Equity
+RBOT.L,iShares Automation & Robotics UCITS ETF,Equities — Thematics,ucits,London,,2023-01-03,1.0,RBOT LN Equity
+WCLD.L,WisdomTree Cloud Computing UCITS ETF,Equities — Thematics,ucits,London,,2023-01-03,1.0,WCLD LN Equity
+WQTM.L,WisdomTree Quantum Computing UCITS ETF,Equities — Thematics,ucits,London,,2025-09-05,0.264,WQTM LN Equity
+WTAI.L,WisdomTree Artificial Intelligence UCITS ETF,Equities — Thematics,ucits,London,,2023-01-03,1.0,WTAI LN Equity
+CIND.L,iShares Dow Jones Industrial Average UCITS ETF,Equities — US & Canada,ucits,London,,2023-01-03,1.0,CIND LN Equity
+CNDX.L,iShares NASDAQ 100 UCITS ETF USD (Acc),Equities — US & Canada,extra,London,,2023-01-03,1.0,
+EQAC.SW,Invesco EQQQ Nasdaq-100 UCITS ETF,Equities — US & Canada,ucits,SIX Swiss,,2023-01-03,1.0,EQAC SW Equity
+FEX.L,First Trust US Large Cap Core AlphaDEX® UCITS ETF¹,Equities — US & Canada,extra,London,202.3,2023-01-03,1.0,
+IUQA.L,iShares Edge MSCI USA Quality Factor UCITS ETF,Equities — US & Canada,ucits,London,,2023-01-03,1.0,IUQA LN Equity
+LGUG.L,L&G US Equity UCITS ETF,Equities — US & Canada,extra,London,2013.6956397104493,2023-01-03,0.935,
+PSPH.PA,Amundi PEA S&P 500 UCITS ETF EUR Hedged Acc,Equities — US & Canada,extra,Paris,1581.9769429201965,2023-01-03,1.0,
+SDVY.L,First Trust SMID Rising Dividend Achievers UCITS ETF,Equities — US & Canada,ucits,London,,2024-04-10,0.652,SDVY LN Equity
+SPY4.L,SPDR S&P 400 U.S. Mid Cap UCITS ETF,Equities — US & Canada,ucits,London,,2023-01-03,1.0,SPY4 LN Equity
+UVAL.L,State Street SPDR MSCI USA Value UCITS ETF USD Acc,Equities — US & Canada,extra,London,380.8854576982574,2023-01-03,1.0,
+VUAA.L,Vanguard S&P 500 UCITS ETF USD Accumulation,Equities — US & Canada,extra,London,86036.2,2023-01-03,1.0,
+XD9U.DE,Xtrackers MSCI USA UCITS ETF 1C,Equities — US & Canada,extra,Xetra,,2023-01-03,1.0,
+XDEW.L,Xtrackers S&P 500 Equal Weight UCITS ETF,Equities — US & Canada,ucits,London,,2023-01-03,1.0,XDEW LN Equity
+XMUS.DE,XMUS.DE,Equities — US & Canada,extra,Xetra,,2023-01-03,1.0,
+XNAS.DE,XNAS.DE,Equities — US & Canada,extra,Xetra,2412.9,2023-01-03,1.0,
+ZPRR.DE,State Street SPDR Russell 2000 US Small Cap UCITS ETF,Equities — US & Canada,extra,Xetra,,2023-01-03,1.0,
+540H.DE,Amundi MSCI Europe Ex EMU ESG Selection UCITS ETF Acc,"Factor, Style & ESG",extra,Xetra,273.9054517606277,2023-01-03,1.0,
+5MVL.DE,iShares Edge MSCI EM Value Factor UCITS ETF USD (Acc),"Factor, Style & ESG",extra,Xetra,1902.6602042694087,2023-01-03,1.0,
+AMEQ.DE,Amundi Index Solutions - Amundi MSCI Europe Quality Factor UCITS ETF-C,"Factor, Style & ESG",extra,Xetra,319.72206554621124,2023-01-03,1.0,
+ASIL.L,Amundi MSCI China ESG Selection Extra UCITS ETF Acc,"Factor, Style & ESG",extra,London,732.8593304983368,2023-01-03,1.0,
+CD8.PA,Amundi MSCI EMU High Dividend UCITS ETF Acc,"Factor, Style & ESG",extra,Paris,437.4941686030655,2023-01-03,1.0,
+CD9.PA,Amundi Index Solutions - Amundi MSCI Europe High Dividend Factor UCITS ETF-C,"Factor, Style & ESG",extra,Paris,571.2932521981888,2023-01-03,1.0,
+CEUR.L,Amundi MSCI Europe ESG Broad Transition - UCITS ETF DR - EUR (C),"Factor, Style & ESG",extra,London,3418.172719908325,2023-01-03,1.0,
+CG9.PA,Amundi Index Solutions - Amundi MSCI Europe Growth UCITS ETF Acc,"Factor, Style & ESG",extra,Paris,309.0903714843788,2023-01-03,1.0,
+CV9.PA,Amundi Index Solutions - Amundi MSCI Europe Value Factor UCITS ETF-C,"Factor, Style & ESG",extra,Paris,423.2955939220123,2023-01-03,1.0,
+DEMS.L,WisdomTree Emerging Markets High Dividend UCITS ETF - Acc,"Factor, Style & ESG",extra,London,362.39386402882,2023-01-03,1.0,
+EEIP.L,WisdomTree Europe High Dividend UCITS ETF Acc,"Factor, Style & ESG",extra,London,300.7426914528046,2023-01-03,1.0,
+EMSM.L,State Street SPDR MSCI Emerging Markets Small Cap UCITS ETF,"Factor, Style & ESG",extra,London,775.8712493527985,2023-01-03,1.0,
+EMV.L,iShares Edge MSCI EM Minimum Volatility UCITS ETF USD (Acc),"Factor, Style & ESG",extra,London,650.9399705646133,2023-01-03,1.0,
+FGBL.PA,First Trust Global Equity Income UCITS ETF,"Factor, Style & ESG",extra,Paris,130.8,2023-01-03,1.0,
+FSEU.L,iShares STOXX Europe Equity Multifactor UCITS ETF EUR (Acc),"Factor, Style & ESG",extra,London,1206.6053605634308,2023-01-03,1.0,
+IEFM.L,iShares Edge MSCI Europe Momentum Factor UCITS ETF EUR (Acc),"Factor, Style & ESG",extra,London,1067.1757513519592,2023-01-03,1.0,
+IEFQ.L,iShares Edge MSCI Europe Quality Factor UCITS ETF EUR (Acc),"Factor, Style & ESG",extra,London,927.4826163331908,2023-01-03,1.0,
+IEFV.L,iShares Edge MSCI Europe Value Factor UCITS ETF EUR (Acc),"Factor, Style & ESG",extra,London,3698.303884902649,2023-01-03,1.0,
+IEVL.L,ISHARES EDGE MSCI ERP VALUE,"Factor, Style & ESG",thematic,London,,2023-01-03,1.0,IEVL LN Equity
+IMV.L,iShares Edge MSCI Europe Minimum Volatility UCITS ETF EUR (Acc),"Factor, Style & ESG",extra,London,1238.1272223012695,2023-01-03,1.0,
+IS3S.DE,IS3S.DE,"Factor, Style & ESG",extra,Xetra,7209.5,2023-01-03,1.0,
+IUMF.L,iShares Edge MSCI USA Momentum Factor UCITS ETF,"Factor, Style & ESG",extra,London,1031.0673875871582,2023-01-03,1.0,
+IUSF.L,iShares MSCI USA Mid-Cap Equal Weight UCITS ETF,"Factor, Style & ESG",extra,London,403.6520085908203,2023-01-03,1.0,
+IUVF.L,iShares Edge MSCI USA Value Factor UCITS ETF,"Factor, Style & ESG",extra,London,5187.781445713562,2023-01-03,1.0,
+IWFQ.L,IWFQ.L,"Factor, Style & ESG",extra,London,5897.7,2023-01-03,1.0,
+IWFS.L,iShares MSCI World Mid-Cap Equal Weight UCITS ETF,"Factor, Style & ESG",extra,London,613.8591729872055,2023-01-03,1.0,
+IWMO.L,iShares Edge MSCI World Momentum Factor UCITS ETF USD (Acc),"Factor, Style & ESG",extra,London,5434.7,2023-01-03,1.0,
+JPGL.DE,JPM Global Equity Multi-Factor UCITS ETF,"Factor, Style & ESG",extra,Xetra,279.9,2023-01-03,1.0,
+MOGB.L,VanEck Morningstar US ESG Wide Moat UCITS ETF,"Factor, Style & ESG",extra,London,513.4893816434708,2023-01-03,1.0,
+MVED.L,iShares Edge MSCI Europe Minimum Volatility UCITS ETF,"Factor, Style & ESG",extra,London,1059.4279886098632,2023-01-03,1.0,
+MVEU.L,ISHARES EDGE MSCI ERP MINVOL,"Factor, Style & ESG",thematic,London,,2023-01-03,1.0,MVEU LN Equity
+QDVA.DE,iShares Edge MSCI USA Momentum Factor UCITS ETF USD (Acc),"Factor, Style & ESG",extra,Xetra,882.2531553117676,2023-01-03,1.0,
+RIUG.L,L&G US ESG Paris Aligned UCITS ETF,"Factor, Style & ESG",extra,London,230.76123838560864,2023-01-03,1.0,
+RTWP.L,L&G Russell 2000 US Small Cap Quality UCITS ETF USD Accumulate,"Factor, Style & ESG",extra,London,294.7895805761528,2023-01-03,1.0,
+SMCX.SW,State Street SPDR MSCI Europe Small Cap UCITS ETF,"Factor, Style & ESG",extra,SIX Swiss,355.2800189889793,2023-01-03,1.0,
+SPMV.L,ISHARES EDGE S&P500 MIN VOL,"Factor, Style & ESG",thematic,London,,2023-01-03,1.0,SPMV LN Equity
+XDEB.DE,XDEB.DE,"Factor, Style & ESG",extra,Xetra,1299.6,2023-01-03,1.0,
+XDEB.L,Xtrackers MSCI World Minimum Volatility UCITS ETF 1C,"Factor, Style & ESG",extra,London,1773.627909264618,2023-01-03,1.0,
+XDEM.DE,XDEM.DE,"Factor, Style & ESG",extra,Xetra,2240.5,2023-01-03,1.0,
+XDEQ.DE,XDEQ.DE,"Factor, Style & ESG",extra,Xetra,3195.5,2023-01-03,1.0,
+XDEV.DE,XDEV.DE,"Factor, Style & ESG",extra,Xetra,4320.1,2023-01-03,1.0,
+XDND.DE,Xtrackers MSCI North America High Dividend Yield UCITS ETF 1C,"Factor, Style & ESG",extra,Xetra,233.86260861200333,2023-01-03,1.0,
+XMAD.L,Xtrackers MSCI EM Asia Screened Swap UCITS ETF 1C,"Factor, Style & ESG",extra,London,752.710336,2023-01-03,1.0,
+XXSC.L,Xtrackers MSCI Europe Small Cap UCITS ETF 1C,"Factor, Style & ESG",extra,London,4813.194315952575,2023-01-03,1.0,
+XZEM.SW,Xtrackers MSCI Emerging Markets ESG UCITS ETF 1C,"Factor, Style & ESG",extra,SIX Swiss,1939.2269189925385,2023-01-03,1.0,
+XZEU.SW,Xtrackers MSCI Europe ESG UCITS ETF 1C,"Factor, Style & ESG",extra,SIX Swiss,1445.5779140562286,2023-01-03,1.0,
+ZPRV.DE,State Street SPDR MSCI USA Small Cap Value Weighted UCITS ETF USD Acc,"Factor, Style & ESG",extra,Xetra,1087.0,2023-01-03,1.0,
+ZPRX.DE,State Street SPDR MSCI Europe Small Cap Value Weighted UCITS ETF EUR Acc,"Factor, Style & ESG",extra,Xetra,746.7,2023-01-03,1.0,
+BTEK.L,iShares Nasdaq US Biotechnology UCITS ETF USD (Acc),Healthcare & Ageing,extra,London,1564.841399655365,2023-01-03,1.0,
+DOCG.L,L&G Healthcare Technology & Innovation ETF USD Acc,Healthcare & Ageing,extra,London,382.18391407491305,2023-01-03,1.0,
+ARKX,ARK SPACE & DEFENSE INNOVATI,IPO & Spin-Offs,thematic,US / other,,2023-01-03,1.0,ARKX US Equity
+4COP.DE,Global X Copper Miners UCITS ETF,Industrial Metals & Mining,extra,Xetra,1320.149313855072,2023-01-03,1.0,
+AIGI.L,WT INDUSTRIAL METALS,Industrial Metals & Mining,thematic,London,,2023-01-03,1.0,AIGI LN Equity
+ALUM.L,WT ALUMINIUM,Industrial Metals & Mining,thematic,London,,2023-01-03,1.0,ALUM LN Equity
+AUCP.L,L&G Gold Mining UCITS ETF,Industrial Metals & Mining,extra,London,926.8145867096556,2023-01-03,1.0,
+COPA.L,WT COPPER,Industrial Metals & Mining,thematic,London,,2023-01-03,1.0,COPA LN Equity
+COPG.L,Global X Copper Miners UCITS ETF USD Acc,Industrial Metals & Mining,extra,London,1542.825770660492,2023-01-03,1.0,
+COPX.L,GX COPPER MINERS UCITS,Industrial Metals & Mining,thematic,London,,2023-01-03,1.0,COPX LN Equity
+GDGB.L,VanEck Gold Miners UCITS ETF,Industrial Metals & Mining,extra,London,4131.4931447349245,2023-01-03,1.0,
+GIGB.L,VanEck S&P Global Mining UCITS ETF,Industrial Metals & Mining,extra,London,2635.3593954522703,2023-01-03,1.0,
+GJGB.L,VanEck Junior Gold Miners UCITS ETF,Industrial Metals & Mining,extra,London,1375.1753163864746,2023-01-03,1.0,
+RARE.L,WITR SM AND RE MINE UC ET-US,Industrial Metals & Mining,thematic,London,,2024-04-22,0.643,RARE LN Equity
+REGB.L,VanEck Rare Earth and Strategic Metals UCITS ETF A USD Acc,Industrial Metals & Mining,extra,London,1450.8548271790771,2023-01-03,1.0,
+REMX.L,VanEck Rare Earth and Strategic Metals UCITS ETF,Industrial Metals & Mining,extra,London,1063.055872,2023-01-03,1.0,
+CITY.MI,iShares Smart City Infrastructure UCITS ETF USD Acc,Infrastructure & Real Estate,extra,Milan,534.4192983270035,2023-01-03,1.0,
+GLRA.SW,State Street SPDR Dow Jones Global Real Estate UCITS ETF USD Cap,Infrastructure & Real Estate,extra,SIX Swiss,552.8595110731544,2023-01-03,1.0,
+GRID.MI,First Trust Nasdaq Clean Edge Smart Grid Infrastructure UCITS ETF,Infrastructure & Real Estate,extra,Milan,3098.8626821676025,2023-01-03,1.0,
+VPNG.L,Global X Data Center REITS & Digital Infrastructure UCITS ETF USD Acc,Infrastructure & Real Estate,extra,London,466.1606008572159,2023-01-03,1.0,
+XDER.L,Xtrackers FTSE Developed Europe Real Estate UCITS ETF 1C,Infrastructure & Real Estate,extra,London,937.964689420578,2023-01-03,1.0,
+4GLD.DE,4GLD.DE,Precious Metals,extra,Xetra,,2023-01-03,1.0,
+EGLN.L,EGLN.L,Precious Metals,extra,London,,2023-01-03,1.0,
+GDXJ.L,VANECK JR GOLD MINERS ETF,Precious Metals,thematic,London,,2023-01-03,1.0,GDXJ LN Equity
+GLD,SPDR GOLD SHARES,Precious Metals,thematic,US / other,,2023-01-03,1.0,GLD US Equity
+IAUP.L,ISHARES GOLD PRODUCERS,Precious Metals,thematic,London,,2023-01-03,1.0,IAUP LN Equity
+IGLN.L,ISHARES PHYSICAL GOLD ETC,Precious Metals,thematic,London,,2023-01-03,1.0,IGLN LN Equity
+ISLN.L,ISHARES PHYSICAL SILVER ETC,Precious Metals,thematic,London,,2023-01-03,1.0,ISLN LN Equity
+PALL,ABRDN PHYSICAL PALLADIUM SHS,Precious Metals,thematic,US / other,,2023-01-03,1.0,PALL US Equity
+PHPD.L,WT PHYSICAL PALLADIUM,Precious Metals,thematic,London,,2023-01-03,1.0,PHPD LN Equity
+PHPT.L,WT PHYSICAL PLATINUM,Precious Metals,thematic,London,,2023-01-03,1.0,PHPT LN Equity
+PPLT,ABRDN PHYSICAL PLATINUM SHRS,Precious Metals,thematic,US / other,,2023-01-03,1.0,PPLT US Equity
+SGLD.SW,Invesco Physical Gold ETC,Precious Metals,extra,SIX Swiss,32541.77581909644,2023-01-03,1.0,
+SGLE.MI,Invesco Physical Gold ETC EUR Hedged,Precious Metals,extra,Milan,1210.516712973877,2023-01-03,1.0,
+SGLN.L,SGLN.L,Precious Metals,extra,London,,2023-01-03,1.0,
+SLV,ISHARES SILVER TRUST,Precious Metals,thematic,US / other,,2023-01-03,1.0,SLV US Equity
+SSLN.L,SSLN.L,Precious Metals,extra,London,,2023-01-03,1.0,
+XAD6.MI,Xtrackers Physical Silver ETC (EUR),Precious Metals,extra,Milan,614.7361933032761,2023-01-03,1.0,
+XGDU.DE,XGDU.DE,Precious Metals,extra,Xetra,,2023-01-03,1.0,
+ZGLD.SW,SWC-GOLD ETF EA CHF,Precious Metals,thematic,SIX Swiss,,2023-01-03,1.0,ZGLD SW Equity
+ZGLDEU.SW,SWC-GOLD ETF EA EUR,Precious Metals,thematic,SIX Swiss,,2023-01-03,1.0,ZGLDEU SW Equity
+ZGLDGB.SW,SWC-GOLD ETF EA GBP,Precious Metals,thematic,SIX Swiss,,2023-01-03,1.0,ZGLDGB SW Equity
+ZGLDUS.SW,SWC-GOLD ETF EA USD,Precious Metals,thematic,SIX Swiss,,2023-01-03,1.0,ZGLDUS SW Equity
+CSPE.L,State Street SPDR MSCI Europe Consumer Staples UCITS ETF,Sector — Consumer & Communications,extra,London,204.342273959034,2023-01-03,1.0,
+IUCD.L,iShares S&P 500 Consumer Discretionary Sector UCITS ETF,Sector — Consumer & Communications,ucits,London,,2023-01-03,1.0,IUCD LN Equity
+IUCM.L,iShares S&P 500 Communication Sector UCITS ETF,Sector — Consumer & Communications,ucits,London,,2023-01-03,1.0,IUCM LN Equity
+IUCS.L,iShares S&P 500 Consumer Staples Sector UCITS ETF,Sector — Consumer & Communications,ucits,London,,2023-01-03,1.0,IUCS LN Equity
+XDWC.DE,XDWC.DE,Sector — Consumer & Communications,extra,Xetra,404.3,2023-01-03,1.0,
+XDWS.DE,XDWS.DE,Sector — Consumer & Communications,extra,Xetra,962.5,2023-01-03,1.0,
+XSSW.L,Xtrackers MSCI World Communication Services UCITS ETF 1C,Sector — Consumer & Communications,extra,London,601.9117234642487,2023-01-03,1.0,
+XWCS.L,Xtrackers MSCI World Consumer Staples UCITS ETF 1C,Sector — Consumer & Communications,extra,London,1313.6350089516295,2023-01-03,1.0,
+XWDS.L,Xtrackers MSCI World Consumer Discretionary UCITS ETF 1C,Sector — Consumer & Communications,extra,London,551.7267841188965,2023-01-03,1.0,
+ENGE.L,State Street SPDR MSCI Europe Energy UCITS ETF,Sector — Energy,extra,London,843.5239230266266,2023-01-03,1.0,
+ESIE.L,iShares MSCI Europe Energy Sector UCITS ETF,Sector — Energy,extra,London,417.6855657888413,2023-01-03,0.968,
+IUES.L,iShares S&P 500 Energy Sector UCITS ETF,Sector — Energy,ucits,London,,2023-01-03,1.0,IUES LN Equity
+XDW0.L,Xtrackers MSCI World Energy UCITS ETF,Sector — Energy,ucits,London,,2023-01-03,1.0,XDW0 LN Equity
+XWES.L,Xtrackers MSCI World Energy UCITS ETF 1C,Sector — Energy,extra,London,2657.8582278829954,2023-01-03,1.0,
+BNKE.L,Amundi Euro Stoxx Banks UCITS ETF Acc,Sector — Financials,extra,London,8475.031889208984,2023-01-03,1.0,
+BNKS.L,iShares S&P US Banks UCITS ETF,Sector — Financials,ucits,London,,2023-01-03,1.0,BNKS LN Equity
+ESIF.DE,iShares MSCI Europe Financials Sector UCITS ETF,Sector — Financials,ucits,Xetra,,2023-01-03,1.0,ESIF GY Equity
+IUFS.L,iShares S&P 500 Financials Sector UCITS ETF,Sector — Financials,ucits,London,,2023-01-03,1.0,IUFS LN Equity
+S7XP.L,Invesco EURO STOXX Optimised Banks UCITS ETF,Sector — Financials,extra,London,272.8784840671539,2023-01-03,1.0,
+SXIPEX.DE,iShares STOXX Europe 600 Insurance UCITS ETF DE,Sector — Financials,ucits,Xetra,,2023-01-03,1.0,SXIPEX GY Equity
+X7PP.L,Invesco STOXX Europe 600 Optimised Banks UCITS ETF,Sector — Financials,extra,London,818.1306740641174,2023-01-03,1.0,
+XDWF.L,Xtrackers MSCI World Financials UCITS ETF,Sector — Financials,ucits,London,,2023-01-03,1.0,XDWF LN Equity
+XS7R.L,Xtrackers MSCI Europe Financials UCITS ETF 1C,Sector — Financials,extra,London,213.85145466222383,2023-01-03,1.0,
+XWFS.L,Xtrackers MSCI World Financials UCITS ETF 1C,Sector — Financials,extra,London,1892.809879492981,2023-01-03,1.0,
+BTEC.L,iShares Nasdaq US Biotechnology UCITS ETF,Sector — Health Care,ucits,London,,2023-01-03,1.0,BTEC LN Equity
+HEAE.L,State Street SPDR MSCI Europe Health Care UCITS ETF,Sector — Health Care,extra,London,816.8493813669892,2023-01-03,1.0,
+IUHC.L,iShares S&P 500 Health Care Sector UCITS ETF,Sector — Health Care,ucits,London,,2023-01-03,1.0,IUHC LN Equity
+XDWH.L,Xtrackers MSCI World Health Care UCITS ETF,Sector — Health Care,ucits,London,,2023-01-03,1.0,XDWH LN Equity
+IUMS.L,iShares S&P 500 Materials Sector UCITS ETF,Sector — Industrials & Materials,ucits,London,,2023-01-03,1.0,IUMS LN Equity
+STQX.SW,State Street SPDR MSCI Europe Industrials UCITS ETF,Sector — Industrials & Materials,extra,SIX Swiss,1600.5791553400268,2023-01-03,1.0,
+SXLI.L,SPDR S&P U.S. Industrials Select Sector UCITS ETF,Sector — Industrials & Materials,ucits,London,,2023-01-03,1.0,SXLI LN Equity
+WMAT.L,SPDR MSCI World Materials UCITS ETF,Sector — Industrials & Materials,ucits,London,,2023-01-03,1.0,WMAT LN Equity
+XDWI.DE,XDWI.DE,Sector — Industrials & Materials,extra,Xetra,1391.5,2023-01-03,1.0,
+XDWM.DE,XDWM.DE,Sector — Industrials & Materials,extra,Xetra,728.9,2023-01-03,1.0,
+XSMW.L,Xtrackers MSCI World Materials UCITS ETF 1C,Sector — Industrials & Materials,extra,London,994.7912302937468,2023-01-03,1.0,
+XWIS.L,Xtrackers MSCI World Industrials UCITS ETF 1C,Sector — Industrials & Materials,extra,London,1899.1079453893435,2023-01-03,1.0,
+ESIT.L,iShares MSCI Europe Information Technology Sector UCITS ETF,Sector — Technology,extra,London,305.9182177692948,2023-01-03,1.0,
+HNSC.L,HSBC NASDAQ Global Semiconductor UCITS ETF USD,Sector — Technology,extra,London,237.966544,2023-01-03,1.0,
+HNSS.L,HSBC NASDAQ Global Semiconductor UCITS ETF,Sector — Technology,extra,London,324.7758825883446,2023-01-03,1.0,
+IUIT.L,iShares S&P 500 Information Technology Sector UCITS ETF,Sector — Technology,ucits,London,,2023-01-03,1.0,IUIT LN Equity
+SEMG.L,Amundi MSCI Semiconductors UCITS ETF Acc,Sector — Technology,extra,London,2531.822665031585,2023-01-03,1.0,
+SEMI.AS,iShares MSCI Global Semiconductors UCITS ETF,Sector — Technology,ucits,Amsterdam,,2023-01-03,1.0,SEMI NA Equity
+SEMI.L,iShares MSCI Global Semiconductors UCITS ETF USD Acc,Sector — Technology,extra,London,7447.654736393677,2023-01-03,1.0,
+SMHV.SW,VanEck Semiconductor UCITS ETF,Sector — Technology,extra,SIX Swiss,10056.207221484558,2023-01-03,1.0,
+STKX.SW,State Street SPDR MSCI Europe Technology UCITS ETF,Sector — Technology,extra,SIX Swiss,207.7579642016716,2023-01-03,1.0,
+SX8PEX.DE,iShares STOXX Europe 600 Technology UCITS ETF DE,Sector — Technology,ucits,Xetra,,2023-01-03,1.0,SX8PEX GY Equity
+SXLK.L,SPDR S&P U.S. Technology Select Sector UCITS ETF,Sector — Technology,ucits,London,,2023-01-03,1.0,SXLK LN Equity
+XDWT.DE,XDWT.DE,Sector — Technology,extra,Xetra,5949.3,2023-01-03,1.0,
+XDWT.SW,Xtrackers MSCI World Information Technology UCITS ETF 1C,Sector — Technology,extra,SIX Swiss,7428.794610380859,2023-01-03,1.0,
+IUUS.L,iShares S&P 500 Utilities Sector UCITS ETF,Sector — Utilities,ucits,London,,2023-01-03,1.0,IUUS LN Equity
+STUX.MI,SS SPDR MSCI Europe Utilities UCITS ETF,Sector — Utilities,ucits,Milan,,2023-01-03,1.0,STUX IM Equity
+SXLU.L,SPDR S&P U.S. Utilities Select Sector UCITS ETF,Sector — Utilities,ucits,London,,2023-01-03,1.0,SXLU LN Equity
+XDWU.DE,XDWU.DE,Sector — Utilities,extra,Xetra,987.7,2023-01-03,1.0,
+XDWU.SW,Xtrackers MSCI World Utilities UCITS ETF 1C,Sector — Utilities,extra,SIX Swiss,1233.275561679474,2023-01-03,1.0,
+2B79.DE,iShares Digitalisation UCITS ETF,Technology & Cybersecurity,extra,Xetra,888.5399237087555,2023-01-03,1.0,
+CIBR.L,FIRST TRUST CYBERSECURITY,Technology & Cybersecurity,thematic,London,,2023-01-03,1.0,CIBR LN Equity
+CLOU,GLOBAL X CLOUD COMPUTING ETF,Technology & Cybersecurity,thematic,US / other,,2023-01-03,1.0,CLOU US Equity
+DGIT.L,iShares Digitalisation UCITS ETF USD (Acc),Technology & Cybersecurity,extra,London,1038.41457793544,2023-01-03,1.0,
+DGTL.L,DGTL.L,Technology & Cybersecurity,extra,London,760.9,2023-01-03,1.0,
+FDN,FIRST TRUST DJ INTERNET IND,Technology & Cybersecurity,thematic,US / other,,2023-01-03,1.0,FDN US Equity
+FSKY.L,First Trust Cloud Computing UCITS ETF,Technology & Cybersecurity,extra,London,384.4,2023-01-03,1.0,
+FSKY.MI,First Trust Cloud Computing UCITS ETF Class A USD Accumulation,Technology & Cybersecurity,extra,Milan,448.8600912928467,2023-01-03,1.0,
+GDIG.L,GDIG.L,Technology & Cybersecurity,extra,London,1931.0,2023-01-03,1.0,
+SKYY,FIRST TRUST CLOUD COMPUTING,Technology & Cybersecurity,thematic,US / other,,2023-01-03,1.0,SKYY US Equity
+SMGB.L,SMGB.L,Technology & Cybersecurity,extra,London,8053.4,2023-01-03,1.0,
+WCBR.L,WCBR.L,Technology & Cybersecurity,extra,London,417.8,2023-01-03,1.0,

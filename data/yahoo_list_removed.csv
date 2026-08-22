@@ -1,0 +1,84 @@
+ticker,name,removed_because,detail,kept_instead,aum_usd_m
+2B79.DE,iShares Digitalisation UCITS ETF,duplicate,"same fund, smaller listing",DGIT.L,888.5
+4COP.DE,Global X Copper Miners UCITS ETF,duplicate,"same fund, smaller listing",COPG.L,1320.1
+AMEQ.DE,Amundi Index Solutions - Amundi MSCI Europe Quality Factor UCITS ETF-C,duplicate,same exposure: European quality factor,IEFQ.L,319.7
+ANRJ.L,Amundi Global Hydrogen UCITS ETF - Acc,duplicate,same exposure: hydrogen economy,HTWG.L,304.0
+APEX.MI,Amundi MSCI AC Asia Ex Japan UCITS ETF Acc,duplicate,same exposure: EM / Asia ex-Japan equity,SPYA.DE,454.7
+AUCP.L,L&G Gold Mining UCITS ETF,duplicate,same exposure: gold miners,GDGB.L,926.8
+BCHN.L,Invesco CoinShares Global Blockchain UCITS ETF,duplicate,"same fund, smaller listing",BCHS.L,975.7
+BOTZ.SW,Global X Robotics & Artificial Intelligence UCITS ETF USD Acc,duplicate,"same fund, smaller listing",ROBG.L,198.3
+CSJP.MI,iShares VII PLC - iShares MSCI Japan ETF USD Acc,duplicate,same exposure: Japan equity,SJPA.L,1958.7
+CSNDX.SW,iShares NASDAQ 100 UCITS ETF USD (Acc),duplicate,"same fund, smaller listing",CNDX.L,22150.0
+CV9.PA,Amundi Index Solutions - Amundi MSCI Europe Value Factor UCITS ETF-C,duplicate,same exposure: European value factor,IEFV.L,423.3
+CW8.PA,Amundi Index Solutions - Amundi MSCI World Swap UCITS ETF EUR Acc,duplicate,same exposure: developed world large/mid,XDWD.L,7699.8
+DAGB.L,VanEck Crypto& Blockchain Innovators ETF A USD Acc,duplicate,same exposure: blockchain/crypto equity,BCHS.L,697.8
+DAPP.L,VanEck Crypto & Blockchain Innovators UCITS ETF USD Acc,duplicate,"same fund, smaller listing",DAGB.L,511.3
+DGTL.L,iShares Digitalisation UCITS ETF USD (Acc),duplicate,"same fund, smaller listing",DGIT.L,760.9
+EEIP.L,WisdomTree Europe High Dividend UCITS ETF Acc,duplicate,same exposure: European high dividend,CD9.PA,300.7
+ESIE.L,iShares MSCI Europe Energy Sector UCITS ETF,duplicate,same exposure: European energy sector,ENGE.L,417.7
+FSKY.L,First Trust Cloud Computing UCITS ETF,duplicate,"same fund, smaller listing",FSKY.MI,384.4
+FWRA.L,Invesco FTSE All-World UCITS ETF USD Accumulation,duplicate,same exposure: FTSE All-World,VWCE.DE,3746.0
+GDIG.L,VanEck S&P Global Mining UCITS ETF USD Acc,duplicate,"same fund, smaller listing (also miscategorised)",GIGB.L,1931.0
+GLGG.L,L&G Clean Water UCITS ETF,duplicate,same exposure: global water equity,H2OA.AS,1025.6
+HCHS.L,HSBC MSCI China UCITS ETF,duplicate,same exposure: MSCI China,XCS6.DE,1540.0
+HEMC.L,HSBC MSCI Emerging Markets UCITS ETF,duplicate,same exposure: broad emerging markets,XMMS.L,7839.7
+HMJS.PA,HSBC MSCI JAPAN UCITS ETF,duplicate,same exposure: Japan equity,SJPA.L,293.5
+HNSC.L,HSBC NASDAQ Global Semiconductor UCITS ETF USD,duplicate,"same fund, smaller listing",HNSS.L,238.0
+HNSS.L,HSBC NASDAQ Global Semiconductor UCITS ETF,duplicate,same exposure: semiconductors,SMHV.SW,324.8
+HTWO.L,L&G Hydrogen Economy UCITS ETF USD Acc,duplicate,"same fund, smaller listing",HTWG.L,463.9
+LCCN.SW,Amundi MSCI China UCITS ETF,duplicate,same exposure: MSCI China,XCS6.DE,905.7
+LGAG.L,L&G Asia Pacific ex Japan Equity UCITS ETF,duplicate,same exposure: Asia Pacific ex-Japan,AEJL.L,1071.7
+LGGG.L,L&G Global Equity UCITS ETF,duplicate,same exposure: developed world large/mid,XDWD.L,2395.6
+LGJG.L,L&G Japan Equity UCITS ETF,duplicate,same exposure: Japan equity,SJPA.L,1311.0
+LGUG.L,L&G US Equity UCITS ETF,duplicate,same exposure: US large cap core,VUAA.L,2013.7
+MEUG.L,Amundi MSCI Europe UCITS ETF Acc,duplicate,same exposure: broad European equity,MEUD.PA,842.7
+MVED.L,iShares Edge MSCI Europe Minimum Volatility UCITS ETF,duplicate,"same fund, smaller listing",IMV.L,1059.4
+QDVA.DE,iShares Edge MSCI USA Momentum Factor UCITS ETF USD (Acc),duplicate,"same fund, smaller listing",IUMF.L,882.3
+REMX.L,VanEck Rare Earth and Strategic Metals UCITS ETF,duplicate,"same fund, smaller listing",REGB.L,1063.1
+RIEG.L,L&G MSCI Europe Select UCITS ETF - EUR Accumulating ETF,duplicate,same exposure: broad European equity,MEUD.PA,888.9
+S7XP.L,Invesco EURO STOXX Optimised Banks UCITS ETF,duplicate,same exposure: euro-area banks,BNKE.L,272.9
+SEMG.L,Amundi MSCI Semiconductors UCITS ETF Acc,duplicate,same exposure: semiconductors,SMHV.SW,2531.8
+SEMI.L,iShares MSCI Global Semiconductors UCITS ETF USD Acc,duplicate,same exposure: semiconductors,SMHV.SW,7447.7
+SMCX.SW,State Street SPDR MSCI Europe Small Cap UCITS ETF,duplicate,same exposure: European small cap,XXSC.L,355.3
+SMEA.L,iShares Core MSCI Europe UCITS ETF EUR (Acc),duplicate,same exposure: broad European equity,MEUD.PA,15882.0
+SMGB.L,VanEck Semiconductor UCITS ETF USD Acc,duplicate,"same fund, smaller listing",SMHV.SW,8053.4
+SPPW.DE,State Street SPDR MSCI World UCITS ETF,duplicate,same exposure: developed world large/mid,XDWD.L,17500.0
+SPYI.DE,State Street SPDR MSCI All Country World Investable Market UCITS ETF,duplicate,same exposure: global all-cap ACWI IMI,VWCE.DE,7949.2
+SPYM.DE,State Street SPDR MSCI Emerging Markets UCITS ETF,duplicate,same exposure: broad emerging markets,XMMS.L,2507.4
+STKX.SW,State Street SPDR MSCI Europe Technology UCITS ETF,duplicate,same exposure: European technology sector,ESIT.L,207.8
+URNM.L,Sprott Uranium Miners UCITS ETF USD Acc,duplicate,same exposure: uranium / nuclear,NUKL.DE,331.9
+UVAL.L,State Street SPDR MSCI USA Value UCITS ETF USD Acc,duplicate,same exposure: US value factor,IUVF.L,380.9
+VAGF.DE,Vanguard Global Aggregate Bond UCITS ETF EUR Hedged Accumulation,duplicate,"same exposure: global aggregate, EUR hedged",EUNA.DE,2679.3
+VALW.L,State Street SPDR MSCI World Value UCITS ETF,duplicate,same exposure: world value factor,IS3S.DE,269.2
+VFEA.L,Vanguard FTSE Emerging Markets UCITS ETF USD Accumulation,duplicate,same exposure: broad emerging markets,XMMS.L,5893.9
+VHVE.L,Vanguard FTSE Developed World UCITS ETF USD Accumulation,duplicate,same exposure: developed world large/mid,XDWD.L,11284.5
+WATC.SW,Amundi MSCI Water UCITS ETF Acc,duplicate,same exposure: global water equity,H2OA.AS,1980.4
+XAAG.DE,Invesco Bloomberg Commodity ex-Agriculture UCITS ETF,duplicate,same exposure: commodity ex-agriculture,COMG.L,679.2
+XCS5.DE,Xtrackers MSCI India Swap UCITS ETF 1C,duplicate,same exposure: India equity,FLXI.DE,698.6
+XD9U.DE,Xtrackers MSCI USA UCITS ETF 1C,duplicate,same exposure: US large cap core,VUAA.L,13573.2
+XDEB.DE,Xtrackers MSCI World Minimum Volatility UCITS ETF 1C,duplicate,"same fund, smaller listing",XDEB.L,1299.6
+XDEM.DE,Xtrackers MSCI World Momentum UCITS ETF 1C,duplicate,same exposure: world momentum factor,IWMO.L,2240.5
+XDEQ.DE,Xtrackers MSCI World Quality UCITS ETF 1C,duplicate,same exposure: world quality factor,IWFQ.L,3195.5
+XDEV.DE,Xtrackers MSCI World Value UCITS ETF 1C,duplicate,same exposure: world value factor,IS3S.DE,4320.1
+XDWC.DE,Xtrackers MSCI World Consumer Discretionary UCITS ETF 1C,duplicate,"same fund, smaller listing",XWDS.L,404.3
+XDWI.DE,Xtrackers MSCI World Industrials UCITS ETF 1C,duplicate,"same fund, smaller listing",XWIS.L,1391.5
+XDWM.DE,Xtrackers MSCI World Materials UCITS ETF 1C,duplicate,"same fund, smaller listing",XSMW.L,728.9
+XDWS.DE,Xtrackers MSCI World Consumer Staples UCITS ETF 1C,duplicate,"same fund, smaller listing",XWCS.L,962.5
+XDWT.DE,Xtrackers MSCI World Information Technology UCITS ETF 1C,duplicate,"same fund, smaller listing",XDWT.SW,5949.3
+XDWU.DE,Xtrackers MSCI World Utilities UCITS ETF 1C,duplicate,"same fund, smaller listing",XDWU.SW,987.7
+XMAD.L,Xtrackers MSCI EM Asia Screened Swap UCITS ETF 1C,duplicate,same exposure: EM Asia equity,SPYA.DE,752.7
+XMAS.DE,Xtrackers MSCI EM Asia Screened Swap UCITS ETF 1C,duplicate,"same fund, duplicate line",XMAD.L,752.7
+XMEU.DE,Xtrackers MSCI Europe UCITS ETF 1C,duplicate,same exposure: broad European equity,MEUD.PA,9164.6
+XMME.DE,Xtrackers MSCI Emerging Markets UCITS ETF 1C,duplicate,same exposure: broad emerging markets,XMMS.L,14132.4
+XMUS.DE,Xtrackers MSCI USA UCITS ETF 1C,duplicate,"same fund, smaller listing",XD9U.DE,13573.2
+XNAS.DE,Xtrackers Nasdaq 100 UCITS ETF 1C,duplicate,same exposure: Nasdaq 100,CNDX.L,2412.9
+XZEU.SW,Xtrackers MSCI Europe ESG UCITS ETF 1C,duplicate,same exposure: European ESG equity,CEUR.L,1445.6
+ZPRS.DE,State Street SPDR MSCI World Small Cap UCITS ETF USD Acc,duplicate,same exposure: world small cap,WLDS.L,1984.2
+4GLD.DE,Xetra-Gold ETC,non-UCITS,"Physically-backed ETC (debt security), not a UCITS fund",,
+EGLN.L,iShares Physical Gold ETC,non-UCITS,"Physically-backed ETC (debt security), not a UCITS fund",,
+SGLD.SW,Invesco Physical Gold ETC,non-UCITS,"Physically-backed ETC (debt security), not a UCITS fund",,32541.8
+SGLE.MI,Invesco Physical Gold ETC EUR Hedged,non-UCITS,"Physically-backed ETC (debt security), not a UCITS fund",,1210.5
+SGLN.L,iShares Physical Gold ETC (USD),non-UCITS,"Physically-backed ETC (debt security), not a UCITS fund",,
+SSLN.L,iShares Physical Silver ETC,non-UCITS,"Physically-backed ETC (debt security), not a UCITS fund",,
+XAD6.MI,Xtrackers Physical Silver ETC (EUR),non-UCITS,"Physically-backed ETC (debt security), not a UCITS fund",,614.7
+XGDU.DE,Xtrackers Physical Gold ETC,non-UCITS,"Physically-backed ETC (debt security), not a UCITS fund",,

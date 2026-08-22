@@ -1,0 +1,122 @@
+rank,ticker,name,category,venue,aum_usd_m,aum_source,currency_hedged_of,first_price,coverage
+1,VUAA.L,Vanguard S&P 500 UCITS ETF USD Accumulation,Equities — US & Canada,London,86036.2,yahoo,,2023-01-03,1.0
+2,VWCE.DE,Vanguard FTSE All-World UCITS ETF USD Accumulation,Developed Market Indices,Xetra,79553.0,yahoo,,2023-01-03,1.0
+3,MEUD.PA,Amundi Core Stoxx Europe 600 UCITS ETF Acc,Equities — Europe,Paris,24612.1,estimated,,2024-02-19,0.69
+4,XDWD.L,Xtrackers MSCI World UCITS ETF 1C,Developed Market Indices,London,22490.0,estimated,,2023-01-03,1.0
+5,CNDX.L,iShares NASDAQ 100 UCITS ETF USD (Acc),Equities — US & Canada,London,22150.0,estimated,,2023-01-03,1.0
+6,XMMS.L,Xtrackers MSCI Emerging Markets UCITS ETF 1C,Emerging Markets,London,19287.8,yahoo,,2023-01-03,1.0
+7,XESC.DE,Xtrackers Euro Stoxx 50 UCITS ETF 1C,Equities — Europe,Xetra,12395.8,yahoo,,2023-01-03,1.0
+8,SMHV.SW,VanEck Semiconductor UCITS ETF,Sector — Technology,SIX Swiss,10056.2,yahoo,,2023-01-03,1.0
+9,XDAX.L,Xtrackers DAX UCITS ETF 1C,Equities — Europe,London,9806.7,yahoo,,2023-01-03,1.0
+10,WLDS.L,iShares MSCI World Small Cap UCITS ETF USD (Acc),Developed Market Indices,London,8476.0,yahoo,,2023-01-03,1.0
+11,BNKE.L,Amundi Euro Stoxx Banks UCITS ETF Acc,Sector — Financials,London,8475.0,yahoo,,2023-01-03,1.0
+12,SJPA.L,iShares Core MSCI Japan IMI UCITS ETF USD (Acc),Equities — Asia Pacific,London,8341.0,estimated,,2023-01-03,1.0
+13,CSBGU7.SW,iShares $ Treasury Bond 3-7yr UCITS ETF USD (Acc),Bonds — Government & Aggregate,SIX Swiss,7773.0,estimated,,2023-01-03,1.0
+14,EXUS.L,Xtrackers MSCI World ex USA UCITS ETF 1C USD,Developed Market Indices,London,7524.9,yahoo,,2024-03-06,0.677
+15,XDWT.SW,Xtrackers MSCI World Information Technology UCITS ETF 1C,Sector — Technology,SIX Swiss,7428.8,yahoo,,2023-01-03,1.0
+16,IS3S.DE,iShares Edge MSCI World Value Factor UCITS ETF USD (Acc),"Factor, Style & ESG",Xetra,7209.5,yahoo,,2023-01-03,1.0
+17,XSXE.DE,Xtrackers Stoxx Europe 600 UCITS ETF 2C - EUR Hedged,Equities — Europe,Xetra,6513.4,yahoo,MEUD.PA,2023-01-03,1.0
+18,IWFQ.L,iShares Edge MSCI World Quality Factor UCITS ETF USD (Acc),"Factor, Style & ESG",London,5897.7,yahoo,,2023-01-03,1.0
+19,XBEC.SW,Xtrackers II EUR Corporate Bond UCITS ETF 1C,Bonds — Investment Grade & Structured,SIX Swiss,5764.8,yahoo,,2023-01-03,1.0
+20,IWMO.L,iShares Edge MSCI World Momentum Factor UCITS ETF USD (Acc),"Factor, Style & ESG",London,5434.7,yahoo,,2023-01-03,1.0
+21,ZPRR.DE,State Street SPDR Russell 2000 US Small Cap UCITS ETF,Equities — US & Canada,Xetra,5333.0,estimated,,2023-01-03,1.0
+22,CACC.PA,Amundi CAC 40 UCITS ETF Acc,Equities — Europe,Paris,5259.4,yahoo,,2023-01-03,1.0
+23,IUVF.L,iShares Edge MSCI USA Value Factor UCITS ETF,"Factor, Style & ESG",London,5187.8,yahoo,,2023-01-03,1.0
+24,XXSC.L,Xtrackers MSCI Europe Small Cap UCITS ETF 1C,"Factor, Style & ESG",London,4813.2,yahoo,,2023-01-03,1.0
+25,GDGB.L,VanEck Gold Miners UCITS ETF,Industrial Metals & Mining,London,4131.5,yahoo,,2023-01-03,1.0
+26,IEFV.L,iShares Edge MSCI Europe Value Factor UCITS ETF EUR (Acc),"Factor, Style & ESG",London,3698.3,yahoo,,2023-01-03,1.0
+27,CEUR.L,Amundi MSCI Europe ESG Broad Transition - UCITS ETF DR - EUR (C),"Factor, Style & ESG",London,3418.2,yahoo,,2023-01-03,1.0
+28,XHYA.DE,Xtrackers II EUR High Yield Corporate Bond UCITS ETF 1C,Bonds — Investment Grade & Structured,Xetra,3237.5,yahoo,,2023-01-03,1.0
+29,GRID.MI,First Trust Nasdaq Clean Edge Smart Grid Infrastructure UCITS ETF,Infrastructure & Real Estate,Milan,3098.9,yahoo,,2023-01-03,1.0
+30,EUNA.DE,iShares Core Global Aggregate Bond UCITS ETF EUR Hedged (Acc),Bonds — Government & Aggregate,Xetra,2939.0,estimated,(unhedged equivalent not in list),2023-01-03,1.0
+31,XWES.L,Xtrackers MSCI World Energy UCITS ETF 1C,Sector — Energy,London,2657.9,yahoo,,2023-01-03,1.0
+32,ERNA.L,iShares $ Ultrashort Bond UCITS ETF USD (Acc),Bonds — Cash & EM Debt,London,2657.0,estimated,,2023-01-03,1.0
+33,GIGB.L,VanEck S&P Global Mining UCITS ETF,Industrial Metals & Mining,London,2635.4,yahoo,,2023-01-03,1.0
+34,H2OA.AS,iShares Global Water UCITS ETF,Clean Energy & Water,Amsterdam,2564.2,yahoo,,2023-01-03,1.0
+35,MTXX.L,Amundi Core Euro Government Bond UCITS ETF Acc,Bonds — Government & Aggregate,London,2376.9,yahoo,,2023-01-03,1.0
+36,COMG.L,Amundi Bloomberg Equal-weight Commodity ex-Agriculture UCITS ETF Acc,Commodities & Agriculture,London,2366.3,yahoo,,2023-01-03,1.0
+37,DTLA.L,iShares $ Treasury Bond 20+yr UCITS ETF,Bonds — Government & Aggregate,London,2220.0,estimated,,2023-01-03,1.0
+38,NUKL.DE,VanEck Uranium and Nuclear Technologies UCITS ETF A USD Acc,Energy & Nuclear,Xetra,2138.1,yahoo,,2023-02-03,0.975
+39,VEMA.L,Vanguard USD Emerging Markets Government Bond UCITS ETF USD Accumulation,Bonds — Government & Aggregate,London,2121.5,yahoo,,2023-01-03,1.0
+40,FLXI.DE,Franklin FTSE India UCITS ETF,Emerging Markets,Xetra,2043.4,yahoo,,2023-01-03,1.0
+41,C099.DE,Amundi Bloomberg Equal-weight Commodity ex-Agriculture UCITS ETF Euro Hedged Acc,Commodities & Agriculture,Xetra,2024.8,yahoo,COMG.L,2023-01-03,1.0
+42,XCS6.DE,Xtrackers MSCI China UCITS ETF 1C,Emerging Markets,Xetra,2024.5,yahoo,,2023-01-03,1.0
+43,XZEM.SW,Xtrackers MSCI Emerging Markets ESG UCITS ETF 1C,"Factor, Style & ESG",SIX Swiss,1939.2,yahoo,,2023-01-03,1.0
+44,SPYA.DE,State Street SPDR MSCI EM Asia UCITS ETF,Equities — Asia Pacific,Xetra,1903.9,yahoo,,2023-01-03,1.0
+45,5MVL.DE,iShares Edge MSCI EM Value Factor UCITS ETF USD (Acc),"Factor, Style & ESG",Xetra,1902.7,yahoo,,2023-01-03,1.0
+46,XWIS.L,Xtrackers MSCI World Industrials UCITS ETF 1C,Sector — Industrials & Materials,London,1899.1,yahoo,,2023-01-03,1.0
+47,XWFS.L,Xtrackers MSCI World Financials UCITS ETF 1C,Sector — Financials,London,1892.8,yahoo,,2023-01-03,1.0
+48,INTL.L,WisdomTree Artificial Intelligence UCITS ETF - USD Acc,AI & Automation,London,1834.0,yahoo,,2023-01-03,1.0
+49,XDEB.L,Xtrackers MSCI World Minimum Volatility UCITS ETF 1C,"Factor, Style & ESG",London,1773.6,yahoo,,2023-01-03,1.0
+50,ROBG.L,Global X Robotics & Artificial Intelligence UCITS ETF USD Acc,AI & Automation,London,1702.2,yahoo,,2023-01-03,1.0
+51,STQX.SW,State Street SPDR MSCI Europe Industrials UCITS ETF,Sector — Industrials & Materials,SIX Swiss,1600.6,yahoo,,2023-01-03,1.0
+52,PSPH.PA,Amundi PEA S&P 500 UCITS ETF EUR Hedged Acc,Equities — US & Canada,Paris,1582.0,yahoo,VUAA.L,2023-01-03,1.0
+53,BTEK.L,iShares Nasdaq US Biotechnology UCITS ETF USD (Acc),Healthcare & Ageing,London,1564.8,yahoo,,2023-01-03,1.0
+54,COPG.L,Global X Copper Miners UCITS ETF USD Acc,Industrial Metals & Mining,London,1542.8,yahoo,,2023-01-03,1.0
+55,X1G.MI,Amundi Index Solutions - Amundi Euro Lowest Rated IG Government Bond UCITS ETF-C,Bonds — Government & Aggregate,Milan,1532.1,yahoo,,2023-01-03,1.0
+56,REGB.L,VanEck Rare Earth and Strategic Metals UCITS ETF A USD Acc,Industrial Metals & Mining,London,1450.9,yahoo,,2023-01-03,1.0
+57,GJGB.L,VanEck Junior Gold Miners UCITS ETF,Industrial Metals & Mining,London,1375.2,yahoo,,2023-01-03,1.0
+58,BCHS.L,Invesco CoinShares Global Blockchain UCITS ETF,Crypto & Blockchain,London,1331.7,yahoo,,2023-01-03,1.0
+59,XWCS.L,Xtrackers MSCI World Consumer Staples UCITS ETF 1C,Sector — Consumer & Communications,London,1313.6,yahoo,,2023-01-03,1.0
+60,CMFP.L,L&G Longer Dated All Commodities UCITS ETF,Commodities & Agriculture,London,1282.0,yahoo,,2023-01-03,1.0
+61,IMV.L,iShares Edge MSCI Europe Minimum Volatility UCITS ETF EUR (Acc),"Factor, Style & ESG",London,1238.1,yahoo,,2023-01-03,1.0
+62,XDWU.SW,Xtrackers MSCI World Utilities UCITS ETF 1C,Sector — Utilities,SIX Swiss,1233.3,yahoo,,2023-01-03,1.0
+63,FSEU.L,iShares STOXX Europe Equity Multifactor UCITS ETF EUR (Acc),"Factor, Style & ESG",London,1206.6,yahoo,,2023-01-03,1.0
+64,IEXA.DE,iShares € Corp Bond ex-Financials UCITS ETF EUR (Acc),Bonds — Investment Grade & Structured,Xetra,1125.8,yahoo,,2023-01-03,1.0
+65,ZPRV.DE,State Street SPDR MSCI USA Small Cap Value Weighted UCITS ETF USD Acc,"Factor, Style & ESG",Xetra,1087.0,yahoo,,2023-01-03,1.0
+66,AEJL.L,Amundi MSCI AC Asia Pacific Ex Japan UCITS ETF Acc,Equities — Asia Pacific,London,1074.3,yahoo,,2023-01-03,1.0
+67,IEFM.L,iShares Edge MSCI Europe Momentum Factor UCITS ETF EUR (Acc),"Factor, Style & ESG",London,1067.2,yahoo,,2023-01-03,1.0
+68,DGIT.L,iShares Digitalisation UCITS ETF USD (Acc),Technology & Cybersecurity,London,1038.4,yahoo,,2023-01-03,1.0
+69,IUMF.L,iShares Edge MSCI USA Momentum Factor UCITS ETF,"Factor, Style & ESG",London,1031.1,yahoo,,2023-01-03,1.0
+70,RENG.L,L&G Clean Energy UCITS ETF USD Acc,Clean Energy & Water,London,1015.4,yahoo,,2023-01-03,1.0
+71,XSMW.L,Xtrackers MSCI World Materials UCITS ETF 1C,Sector — Industrials & Materials,London,994.8,yahoo,,2023-01-03,1.0
+72,XDER.L,Xtrackers FTSE Developed Europe Real Estate UCITS ETF 1C,Infrastructure & Real Estate,London,938.0,yahoo,,2023-01-03,1.0
+73,IEFQ.L,iShares Edge MSCI Europe Quality Factor UCITS ETF EUR (Acc),"Factor, Style & ESG",London,927.5,yahoo,,2023-01-03,1.0
+74,ENGE.L,State Street SPDR MSCI Europe Energy UCITS ETF,Sector — Energy,London,843.5,yahoo,,2023-01-03,1.0
+75,X7PP.L,Invesco STOXX Europe 600 Optimised Banks UCITS ETF,Sector — Financials,London,818.1,yahoo,,2023-01-03,1.0
+76,HEAE.L,State Street SPDR MSCI Europe Health Care UCITS ETF,Sector — Health Care,London,816.8,yahoo,,2023-01-03,1.0
+77,XKS2.L,Xtrackers MSCI Korea UCITS ETF 1C,Emerging Markets,London,799.1,yahoo,,2023-01-03,1.0
+78,CEC.PA,Amundi MSCI Eastern Europe Ex Russia UCITS ETF Acc,Equities — Europe,Paris,783.5,yahoo,,2023-01-03,1.0
+79,BATT.L,WisdomTree Battery Solutions UCITS ETF USD Acc,Clean Energy & Water,London,781.2,yahoo,,2023-01-03,1.0
+80,EMSM.L,State Street SPDR MSCI Emerging Markets Small Cap UCITS ETF,"Factor, Style & ESG",London,775.9,yahoo,,2023-01-03,1.0
+81,ZPRX.DE,State Street SPDR MSCI Europe Small Cap Value Weighted UCITS ETF EUR Acc,"Factor, Style & ESG",Xetra,746.7,yahoo,,2023-01-03,1.0
+82,ASIL.L,Amundi MSCI China ESG Selection Extra UCITS ETF Acc,"Factor, Style & ESG",London,732.9,yahoo,,2023-01-03,1.0
+83,EMV.L,iShares Edge MSCI EM Minimum Volatility UCITS ETF USD (Acc),"Factor, Style & ESG",London,650.9,yahoo,,2023-01-03,1.0
+84,HTWG.L,L&G Hydrogen Economy UCITS ETF,Clean Energy & Water,London,633.1,yahoo,,2023-01-03,1.0
+85,IWFS.L,iShares MSCI World Mid-Cap Equal Weight UCITS ETF,"Factor, Style & ESG",London,613.9,yahoo,,2023-01-03,1.0
+86,BCOG.L,L&G All Commodities UCITS ETF,Commodities & Agriculture,London,605.8,yahoo,,2023-01-03,1.0
+87,XSSW.L,Xtrackers MSCI World Communication Services UCITS ETF 1C,Sector — Consumer & Communications,London,601.9,yahoo,,2023-01-03,1.0
+88,ESPO.L,VanEck Video Gaming and eSports UCITS ETF USD Acc,Consumer & Leisure,London,590.1,yahoo,,2023-01-03,1.0
+89,CD9.PA,Amundi Index Solutions - Amundi MSCI Europe High Dividend Factor UCITS ETF-C,"Factor, Style & ESG",Paris,571.3,yahoo,,2023-01-03,1.0
+90,GLRA.SW,State Street SPDR Dow Jones Global Real Estate UCITS ETF USD Cap,Infrastructure & Real Estate,SIX Swiss,552.9,yahoo,,2023-01-03,1.0
+91,XWDS.L,Xtrackers MSCI World Consumer Discretionary UCITS ETF 1C,Sector — Consumer & Communications,London,551.7,yahoo,,2023-01-03,1.0
+92,LGEU.L,L&G Europe ex UK Equity UCITS ETF,Equities — Europe,London,539.9,yahoo,,2023-01-03,1.0
+93,CITY.MI,iShares Smart City Infrastructure UCITS ETF USD Acc,Infrastructure & Real Estate,Milan,534.4,yahoo,,2023-01-03,1.0
+94,MOGB.L,VanEck Morningstar US ESG Wide Moat UCITS ETF,"Factor, Style & ESG",London,513.5,yahoo,,2023-01-03,1.0
+95,VPNG.L,Global X Data Center REITS & Digital Infrastructure UCITS ETF USD Acc,Infrastructure & Real Estate,London,466.2,yahoo,,2023-01-03,1.0
+96,FSKY.MI,First Trust Cloud Computing UCITS ETF Class A USD Accumulation,Technology & Cybersecurity,Milan,448.9,yahoo,,2023-01-03,1.0
+97,EURO.SW,State Street SPDR MSCI EMU UCITS ETF,Equities — Europe,SIX Swiss,448.5,yahoo,,2023-01-03,1.0
+98,CD8.PA,Amundi MSCI EMU High Dividend UCITS ETF Acc,"Factor, Style & ESG",Paris,437.5,yahoo,,2023-01-03,1.0
+99,XMEX.SW,Xtrackers MSCI Mexico UCITS ETF 1C,Emerging Markets,SIX Swiss,418.8,yahoo,,2023-01-03,1.0
+100,WCBR.L,WisdomTree Cybersecurity UCITS ETF USD Acc,Technology & Cybersecurity,London,417.8,yahoo,,2023-01-03,1.0
+101,IUSF.L,iShares MSCI USA Mid-Cap Equal Weight UCITS ETF,"Factor, Style & ESG",London,403.7,yahoo,,2023-01-03,1.0
+102,DOCG.L,L&G Healthcare Technology & Innovation ETF USD Acc,Healthcare & Ageing,London,382.2,yahoo,,2023-01-03,1.0
+103,DEMS.L,WisdomTree Emerging Markets High Dividend UCITS ETF - Acc,"Factor, Style & ESG",London,362.4,yahoo,,2023-01-03,1.0
+104,CN1.PA,Amundi Index Solutions - Amundi MSCI Nordic UCITS ETF-C,Equities — Europe,Paris,351.5,yahoo,,2023-01-03,1.0
+105,EMGB.L,VanEck J.P. Morgan EM Local Currency Bond UCITS ETF A USD,Bonds — Cash & EM Debt,London,323.0,yahoo,,2023-01-03,1.0
+106,CG9.PA,Amundi Index Solutions - Amundi MSCI Europe Growth UCITS ETF Acc,"Factor, Style & ESG",Paris,309.1,yahoo,,2023-01-03,1.0
+107,EMAAA.MI,Amundi Euro Highest Rated Macro-Weighted Government Bond UCITS ETF Acc,Bonds — Government & Aggregate,Milan,306.9,yahoo,,2023-01-03,1.0
+108,ESIT.L,iShares MSCI Europe Information Technology Sector UCITS ETF,Sector — Technology,London,305.9,yahoo,,2023-01-03,1.0
+109,RTWP.L,L&G Russell 2000 US Small Cap Quality UCITS ETF USD Accumulate,"Factor, Style & ESG",London,294.8,yahoo,,2023-01-03,1.0
+110,TFRP.L,WisdomTree USD Floating Rate Treasury Bond UCITS ETF - USD Acc,Bonds — Government & Aggregate,London,293.3,yahoo,,2023-01-03,1.0
+111,JPGL.DE,JPM Global Equity Multi-Factor UCITS ETF,"Factor, Style & ESG",Xetra,279.9,yahoo,,2023-01-03,1.0
+112,540H.DE,Amundi MSCI Europe Ex EMU ESG Selection UCITS ETF Acc,"Factor, Style & ESG",Xetra,273.9,yahoo,,2023-01-03,1.0
+113,LGUK.L,L&G UK Equity UCITS ETF,Equities — Europe,London,266.3,yahoo,,2023-01-03,1.0
+114,GOGB.L,VanEck Morningstar Global Wide Moat UCITS ETF,Developed Market Indices,London,234.5,yahoo,,2023-01-03,1.0
+115,XDND.DE,Xtrackers MSCI North America High Dividend Yield UCITS ETF 1C,"Factor, Style & ESG",Xetra,233.9,yahoo,,2023-01-03,1.0
+116,RIUG.L,L&G US ESG Paris Aligned UCITS ETF,"Factor, Style & ESG",London,230.8,yahoo,,2023-01-03,1.0
+117,XS7R.L,Xtrackers MSCI Europe Financials UCITS ETF 1C,Sector — Financials,London,213.9,yahoo,,2023-01-03,1.0
+118,CSPE.L,State Street SPDR MSCI Europe Consumer Staples UCITS ETF,Sector — Consumer & Communications,London,204.3,yahoo,,2023-01-03,1.0
+119,FEX.L,First Trust US Large Cap Core AlphaDEX® UCITS ETF¹,Equities — US & Canada,London,202.3,yahoo,,2023-01-03,1.0
+120,FGBL.PA,First Trust Global Equity Income UCITS ETF,"Factor, Style & ESG",Paris,130.8,yahoo,,2023-01-03,1.0
+121,FTEU.L,First Trust Eurozone AlphaDEX® UCITS ETF,Equities — Europe,London,127.8,yahoo,,2023-01-03,1.0
