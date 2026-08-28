@@ -56,9 +56,14 @@ quiet. One tooltip for the point under the cursor. The y-axis fits the band as
 well as the price, so the band is never clipped.
 
 The gallery filters all ask about the **latest print** ("Latest print · major
-surprise"), so choosing one opens the chart on that print with three quarters
-of run-up rather than on five years of history. The range buttons and the
-slider override it.
+surprise"): they choose which *names* appear in the result list. The chart
+always shows every print in the plotted window — the latest one is ringed in
+Space Blue, carries a dashed guide and a `Latest · <category> · <date>` label,
+so the print the filter asked about is identifiable without hiding the rest.
+
+Direction is the marker symbol, severity is its size, and an In Line print is
+small and grey so the surprises read first. A key strip under the chart names
+the whole vocabulary.
 
 ## Reading the dashboard
 

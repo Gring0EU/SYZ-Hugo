@@ -28,19 +28,24 @@ import ipywidgets as widgets
 from IPython.display import display
 
 # CATEGORY -> (colour, symbol, size). Same severity language as the dashboard.
+# CATEGORY -> (colour, symbol, size). Direction is the symbol, severity is the
+# size, and an In Line print is deliberately small and grey: every print stays
+# on the chart, but the ones that surprised are the ones that read.
 MARKER_STYLE = {
-    'Major +':    (THEME.MINT_GREEN,   'triangle-up',   16),
-    'Moderate +': (THEME.TEAL_GREEN,   'triangle-up',   11),
-    'In Line':    (THEME.SKY_BLUE,     'circle',         7),
-    'Moderate −': (THEME.MANGO_AMBER,  'triangle-down', 11),
-    'Major −':    (THEME.TIGER_ORANGE, 'triangle-down', 16),
-    'Unrated':    ('rgba(75,95,128,0.45)', 'circle-open', 7),
+    'Major +':    (THEME.MINT_GREEN,   'triangle-up',   18),
+    'Moderate +': (THEME.TEAL_GREEN,   'triangle-up',   12),
+    'In Line':    ('rgba(75,95,128,0.40)', 'circle',     6),
+    'Moderate −': (THEME.MANGO_AMBER,  'triangle-down', 12),
+    'Major −':    (THEME.TIGER_ORANGE, 'triangle-down', 18),
+    'Unrated':    ('rgba(75,95,128,0.25)', 'circle-open', 6),
 }
 CATEGORY_GLYPH = {'Major +': '▲▲', 'Moderate +': '▲', 'In Line': '•',
                   'Moderate −': '▼', 'Major −': '▼▼', 'Unrated': '○'}
 SIGNAL_GLYPH = {SIGNAL_LONG: '⚡L', SIGNAL_SHORT: '⚡S', SIGNAL_DIVERGENT: '≠'}
 SIGNAL_COLOR = {SIGNAL_LONG: THEME.MINT_GREEN, SIGNAL_SHORT: THEME.TIGER_ORANGE}
-MARKER_EDGE = 'rgba(32,41,69,0.6)'
+# A white edge lifts a marker off the price line it sits on; the latest print
+# and a signalled print override it with a colour of their own.
+MARKER_EDGE = THEME.WHITE
 
 # Band settings come from Config so the chart and the event engine cannot
 # disagree about what was measured.
@@ -143,6 +148,9 @@ class EarningsGallery:
         self.ui_next = widgets.Button(description='Next ▶', button_style='info',
                                       layout={'width': '80px'})
         self.ui_status = widgets.HTML(layout={'margin': '0 0 0 16px'})
+        # Plotly's legend names the lines; nothing named the markers, so the
+        # severity vocabulary had to be guessed from colour and size.
+        self.ui_key = widgets.HTML(self._marker_key())
 
         self.ui_search.observe(self._on_query, names='value')
         self.ui_filter.observe(self._on_query, names='value')
@@ -164,7 +172,28 @@ class EarningsGallery:
         row3 = widgets.HBox([self.ui_results, self.ui_meta],
                             layout={'align_items': 'flex-start',
                                     'margin': '0 0 12px 0'})
-        return widgets.VBox([row1, row2, row3, self.fig])
+        return widgets.VBox([row1, row2, row3, self.fig, self.ui_key])
+
+    @staticmethod
+    def _marker_key() -> str:
+        """Legend for the markers, in the chart's own colours."""
+        items = [(THEME.MINT_GREEN, '▲', 'Major beat'),
+                 (THEME.TEAL_GREEN, '▲', 'Moderate beat'),
+                 ('rgba(75,95,128,0.55)', '•', 'In line'),
+                 (THEME.MANGO_AMBER, '▼', 'Moderate miss'),
+                 (THEME.TIGER_ORANGE, '▼', 'Major miss')]
+        glyphs = " &nbsp;·&nbsp; ".join(
+            f"<span style='color:{c};font-size:14px'>{g}</span> {t}"
+            for c, g, t in items)
+        extra = (f" &nbsp;·&nbsp; <span style='color:{THEME.MINT_GREEN}'>◯</span>"
+                 f"/<span style='color:{THEME.TIGER_ORANGE}'>◯</span> thick ring "
+                 f"+ solid guide = band signal (long/short)"
+                 f" &nbsp;·&nbsp; <span style='color:{THEME.SPACE_BLUE}'>◯</span>"
+                 f" ring + dashed guide = latest print, the one the filter asks "
+                 f"about")
+        return (f"<div style='font-family:{THEME.FONT};font-weight:300;"
+                f"font-size:12px;color:{THEME.SPACE_BLUE};background:{THEME.WHITE};"
+                f"padding:8px 4px'>{glyphs}{extra}</div>")
 
     # ── data binding ─────────────────────────────────────────────────
     def refresh_catalog(self):
@@ -332,9 +361,16 @@ class EarningsGallery:
         signals = (list(ev['SIGNAL']) if 'SIGNAL' in ev.columns
                    else [SIGNAL_NONE] * len(ev))
         fired = [s in ACTIVE_SIGNALS for s in signals]
-        edges = [SIGNAL_COLOR.get(s, MARKER_EDGE) for s in signals]
-        widths = [3 if f else 1 for f in fired]
-        sizes = [z + 6 if f else z for z, f in zip(sizes, fired)]
+        # The result list is filtered on the latest print, so that print is the
+        # one the user came to see. It keeps its own category colour and gains
+        # a dark ring, a dashed guide and a label -- every earlier print stays
+        # exactly where it is.
+        latest = [i == len(ev) - 1 for i in range(len(ev))]
+        edges = [SIGNAL_COLOR[s] if f else (THEME.SPACE_BLUE if n else MARKER_EDGE)
+                 for s, f, n in zip(signals, fired, latest)]
+        widths = [3 if f else (2 if n else 1.5) for f, n in zip(fired, latest)]
+        sizes = [z + (6 if f else 0) + (4 if n else 0)
+                 for z, f, n in zip(sizes, fired, latest)]
 
         idx = list(px.index)
         with self.fig.batch_update():
@@ -369,21 +405,30 @@ class EarningsGallery:
             self.fig.layout.shapes = tuple(
                 dict(type='line', xref='x', yref='paper', y0=0, y1=1,
                      x0=d, x1=d, layer='below',
-                     line=dict(color=SIGNAL_COLOR[s], width=2))
-                for d, s, f in zip(ev['TRADE_DATE'], signals, fired) if f)
-            self.fig.layout.annotations = tuple(
-                dict(x=d, y=float(y), xref='x', yref='y',
-                     text=f"<b>{s}</b> {pd.Timestamp(d):%d %b %y}",
-                     showarrow=True, arrowhead=2, arrowwidth=1.5,
-                     arrowcolor=SIGNAL_COLOR[s], ax=0, ay=-46,
-                     font=dict(family=THEME.FONT, size=11, color=THEME.WHITE),
-                     bgcolor=SIGNAL_COLOR[s], bordercolor=SIGNAL_COLOR[s],
-                     borderpad=3, opacity=0.95)
-                for d, y, s, f in zip(ev['TRADE_DATE'], ev['PRICE_AT_EVENT'],
-                                      signals, fired) if f)
-            window = self._opening_window(idx, ev)
-            self.fig.layout.xaxis.range = list(window)
-        self._rescale(window)
+                     line=dict(color=SIGNAL_COLOR[s] if f else THEME.AXIS_COLOR,
+                               width=2 if f else 1,
+                               dash='solid' if f else 'dash'))
+                for d, s, f, n in zip(ev['TRADE_DATE'], signals, fired, latest)
+                if f or n)
+            # One label per signalled print, and one for the latest print
+            # whatever it did -- the two are stacked at different heights when
+            # they land on the same date.
+            notes = []
+            for i, (d, y, cat, s, f, n) in enumerate(zip(
+                    ev['TRADE_DATE'], ev['PRICE_AT_EVENT'], ev['CATEGORY'],
+                    signals, fired, latest)):
+                if f:
+                    notes.append(self._label(d, y, f"<b>{s}</b> "
+                                             f"{pd.Timestamp(d):%d %b %y}",
+                                             SIGNAL_COLOR[s], -46))
+                if n:
+                    notes.append(self._label(d, y, f"Latest · {cat} · "
+                                             f"{pd.Timestamp(d):%d %b %y}",
+                                             THEME.SPACE_BLUE,
+                                             -84 if f else -46))
+            self.fig.layout.annotations = tuple(notes)
+            self.fig.layout.xaxis.range = [idx[0], idx[-1]]
+        self._rescale([idx[0], idx[-1]])
 
         key = f"{self.code}|{ticker}"
         if key in self.keys and self.ui_results.value != key:
@@ -395,22 +440,14 @@ class EarningsGallery:
         self.ui_meta.value = self._meta_html(ticker)
         self._status()
 
-    def _opening_window(self, idx, ev):
-        """Which slice of history to open on.
-
-        A latest-print filter is a question about the most recent quarter --
-        "who just posted a major surprise" -- so the chart opens on that print
-        with a couple of quarters of run-up for context, instead of leaving you
-        to hunt for it at the right edge of five years. Any other filter opens
-        on the full history. The range buttons and the slider still do whatever
-        you ask afterwards.
-        """
-        full = (idx[0], idx[-1])
-        if self.ui_filter.value not in LATEST_FILTERS or ev.empty:
-            return full
-        last = pd.Timestamp(ev['TRADE_DATE'].iloc[-1])
-        start = max(idx[0], last - pd.DateOffset(months=9))
-        return (start, idx[-1]) if start < idx[-1] else full
+    @staticmethod
+    def _label(date, y, text, colour, dy) -> dict:
+        return dict(x=date, y=float(y), xref='x', yref='y', text=text,
+                    showarrow=True, arrowhead=2, arrowwidth=1.5,
+                    arrowcolor=colour, ax=0, ay=dy,
+                    font=dict(family=THEME.FONT, size=11, color=THEME.WHITE),
+                    bgcolor=colour, bordercolor=colour, borderpad=3,
+                    opacity=0.95)
 
     def _meta_html(self, ticker: str) -> str:
         rows = self.catalog[(self.catalog.CODE == self.code) &
