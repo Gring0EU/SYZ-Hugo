@@ -121,7 +121,13 @@ def _hit_rate(df: pd.DataFrame) -> float:
     """
     if df.empty:
         return np.nan
-    agree = np.where(df['DIR'] == 'POS', df['RET(%)'] > 0, df['RET(%)'] < 0)
+    # A print still awaiting its reaction window has no verdict; comparing NaN
+    # would silently score it as a miss and drag the rate down.
+    scored = df[df['RET(%)'].notna()]
+    if scored.empty:
+        return np.nan
+    agree = np.where(scored['DIR'] == 'POS', scored['RET(%)'] > 0,
+                     scored['RET(%)'] < 0)
     return float(np.nanmean(agree))
 
 
@@ -149,6 +155,7 @@ def kpis(ev: pd.DataFrame) -> dict:
         n_short=int((sig['SIGNAL'] == SIGNAL_SHORT).sum()) if len(sig) else 0,
         divergent=divergent,
         signal_rate=(len(sig) / len(sur) if len(sur) else np.nan),
+        pending=int((rat['RET(%)'].isna()).sum()) if len(rat) else 0,
         analyst_share=((rat.SUE_SOURCE == 'analyst').mean()
                        if 'SUE_SOURCE' in rat.columns and len(rat) else np.nan),
     )

@@ -434,7 +434,10 @@ class EarningsGallery:
             est = (f" vs est {row['EPS_EST']:.2f}"
                    if pd.notna(row.get('EPS_EST')) else '')
             bits.append(f"EPS: {row['EPS_ACT']:.2f}{est}")
-        bits.append(f"Reaction: {row['RET(%)']:+.2f}%")
+        # The most recent print is on the chart before its reaction window
+        # closes, so it has no return yet -- say so rather than print '+nan%'.
+        bits.append(f"Reaction: {row['RET(%)']:+.2f}%" if pd.notna(row.get('RET(%)'))
+                    else 'Reaction: pending — window not closed yet')
         if pd.notna(row.get('ABN_RET(%)')):
             bits.append(f"vs index: {row['ABN_RET(%)']:+.2f}%")
         cross = row.get('BB_CROSS', CROSS_NA)

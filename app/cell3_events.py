@@ -230,14 +230,23 @@ def event_returns(events: pd.DataFrame, prices_wide: pd.DataFrame,
         up_v = up_s.to_numpy(dtype=float)
         lo_v = lo_s.to_numpy(dtype=float)
 
-        pos = calendar.searchsorted(
-            pd.to_datetime(grp['DATE']).to_numpy(), side='left')
+        dates = pd.to_datetime(grp['DATE']).to_numpy()
+        pos = calendar.searchsorted(dates, side='left')
         base = pos - cfg.reaction_pre
         end = pos + cfg.reaction_post
 
         px_base, px_end = _take(px, base), _take(px, end)
-        result.loc[grp.index, 'PRICE_AT_EVENT'] = _take(px, pos)
-        result.loc[grp.index, 'TRADE_DATE_I'] = np.where(pos < n, pos, np.nan)
+        # A print is plottable when the announcement itself lands on the price
+        # calendar -- not when its whole reaction window does. The latest print
+        # has no t+1 close yet, and that is precisely the one the chart and the
+        # radar exist to show, so it is kept with a NaN reaction rather than
+        # dropped. Prints older than the plotted history are excluded here
+        # instead: searchsorted would otherwise pin them all to the first
+        # session and stack them against the left edge of the chart.
+        inside = (pos < n) & (dates >= calendar[0].to_datetime64())
+        result.loc[grp.index, 'PRICE_AT_EVENT'] = np.where(inside, _take(px, pos),
+                                                           np.nan)
+        result.loc[grp.index, 'TRADE_DATE_I'] = np.where(inside, pos, np.nan)
         result.loc[grp.index, 'RET(%)'] = _pct_change(px_end, px_base)
 
         # Band levels are reported at the close of the reaction window, which
@@ -327,9 +336,12 @@ def build_events(earnings: pd.DataFrame, prices_wide: pd.DataFrame,
     for col in keep:
         if col not in df.columns:
             df[col] = np.nan
-    # Prints whose reaction window is not fully inside the price history carry
-    # no usable market read; drop them so downstream means are not biased.
-    df = df.dropna(subset=['RET(%)'])
+    # Keep every print that falls on the plotted calendar, including one that
+    # is too recent to have a completed reaction window: the chart, the signal
+    # log and the radar all read the event table, and an announcement missing
+    # from it reads as "this name did not report". Its RET(%)/FWD_* stay NaN,
+    # which every downstream mean already skips.
+    df = df.dropna(subset=['PRICE_AT_EVENT'])
     return (df[keep].sort_values(['TICKER', 'DATE'])
                     .reset_index(drop=True))
 

@@ -70,8 +70,10 @@ def window_caption(tf: str, cutoff, anchor, n_rated: int, k: dict) -> str:
             if tf == 'LAST' else f"{cutoff:%Y-%m-%d} → {anchor:%Y-%m-%d}")
     src = (f" &nbsp;·&nbsp; {k['analyst_share']:.0%} of scores from consensus"
            if np.isfinite(k.get('analyst_share', np.nan)) else '')
+    pending = (f" &nbsp;·&nbsp; {k['pending']} print(s) too recent to have a "
+               f"completed reaction window" if k.get('pending') else '')
     return THEME.note(f"Window: <b>{TF_LABELS[tf]}</b> &nbsp;·&nbsp; {span} "
-                      f"&nbsp;·&nbsp; {n_rated} rated prints{src}")
+                      f"&nbsp;·&nbsp; {n_rated} rated prints{src}{pending}")
 
 
 def _table(title: str, headers, rows_html: str, footnote: str) -> str:
