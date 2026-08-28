@@ -86,7 +86,25 @@ def _on_xrange(self, layout, xrange):
     self._rescale(xrange)
 
 
-def _rescale(self, xrange):
+def _window(self, xrange):
+    """The slice of the plotted series the x-range actually selects.
+
+    Falls back to the whole series when the range is missing, unparseable, or
+    selects nothing -- the rangeslider can report a normalised (0-1) range,
+    and trusting it leaves the y-axis scaled to a window with no data in it.
+    """
+    env = self._envelope
+    if env is None or not xrange:
+        return env
+    try:
+        lo_x, hi_x = pd.Timestamp(xrange[0]), pd.Timestamp(xrange[1])
+    except (TypeError, ValueError, OverflowError):
+        return env
+    window = env[(env.index >= lo_x) & (env.index <= hi_x)]
+    return window if len(window) >= 2 else env
+
+
+def _rescale(self, xrange=None):
     """Fit the y-axis to everything visible in the current x-window.
 
     The band, not the close, sets the extremes on a 100-day window, so scaling
@@ -94,15 +112,10 @@ def _rescale(self, xrange):
     and with it the signal labels. Extra headroom above leaves room for the
     labels, which are drawn up to ~124px over their marker.
     """
-    if self._envelope is None or not xrange or self._rescaling:
+    if self._envelope is None or self._rescaling:
         return
-    try:
-        lo_x, hi_x = pd.Timestamp(xrange[0]), pd.Timestamp(xrange[1])
-    except (TypeError, ValueError):
-        return
-    window = self._envelope[(self._envelope.index >= lo_x) &
-                            (self._envelope.index <= hi_x)]
-    if window.empty:
+    window = self._window(xrange)
+    if window is None or window.empty:
         return
     lo, hi = float(np.nanmin(window.to_numpy())), float(np.nanmax(window.to_numpy()))
     if not np.isfinite(lo) or not np.isfinite(hi):
@@ -127,6 +140,13 @@ def _on_redraw(self, change):
     if self._syncing or not self.ticker:
         return
     self.draw(self.ticker)
+
+
+def _on_reset(self, _):
+    """Back to the full plotted history, whatever the zoom state."""
+    with self.fig.batch_update():
+        self.fig.layout.xaxis.autorange = True
+    self._rescale()
 
 
 def _on_clear(self, _):
@@ -156,12 +176,13 @@ def _step(self, delta: int):
 
 # _hover takes a row, not self, so it stays a staticmethod on the class.
 EarningsGallery._hover = staticmethod(_hover)
-for _f in (_meta_html, _on_xrange, _rescale, _on_query, _on_redraw,
-           _on_clear, _on_pick, _step):
+for _f in (_meta_html, _window, _on_xrange, _rescale, _on_query,
+           _on_redraw, _on_reset, _on_clear, _on_pick, _step):
     setattr(EarningsGallery, _f.__name__, _f)
 
 _REQUIRED = ('__init__', '_bind', '_build', '_empty', '_hover', '_meta_html',
-             '_on_clear', '_on_pick', '_on_query', '_on_redraw', '_on_xrange',
+             '_on_clear', '_on_pick', '_on_query', '_on_redraw', '_on_reset',
+             '_on_xrange', '_window',
              '_refresh_results', '_rescale', '_row_label', '_signal_annotations',
              '_status', '_step', '_visible_catalog', 'draw', 'load',
              'refresh_catalog', 'select')

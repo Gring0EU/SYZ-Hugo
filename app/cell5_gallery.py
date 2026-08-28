@@ -164,6 +164,11 @@ class EarningsGallery:
         self.ui_labels = widgets.Checkbox(
             value=True, description='Signal labels', indent=False,
             layout={'width': '140px'})
+        # An escape hatch: any zoom state that leaves the chart empty is one
+        # click from the full history again.
+        self.ui_reset = widgets.Button(description='Reset view',
+                                       tooltip='Show the full history',
+                                       layout={'width': '110px'})
         self.ui_results = widgets.Select(options=[], rows=9,
                                          layout={'width': '520px'})
         self.ui_meta = widgets.HTML(layout={'margin': '0 0 0 16px',
@@ -181,6 +186,7 @@ class EarningsGallery:
         self.ui_signals_only.observe(self._on_redraw, names='value')
         self.ui_labels.observe(self._on_redraw, names='value')
         self.ui_clear.on_click(self._on_clear)
+        self.ui_reset.on_click(self._on_reset)
         self.ui_results.observe(self._on_pick, names='value')
         self.ui_prev.on_click(lambda _: self._step(-1))
         self.ui_next.on_click(lambda _: self._step(+1))
@@ -196,7 +202,8 @@ class EarningsGallery:
         row3 = widgets.HBox([self.ui_results, self.ui_meta],
                             layout={'align_items': 'flex-start',
                                     'margin': '0 0 8px 0'})
-        row4 = widgets.HBox([self.ui_signals_only, self.ui_labels],
+        row4 = widgets.HBox([self.ui_signals_only, self.ui_labels,
+                             self.ui_reset],
                             layout={'align_items': 'center',
                                     'margin': '0 0 4px 0'})
         return widgets.VBox([row1, row2, row3, row4, self.fig])
@@ -450,8 +457,12 @@ class EarningsGallery:
                        for _, r in sig.iterrows()]
             self.fig.layout.shapes = tuple(guides)
             self.fig.layout.annotations = tuple(self._signal_annotations(sig))
-            self.fig.layout.xaxis.range = [idx[0], idx[-1]]
-        self._rescale([idx[0], idx[-1]])
+            # Let plotly range the date axis. Pinning it here made a stale
+            # range survive the switch to another name -- and the rangeslider
+            # can hand back a normalised (0-1) range, which pins the view to a
+            # window containing no data at all and blanks the chart.
+            self.fig.layout.xaxis.autorange = True
+        self._rescale()
 
         key = f"{self.code}|{ticker}"
         if key in self.keys and self.ui_results.value != key:
