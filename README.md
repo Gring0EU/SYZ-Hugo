@@ -25,21 +25,27 @@ older Cell 3; it is already folded into `cell3_events.py`.
 
 ## Signal definition
 
-A print is scored on fundamentals first: Standardised Unexpected Earnings
-against consensus, falling back to the Foster-Olsen-Shevlin time-series model,
-standardised on that name's own prior surprises only.
+**The band defines the surprise.** At an earnings announcement, a close that
+crosses out through the upper Bollinger band is a positive surprise; through
+the lower band, a negative one. A stock can rise on a print and still not leave
+its own range — that is not news. Volatility is the yardstick, so the crossing
+is the event.
 
-A rated surprise becomes a **tradeable signal** only when price confirms it: the
-close must cross the Bollinger band during the reaction window (t-1 → t+1),
-having been inside the band before the print. Bands are measured over
-`Config.bb_window` = 100 sessions at ±`Config.bb_sigma` = 2σ — a quarter of
-trading days, so the dispersion is the name's inter-earnings volatility rather
-than the fortnight before the release, and a cross is a genuine range break.
+The close must have been inside the band before the print and outside it after
+(measured over the reaction window, t-1 → t+1), so a name already riding a band
+does not re-fire every quarter. Bands run over `Config.bb_window` = 100 sessions
+at ±`Config.bb_sigma` = 2σ — a quarter of trading days, so the dispersion is the
+name's inter-earnings volatility rather than the fortnight before the release.
 
-* `SIGNAL = LONG` — positive surprise, close broke the upper band
-* `SIGNAL = SHORT` — negative surprise, close broke the lower band
-* `SIGNAL = DIVERGENT` — surprise confirmed by a break the other way
-* `SIGNAL = NONE` — no crossing
+* `SIGNAL = LONG` — closed through the upper band: positive surprise
+* `SIGNAL = SHORT` — closed through the lower band: negative surprise
+* `SIGNAL = NONE` — stayed inside the band
+
+Standardised Unexpected Earnings is kept as **context, not a condition**:
+SIGMA and CATEGORY still say how surprising the fundamentals were (consensus
+model, falling back to Foster-Olsen-Shevlin, standardised on the name's own
+prior surprises), and `SUE_AGREES` records whether EPS pointed the same way as
+the band. Neither gates the signal.
 
 Every announcement that lands on the plotted price calendar is kept, including
 the newest print whose reaction window has not closed — its return columns stay
@@ -48,12 +54,14 @@ NaN and every mean skips them.
 ## Reading the chart
 
 Close, the 100-day band and its shaded interior, MA200, and one marker per
-print coloured by surprise severity — the same six traces the chart has always
-had. A signalled print is emphasis on its own marker: a thick coloured outline,
-a solid coloured guide on the announcement date, and a dated label. Only
-signalled prints get a guide; the rest are marker-only, so the plot stays
-quiet. One tooltip for the point under the cursor. The y-axis fits the band as
-well as the price, so the band is never clipped.
+print. **Every quarterly report is a light vertical bar** behind the price:
+neutral grey where the print stayed inside the band, green where it closed
+through the upper band, orange through the lower — so the earnings calendar and
+its outcomes read at a glance. Crossings also carry a dated `▲ Positive` /
+`▼ Negative` label. Marker symbol and size are the EPS context (direction and
+severity of the SUE), not the surprise itself. One tooltip for the point under
+the cursor. The y-axis fits the band as well as the price, so the band is never
+clipped.
 
 The gallery filters all ask about the **latest print** ("Latest print · major
 surprise"): they choose which *names* appear in the result list. The chart

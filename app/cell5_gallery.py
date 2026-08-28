@@ -41,11 +41,22 @@ MARKER_STYLE = {
 }
 CATEGORY_GLYPH = {'Major +': '▲▲', 'Moderate +': '▲', 'In Line': '•',
                   'Moderate −': '▼', 'Major −': '▼▼', 'Unrated': '○'}
-SIGNAL_GLYPH = {SIGNAL_LONG: '⚡L', SIGNAL_SHORT: '⚡S', SIGNAL_DIVERGENT: '≠'}
+SIGNAL_GLYPH = {SIGNAL_LONG: '▲ band', SIGNAL_SHORT: '▼ band'}
 SIGNAL_COLOR = {SIGNAL_LONG: THEME.MINT_GREEN, SIGNAL_SHORT: THEME.TIGER_ORANGE}
+# The label says what happened, in the vocabulary of the definition: the band
+# crossing is the surprise, so it is named positive or negative rather than
+# long or short.
+SIGNAL_LABEL = {SIGNAL_LONG: '▲ Positive', SIGNAL_SHORT: '▼ Negative'}
 # A white edge lifts a marker off the price line it sits on; the latest print
 # and a signalled print override it with a colour of their own.
 MARKER_EDGE = THEME.WHITE
+# Every quarterly print is drawn as a light vertical bar behind the price, so
+# the earnings calendar is readable at a glance. The bar carries the band
+# outcome -- the surprise itself -- while the marker carries the EPS context.
+BAR_HALF_WIDTH = pd.Timedelta(days=3)
+BAR_FILL = {SIGNAL_LONG: 'rgba(59,175,144,0.20)',
+            SIGNAL_SHORT: 'rgba(255,108,14,0.18)',
+            SIGNAL_NONE: 'rgba(32,41,69,0.055)'}
 
 # Band settings come from Config so the chart and the event engine cannot
 # disagree about what was measured.
@@ -177,20 +188,26 @@ class EarningsGallery:
     @staticmethod
     def _marker_key() -> str:
         """Legend for the markers, in the chart's own colours."""
-        items = [(THEME.MINT_GREEN, '▲', 'Major beat'),
+        items = [(THEME.MINT_GREEN, '▲', 'Major EPS beat'),
                  (THEME.TEAL_GREEN, '▲', 'Moderate beat'),
-                 ('rgba(75,95,128,0.55)', '•', 'In line'),
+                 ('rgba(75,95,128,0.55)', '•', 'EPS in line'),
                  (THEME.MANGO_AMBER, '▼', 'Moderate miss'),
                  (THEME.TIGER_ORANGE, '▼', 'Major miss')]
         glyphs = " &nbsp;·&nbsp; ".join(
             f"<span style='color:{c};font-size:14px'>{g}</span> {t}"
             for c, g, t in items)
-        extra = (f" &nbsp;·&nbsp; <span style='color:{THEME.MINT_GREEN}'>◯</span>"
-                 f"/<span style='color:{THEME.TIGER_ORANGE}'>◯</span> thick ring "
-                 f"+ solid guide = band signal (long/short)"
-                 f" &nbsp;·&nbsp; <span style='color:{THEME.SPACE_BLUE}'>◯</span>"
-                 f" ring + dashed guide = latest print, the one the filter asks "
-                 f"about")
+        extra = (
+            f"<br><span style='background:rgba(32,41,69,0.055);padding:1px 7px'>"
+            f"&nbsp;</span> every quarterly report &nbsp;·&nbsp; "
+            f"<span style='background:rgba(59,175,144,0.20);padding:1px 7px'>"
+            f"&nbsp;</span> closed through the <b>upper</b> band — positive "
+            f"surprise &nbsp;·&nbsp; "
+            f"<span style='background:rgba(255,108,14,0.18);padding:1px 7px'>"
+            f"&nbsp;</span> closed through the <b>lower</b> band — negative "
+            f"surprise &nbsp;·&nbsp; dashed edge = latest print, the one the "
+            f"filter asks about"
+            f"<br>Symbols above show what EPS did (context); the band decides "
+            f"the surprise.")
         return (f"<div style='font-family:{THEME.FONT};font-weight:300;"
                 f"font-size:12px;color:{THEME.SPACE_BLUE};background:{THEME.WHITE};"
                 f"padding:8px 4px'>{glyphs}{extra}</div>")
@@ -397,19 +414,24 @@ class EarningsGallery:
                                  line=dict(color=edges, width=widths))
             marker.hovertext = [self._hover(r) for _, r in ev.iterrows()]
 
-            # Vertical guides only for the prints that fired. Twenty dashed
-            # lines across five years said nothing the markers do not already
-            # say; a handful of coloured ones point at the dates the app exists
-            # to find. Paper-referenced, so they span the plot area without
-            # touching the y-range computed for the window.
-            self.fig.layout.shapes = tuple(
-                dict(type='line', xref='x', yref='paper', y0=0, y1=1,
-                     x0=d, x1=d, layer='below',
-                     line=dict(color=SIGNAL_COLOR[s] if f else THEME.AXIS_COLOR,
-                               width=2 if f else 1,
-                               dash='solid' if f else 'dash'))
-                for d, s, f, n in zip(ev['TRADE_DATE'], signals, fired, latest)
-                if f or n)
+            # One light bar per quarterly print, tinted by what the band did:
+            # green where the close broke out through the upper band, orange
+            # through the lower, neutral where the print stayed inside the
+            # range. Paper-referenced and drawn below everything, so the bars
+            # never touch the y-range computed for the window.
+            bars = [dict(type='rect', xref='x', yref='paper', y0=0, y1=1,
+                         x0=pd.Timestamp(d) - BAR_HALF_WIDTH,
+                         x1=pd.Timestamp(d) + BAR_HALF_WIDTH,
+                         layer='below', line=dict(width=0),
+                         fillcolor=BAR_FILL.get(s, BAR_FILL[SIGNAL_NONE]))
+                    for d, s in zip(ev['TRADE_DATE'], signals)]
+            # The latest print keeps a dashed edge so it is identifiable among
+            # the bars without a colour of its own.
+            bars += [dict(type='line', xref='x', yref='paper', y0=0, y1=1,
+                          x0=d, x1=d, layer='below',
+                          line=dict(color=THEME.AXIS_COLOR, width=1, dash='dash'))
+                     for d, n in zip(ev['TRADE_DATE'], latest) if n]
+            self.fig.layout.shapes = tuple(bars)
             # One label per signalled print, and one for the latest print
             # whatever it did -- the two are stacked at different heights when
             # they land on the same date.
@@ -418,9 +440,10 @@ class EarningsGallery:
                     ev['TRADE_DATE'], ev['PRICE_AT_EVENT'], ev['CATEGORY'],
                     signals, fired, latest)):
                 if f:
-                    notes.append(self._label(d, y, f"<b>{s}</b> "
-                                             f"{pd.Timestamp(d):%d %b %y}",
-                                             SIGNAL_COLOR[s], -46))
+                    notes.append(self._label(
+                        d, y, f"<b>{SIGNAL_LABEL[s]}</b> · "
+                              f"{pd.Timestamp(d):%d %b %y}",
+                        SIGNAL_COLOR[s], -46))
                 if n:
                     notes.append(self._label(d, y, f"Latest · {cat} · "
                                              f"{pd.Timestamp(d):%d %b %y}",
@@ -499,8 +522,13 @@ class EarningsGallery:
             bits.append(f"vs index: {row['ABN_RET(%)']:+.2f}%")
         signal = row.get('SIGNAL', SIGNAL_NONE)
         if signal in ACTIVE_SIGNALS:
-            bits.append(f"<b>Signal: {signal}</b> — closed through the "
-                        f"{str(row.get('BB_CROSS', '')).lower()} band")
+            side = 'Positive' if signal == SIGNAL_LONG else 'Negative'
+            agree = {'YES': ' · EPS agreed', 'NO': ' · EPS pointed the other way'}
+            bits.append(f"<b>{side} surprise</b> — closed through the "
+                        f"{str(row.get('BB_CROSS', '')).lower()} band"
+                        f"{agree.get(row.get('SUE_AGREES'), '')}")
+        else:
+            bits.append('Stayed inside the band')
         if pd.notna(row.get('FWD_20D')):
             bits.append(f"20D drift: {row['FWD_20D']:+.2f}%")
         return '<br>'.join(bits)

@@ -31,16 +31,18 @@ SURPRISE_STATUS = (STATUS_MODERATE, STATUS_MAJOR)
 
 # Band-cross outcome of the reaction window, and the signal it produces.
 CROSS_UPPER, CROSS_LOWER, CROSS_NONE, CROSS_NA = 'UPPER', 'LOWER', 'NONE', 'NA'
-SIGNAL_LONG, SIGNAL_SHORT = 'LONG', 'SHORT'
-SIGNAL_DIVERGENT, SIGNAL_NONE = 'DIVERGENT', 'NONE'
+SIGNAL_LONG, SIGNAL_SHORT, SIGNAL_NONE = 'LONG', 'SHORT', 'NONE'
 ACTIVE_SIGNALS = (SIGNAL_LONG, SIGNAL_SHORT)
+# Whether the fundamentals pointed the same way as the band did. Context, not
+# a condition: the band defines the surprise.
+AGREE_YES, AGREE_NO, AGREE_NA = 'YES', 'NO', 'NA'
 
 EVENT_COLUMNS = [
     'TICKER', 'ID', 'NAME', 'DATE', 'TRADE_DATE', 'PERIOD_END', 'FISCAL_Q',
     'QUARTER', 'YEAR', 'EPS_ACT', 'EPS_EST', 'SURPRISE', 'SURPRISE_PCT',
     'SIGMA', 'SUE_SOURCE', 'STATUS', 'DIR', 'CATEGORY', 'PRICE_AT_EVENT',
     'RET(%)', 'ABN_RET(%)', 'BB_MID', 'BB_UPPER', 'BB_LOWER', 'BB_CROSS',
-    'SIGNAL',
+    'SIGNAL', 'SUE_AGREES',
 ]
 
 
@@ -274,23 +276,31 @@ def event_returns(events: pd.DataFrame, prices_wide: pd.DataFrame,
 def band_signals(df: pd.DataFrame) -> pd.DataFrame:
     """Turn the numeric cross code into BB_CROSS and the tradeable SIGNAL.
 
-    The signal fires only where the two independent measurements agree: a rated
-    earnings surprise (fundamentals) *and* a close that crossed the band in the
-    same direction (price). A surprise whose price broke the opposite band is
-    kept as DIVERGENT rather than discarded — it is the interesting failure
-    case, and hiding it would quietly bias any read of the signal.
+    The band defines the surprise. A print that closed through the upper band
+    is a positive surprise and a print that closed through the lower band is a
+    negative one, whatever EPS did and whatever the raw return was: a stock can
+    rise on a print and still not leave its own range, and that is not news.
+    Volatility is the yardstick, so the crossing is the event.
+
+    SUE is kept alongside as context — SIGMA/CATEGORY still say how surprising
+    the fundamentals were, and SUE_AGREES records whether they pointed the same
+    way as the band. It is reported, never a condition.
     """
     code = pd.to_numeric(df.get('BB_CROSS_CODE'), errors='coerce')
     df['BB_CROSS'] = np.select([code == 1, code == -1, code == 0],
                                [CROSS_UPPER, CROSS_LOWER, CROSS_NONE],
                                default=CROSS_NA)
-    rated_surprise = df['STATUS'].isin(SURPRISE_STATUS)
     up, down = df['BB_CROSS'] == CROSS_UPPER, df['BB_CROSS'] == CROSS_LOWER
-    df['SIGNAL'] = np.select(
-        [rated_surprise & up & (df['DIR'] == 'POS'),
-         rated_surprise & down & (df['DIR'] == 'NEG'),
-         rated_surprise & (up | down)],
-        [SIGNAL_LONG, SIGNAL_SHORT, SIGNAL_DIVERGENT], default=SIGNAL_NONE)
+    df['SIGNAL'] = np.select([up, down], [SIGNAL_LONG, SIGNAL_SHORT],
+                             default=SIGNAL_NONE)
+    # Agreement is only meaningful where EPS actually said something: an In
+    # Line print has a SUE sign but no opinion worth agreeing with.
+    rated = df['STATUS'].isin(SURPRISE_STATUS) & df['DIR'].isin(('POS', 'NEG'))
+    df['SUE_AGREES'] = np.select(
+        [(up | down) & rated & ((up & (df['DIR'] == 'POS'))
+                                | (down & (df['DIR'] == 'NEG'))),
+         (up | down) & rated],
+        [AGREE_YES, AGREE_NO], default=AGREE_NA)
     return df
 
 
@@ -349,21 +359,25 @@ def build_events(earnings: pd.DataFrame, prices_wide: pd.DataFrame,
 def _events_card(code: str, label: str, ev: pd.DataFrame, cfg: Config) -> str:
     rated = ev[ev.STATUS != STATUS_UNRATED]
     sur = rated[rated.STATUS.isin(SURPRISE_STATUS)]
-    signals = sur[sur.SIGNAL.isin(ACTIVE_SIGNALS)] if 'SIGNAL' in sur.columns \
-        else sur.iloc[0:0]
+    # Signals are counted over every print, not just the rated ones: the band
+    # cross is the event, and a print with too little EPS history to score can
+    # still leave its range.
+    signals = ev[ev.SIGNAL.isin(ACTIVE_SIGNALS)] if 'SIGNAL' in ev.columns \
+        else ev.iloc[0:0]
     analyst = (ev.SUE_SOURCE == 'analyst').mean() if len(ev) else 0
     rows = [
         ('Events built', f"{len(ev):,}"),
         ('Rated / unrated', f"{len(rated):,} / {len(ev) - len(rated):,}"),
         ('Surprises detected', f"{len(sur):,} ({len(sur)/max(len(rated),1):.0%} of rated)"),
         ('Positive / negative', f"{(sur.DIR == 'POS').sum():,} / {(sur.DIR == 'NEG').sum():,}"),
-        ('Band-confirmed signals',
-         f"{len(signals):,} ({len(signals)/max(len(sur),1):.0%} of surprises) — "
-         f"{(signals.SIGNAL == SIGNAL_LONG).sum():,} long / "
-         f"{(signals.SIGNAL == SIGNAL_SHORT).sum():,} short"),
+        ('Band crossings',
+         f"{len(signals):,} ({len(signals)/max(len(ev),1):.0%} of prints) — "
+         f"{(signals.SIGNAL == SIGNAL_LONG).sum():,} upper / "
+         f"{(signals.SIGNAL == SIGNAL_SHORT).sum():,} lower"),
         ('SUE from consensus', f"{analyst:.0%} (rest time-series)"),
-        ('Thresholds', f"|SUE| ≥ {cfg.moderate_sigma} moderate, ≥ {cfg.major_sigma} major; "
-                       f"cross of the {cfg.bb_window}-day ±{cfg.bb_sigma}σ band"),
+        ('Definitions', f"surprise = close through the {cfg.bb_window}-day "
+                        f"±{cfg.bb_sigma}σ band; |SUE| ≥ {cfg.moderate_sigma} "
+                        f"moderate, ≥ {cfg.major_sigma} major (context)"),
     ]
     body = "".join(
         f"<div style='display:flex;justify-content:space-between;padding:5px 0;"

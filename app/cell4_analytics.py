@@ -54,6 +54,8 @@ def prepare(ev: pd.DataFrame) -> pd.DataFrame:
         out['BB_CROSS'] = CROSS_NA
     if 'SIGNAL' not in out.columns:
         out['SIGNAL'] = SIGNAL_NONE
+    if 'SUE_AGREES' not in out.columns:
+        out['SUE_AGREES'] = AGREE_NA
     for col in ('BB_MID', 'BB_UPPER', 'BB_LOWER'):
         if col not in out.columns:
             out[col] = np.nan
@@ -104,7 +106,7 @@ def surprises(ev: pd.DataFrame) -> pd.DataFrame:
 
 
 def signalled(ev: pd.DataFrame) -> pd.DataFrame:
-    """Surprises confirmed by a Bollinger band cross — the tradeable subset."""
+    """Prints that closed through a band — the surprises, by definition."""
     if ev.empty or 'SIGNAL' not in ev.columns:
         return ev.iloc[0:0] if not ev.empty else ev
     return ev[ev['SIGNAL'].isin(ACTIVE_SIGNALS)]
@@ -135,9 +137,11 @@ def kpis(ev: pd.DataFrame) -> dict:
     rat = rated(ev)
     sur = surprises(rat)
     pos, neg = sur[sur.DIR == 'POS'], sur[sur.DIR == 'NEG']
-    sig = signalled(sur)
-    divergent = (int((sur['SIGNAL'] == SIGNAL_DIVERGENT).sum())
-                 if 'SIGNAL' in sur.columns and len(sur) else 0)
+    sig = signalled(ev)
+    agree = (int((sig['SUE_AGREES'] == AGREE_YES).sum())
+             if 'SUE_AGREES' in sig.columns and len(sig) else 0)
+    disagree = (int((sig['SUE_AGREES'] == AGREE_NO).sum())
+                if 'SUE_AGREES' in sig.columns and len(sig) else 0)
     return dict(
         total=len(rat),
         unrated=int((ev['STATUS'] == STATUS_UNRATED).sum()) if not ev.empty else 0,
@@ -153,8 +157,8 @@ def kpis(ev: pd.DataFrame) -> dict:
         signals=len(sig),
         n_long=int((sig['SIGNAL'] == SIGNAL_LONG).sum()) if len(sig) else 0,
         n_short=int((sig['SIGNAL'] == SIGNAL_SHORT).sum()) if len(sig) else 0,
-        divergent=divergent,
-        signal_rate=(len(sig) / len(sur) if len(sur) else np.nan),
+        sue_agrees=agree, sue_disagrees=disagree,
+        signal_rate=(len(sig) / len(ev) if len(ev) else np.nan),
         pending=int((rat['RET(%)'].isna()).sum()) if len(rat) else 0,
         analyst_share=((rat.SUE_SOURCE == 'analyst').mean()
                        if 'SUE_SOURCE' in rat.columns and len(rat) else np.nan),
@@ -223,30 +227,31 @@ def category_table(ev: pd.DataFrame, cfg: Config = CFG) -> pd.DataFrame:
 
 
 def signal_table(ev: pd.DataFrame, cfg: Config = CFG) -> pd.DataFrame:
-    """Band-confirmed signals vs the surprises that never broke the band.
+    """What each kind of print paid, split by what the band did.
 
-    This is the table that says whether the band filter earns its keep: if the
-    confirmed rows do not drift further than the unconfirmed ones, the extra
-    condition is costing trades for nothing.
+    The first two rows are the surprises — the prints that left the range. The
+    last row is every print that stayed inside it, and is the comparison that
+    matters: if a print that never crossed the band drifts as far as one that
+    did, the band is not telling you anything.
     """
-    sur = surprises(rated(ev))
-    if sur.empty or 'SIGNAL' not in sur.columns:
+    if ev.empty or 'SIGNAL' not in ev.columns:
         return pd.DataFrame()
     fwd = [f'FWD_{h}D' for h in cfg.horizons]
     groups = [
-        ('Long — beat, broke upper band', sur[sur.SIGNAL == SIGNAL_LONG]),
-        ('Short — miss, broke lower band', sur[sur.SIGNAL == SIGNAL_SHORT]),
-        ('Divergent — band broke the other way',
-         sur[sur.SIGNAL == SIGNAL_DIVERGENT]),
-        ('No band cross', sur[sur.SIGNAL == SIGNAL_NONE]),
+        ('Positive — closed through the upper band', ev[ev.SIGNAL == SIGNAL_LONG]),
+        ('Negative — closed through the lower band', ev[ev.SIGNAL == SIGNAL_SHORT]),
+        ('No band cross', ev[ev.SIGNAL == SIGNAL_NONE]),
     ]
     rows = []
     for name, g in groups:
         if g.empty:
             continue
+        agrees = ((g['SUE_AGREES'] == AGREE_YES).sum()
+                  / max((g['SUE_AGREES'] != AGREE_NA).sum(), 1)
+                  if 'SUE_AGREES' in g.columns else np.nan)
         row = dict(Group=name, N=len(g), AvgSigma=g.SIGMA.mean(),
                    React=g['RET(%)'].mean(), Abn=g['ABN_RET(%)'].mean(),
-                   HitRate=_hit_rate(g))
+                   SueAgrees=agrees)
         for col in fwd:
             row[col] = g[col].mean() if col in g.columns else np.nan
         rows.append(row)
@@ -298,10 +303,10 @@ def radar_table(ev: pd.DataFrame, sectors: pd.DataFrame,
         AvgSigma=('SIGMA', 'mean'),
         AvgRet=('RET(%)', 'mean'),
     ).reset_index()
-    if 'SIGNAL' in rat.columns:
-        sig = (rat.assign(_sig=rat['SIGNAL'].isin(ACTIVE_SIGNALS))
-                  .groupby('TICKER')['_sig'].sum().astype(int)
-                  .rename('Signals').reset_index())
+    if 'SIGNAL' in ev.columns:
+        sig = (ev.assign(_sig=ev['SIGNAL'].isin(ACTIVE_SIGNALS))
+                 .groupby('TICKER')['_sig'].sum().astype(int)
+                 .rename('Signals').reset_index())
         stats = stats.merge(sig, on='TICKER', how='left')
 
     sur = surprises(rat)
@@ -378,8 +383,11 @@ def _catalog_for(store, code: str, cfg: Config = CFG) -> pd.DataFrame:
     latest = per_name.tail(1).set_index('TICKER')
     counts = rat.groupby('TICKER').agg(
         N_PRINTS=('STATUS', 'size'),
-        N_SURPRISES=('STATUS', lambda s: int(s.isin(SURPRISE_STATUS).sum())),
-        N_SIGNALS=('SIGNAL', lambda s: int(s.isin(ACTIVE_SIGNALS).sum())))
+        N_SURPRISES=('STATUS', lambda s: int(s.isin(SURPRISE_STATUS).sum())))
+    # Band crossings are counted over every print: an unrated print can still
+    # leave its range, and that is the event.
+    counts = counts.join(ev.groupby('TICKER')['SIGNAL'].apply(
+        lambda s: int(s.isin(ACTIVE_SIGNALS).sum())).rename('N_SIGNALS'))
 
     base = pd.DataFrame({'TICKER': sorted(ev['TICKER'].unique())})
     base['CODE'] = code

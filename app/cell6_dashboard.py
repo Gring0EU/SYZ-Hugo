@@ -60,9 +60,9 @@ def kpi_strip(k: dict, label: str, note: str) -> str:
              f"react {fmt(k['avg_ret_pos'], '%', 2)}", THEME.POSITIVE),
         card('Negative', f"{k['n_neg']}",
              f"react {fmt(k['avg_ret_neg'], '%', 2)}", THEME.NEGATIVE),
-        card('Band signals', f"{k.get('signals', 0)}",
-             f"{k.get('n_long', 0)} long / {k.get('n_short', 0)} short "
-             f"· {sig_rate} of surprises", THEME.GOLD_YELLOW),
+        card('Band surprises', f"{k.get('signals', 0)}",
+             f"{k.get('n_long', 0)} upper / {k.get('n_short', 0)} lower "
+             f"· {sig_rate} of prints", THEME.GOLD_YELLOW),
         card('Hit-rate', fmt(k['hit'] * 100 if k['hit'] == k['hit'] else None, '%', 0),
              f"pos {fmt(k['pos_hit']*100 if k['pos_hit']==k['pos_hit'] else None,'%',0)}"
              f" / neg {fmt(k['neg_hit']*100 if k['neg_hit']==k['neg_hit'] else None,'%',0)}",
@@ -154,13 +154,12 @@ def signal_table_html(tbl: pd.DataFrame, cfg: Config = CFG) -> str:
         return THEME.note('No rated surprises in this window, so no band '
                           'signals to compare.', THEME.NEUTRAL)
     fwd_cols = [f'FWD_{h}D' for h in cfg.horizons]
-    headers = ([('Signal group', 'left'), ('N', 'right'), ('Avg σ', 'right'),
+    headers = ([('Group', 'left'), ('N', 'right'), ('Avg SUE σ', 'right'),
                 ('React %', 'right'), ('vs Index %', 'right')] +
                [(f'Fwd {h}D', 'right') for h in cfg.horizons] +
-               [('Hit %', 'right')])
-    tint = {'Long — beat, broke upper band': THEME.POSITIVE,
-            'Short — miss, broke lower band': THEME.NEGATIVE,
-            'Divergent — band broke the other way': THEME.MANGO_AMBER}
+               [('EPS agreed %', 'right')])
+    tint = {'Positive — closed through the upper band': THEME.POSITIVE,
+            'Negative — closed through the lower band': THEME.NEGATIVE}
     rows = ''
     for i, (_, r) in enumerate(tbl.iterrows()):
         bg = THEME.WHITE if i % 2 == 0 else THEME.ZEBRA
@@ -170,11 +169,11 @@ def signal_table_html(tbl: pd.DataFrame, cfg: Config = CFG) -> str:
                  + _cell(fmt(r.React, '%', 2), bg)
                  + _cell(fmt(r.Abn, '%', 2), bg)
                  + "".join(_cell(fmt(r.get(c), '%', 2), bg) for c in fwd_cols)
-                 + _cell(fmt(r.HitRate * 100 if pd.notna(r.HitRate) else None,
+                 + _cell(fmt(r.SueAgrees * 100 if pd.notna(r.SueAgrees) else None,
                              '%', 0), bg))
         rows += f"<tr style='background-color:{bg} !important'>{cells}</tr>"
     return _table(
-        'Band-confirmed signals — does the Bollinger cross add anything?',
+        'Band surprises — does leaving the range pay?',
         headers, rows,
         f"A signal fires when a rated surprise is confirmed by the close crossing "
         f"the {cfg.bb_window}-day ±{cfg.bb_sigma}σ band in the same direction "
@@ -231,7 +230,7 @@ def radar_table_html(df: pd.DataFrame, tf_label: str) -> str:
 def recent_signals_html(ev: pd.DataFrame, n: int = 10) -> str:
     """The last N band-confirmed signals: the app's actual output, at the top
     of the page instead of buried under four figures."""
-    sig = signalled(surprises(rated(ev)))
+    sig = signalled(ev)
     if sig is None or sig.empty:
         return THEME.note(
             f"No band-confirmed signals in this window — every surprise either "
@@ -256,8 +255,8 @@ def recent_signals_html(ev: pd.DataFrame, n: int = 10) -> str:
                  + _cell(fmt(r.get('FWD_20D'), '%', 2), bg)
                  + "</tr>")
     return _table(
-        f'Latest band-confirmed signals — {len(signalled(surprises(rated(ev))))} '
-        f'in this window', headers, rows,
+        f'Latest band surprises — {len(signalled(ev))} in this window',
+        headers, rows,
         f"An earnings surprise whose close crossed the {CFG.bb_window}-day "
         f"±{CFG.bb_sigma}σ band in the same direction during the reaction "
         f"window. React % is the announcement reaction; Fwd 20D % is the drift "
