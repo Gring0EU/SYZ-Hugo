@@ -72,7 +72,7 @@ class EarningsGallery:
     def _build(self):
         fig = go.FigureWidget()
         # 0 band fill · 1 upper · 2 lower · 3 MA200 · 4 close · 5 events
-        fig.add_trace(go.Scatter(fill='toself', fillcolor='rgba(75,95,128,0.08)',
+        fig.add_trace(go.Scatter(fill='toself', fillcolor='rgba(75,95,128,0.05)',
                                  line=dict(color='rgba(255,255,255,0)'),
                                  hoverinfo='skip', showlegend=False))
         fig.add_trace(go.Scatter(mode='lines', name=f'BB{BB_WINDOW} upper',
@@ -89,7 +89,13 @@ class EarningsGallery:
                                  hovertemplate='%{hovertext}<extra></extra>'))
 
         fig.update_layout(**THEME.layout(
-            height=700, hovermode='x unified',
+            # 'closest' rather than 'x unified': a unified tooltip stacked the
+            # close, both bands, the MA and the marker into one block on every
+            # hover, which is the opposite of readable.
+            height=700, hovermode='closest',
+            hoverlabel=dict(bgcolor=THEME.WHITE, bordercolor=THEME.HAIRLINE,
+                            font=dict(family=THEME.FONT, size=12,
+                                      color=THEME.SPACE_BLUE)),
             margin=dict(l=20, r=20, t=60, b=20),
             xaxis=dict(
                 type='date', showline=True, linecolor=THEME.AXIS_COLOR,
@@ -355,17 +361,16 @@ class EarningsGallery:
                                  line=dict(color=edges, width=widths))
             marker.hovertext = [self._hover(r) for _, r in ev.iterrows()]
 
-            # Vertical event guides as paper-referenced shapes: they always span
-            # the plot area and, unlike sentinel-valued traces, never interfere
-            # with the y-range we compute for the visible window. A signalled
-            # print gets its own colour so the date reads off the axis.
+            # Vertical guides only for the prints that fired. Twenty dashed
+            # lines across five years said nothing the markers do not already
+            # say; a handful of coloured ones point at the dates the app exists
+            # to find. Paper-referenced, so they span the plot area without
+            # touching the y-range computed for the window.
             self.fig.layout.shapes = tuple(
                 dict(type='line', xref='x', yref='paper', y0=0, y1=1,
                      x0=d, x1=d, layer='below',
-                     line=dict(color=SIGNAL_COLOR[s] if f else 'rgba(32,41,69,0.15)',
-                               width=2 if f else 1,
-                               dash='solid' if f else 'dash'))
-                for d, s, f in zip(ev['TRADE_DATE'], signals, fired))
+                     line=dict(color=SIGNAL_COLOR[s], width=2))
+                for d, s, f in zip(ev['TRADE_DATE'], signals, fired) if f)
             self.fig.layout.annotations = tuple(
                 dict(x=d, y=float(y), xref='x', yref='y',
                      text=f"<b>{s}</b> {pd.Timestamp(d):%d %b %y}",
@@ -376,8 +381,9 @@ class EarningsGallery:
                      borderpad=3, opacity=0.95)
                 for d, y, s, f in zip(ev['TRADE_DATE'], ev['PRICE_AT_EVENT'],
                                       signals, fired) if f)
-            self.fig.layout.xaxis.range = [idx[0], idx[-1]]
-        self._rescale([idx[0], idx[-1]])
+            window = self._opening_window(idx, ev)
+            self.fig.layout.xaxis.range = list(window)
+        self._rescale(window)
 
         key = f"{self.code}|{ticker}"
         if key in self.keys and self.ui_results.value != key:
@@ -388,6 +394,23 @@ class EarningsGallery:
                 self._syncing = False
         self.ui_meta.value = self._meta_html(ticker)
         self._status()
+
+    def _opening_window(self, idx, ev):
+        """Which slice of history to open on.
+
+        A latest-print filter is a question about the most recent quarter --
+        "who just posted a major surprise" -- so the chart opens on that print
+        with a couple of quarters of run-up for context, instead of leaving you
+        to hunt for it at the right edge of five years. Any other filter opens
+        on the full history. The range buttons and the slider still do whatever
+        you ask afterwards.
+        """
+        full = (idx[0], idx[-1])
+        if self.ui_filter.value not in LATEST_FILTERS or ev.empty:
+            return full
+        last = pd.Timestamp(ev['TRADE_DATE'].iloc[-1])
+        start = max(idx[0], last - pd.DateOffset(months=9))
+        return (start, idx[-1]) if start < idx[-1] else full
 
     def _meta_html(self, ticker: str) -> str:
         rows = self.catalog[(self.catalog.CODE == self.code) &

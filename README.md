@@ -50,8 +50,15 @@ NaN and every mean skips them.
 Close, the 100-day band and its shaded interior, MA200, and one marker per
 print coloured by surprise severity — the same six traces the chart has always
 had. A signalled print is emphasis on its own marker: a thick coloured outline,
-a solid coloured guide on the announcement date, and a dated label. The y-axis
-fits the band as well as the price, so the band is never clipped.
+a solid coloured guide on the announcement date, and a dated label. Only
+signalled prints get a guide; the rest are marker-only, so the plot stays
+quiet. One tooltip for the point under the cursor. The y-axis fits the band as
+well as the price, so the band is never clipped.
+
+The gallery filters all ask about the **latest print** ("Latest print · major
+surprise"), so choosing one opens the chart on that print with three quarters
+of run-up rather than on five years of history. The range buttons and the
+slider override it.
 
 ## Reading the dashboard
 

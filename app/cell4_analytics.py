@@ -503,18 +503,24 @@ def search_catalog(catalog: pd.DataFrame, query: str,
 # over catalog rows; 'recent' is defined against the data's own calendar via
 # DAYS_SINCE / DAYS_TO_NEXT rather than a hard-coded date.
 ASSET_FILTERS = [
-    ('All constituents',            'ALL'),
-    ('Surprised on latest print',   'LAST_SURPRISE'),
-    ('  ...positive only',          'LAST_POS'),
-    ('  ...negative only',          'LAST_NEG'),
-    ('  ...major only',             'LAST_MAJOR'),
-    ('Band-confirmed signal',       'LAST_SIGNAL'),
-    ('  ...long only',              'LAST_LONG'),
-    ('  ...short only',             'LAST_SHORT'),
-    ('Reported in last 30 days',    'RECENT_30'),
-    ('Reporting in next 30 days',   'UPCOMING_30'),
-    ('Frequent surprisers (≥50%)',  'FREQUENT'),
+    ('All constituents',                    'ALL'),
+    ('Latest print · surprise',             'LAST_SURPRISE'),
+    ('Latest print · positive surprise',    'LAST_POS'),
+    ('Latest print · negative surprise',    'LAST_NEG'),
+    ('Latest print · major surprise',       'LAST_MAJOR'),
+    ('Latest print · band signal',          'LAST_SIGNAL'),
+    ('Latest print · long signal',          'LAST_LONG'),
+    ('Latest print · short signal',         'LAST_SHORT'),
+    ('Reported in last 30 days',            'RECENT_30'),
+    ('Reporting in next 30 days',           'UPCOMING_30'),
+    ('Frequent surprisers (≥50%)',          'FREQUENT'),
 ]
+
+# Filters that ask a question about the most recent print. Picking one means
+# "show me who just did this", so the chart opens on that print rather than on
+# five years of history the question was not about.
+LATEST_FILTERS = {'LAST_SURPRISE', 'LAST_POS', 'LAST_NEG', 'LAST_MAJOR',
+                  'LAST_SIGNAL', 'LAST_LONG', 'LAST_SHORT'}
 
 
 def apply_asset_filter(catalog: pd.DataFrame, key: str) -> pd.DataFrame:
