@@ -1,11 +1,13 @@
 # ══════════════════════════════════════════════════════════════════════
-# CELL 5 — STEP 3: PER-ASSET EARNINGS GALLERY
-# Price history with Bollinger band, MA200 and every quarterly print marked by
-# surprise severity, driven by a universal search over every loaded index.
+# CELL 5 — STEP 3: PER-ASSET EARNINGS GALLERY  (part 1 of 2)
+# Price history with the Bollinger band the signal is measured against, the
+# long moving average, and every quarterly print in the plotted window marked
+# by surprise severity — signalled prints called out by name and date.
 #
-# The band drawn here is the same one the event engine measured the signal
-# against (Config.bb_window sessions of volatility, ±Config.bb_sigma), so a
-# print ringed as a signal is visibly sitting outside the band it crossed.
+# Cell 5 defines the class; Cell 5b attaches the remaining methods. The split
+# is deliberate: the cell is long enough that pasting it as one block into a
+# notebook risks losing the tail silently, and a class missing its interaction
+# handlers fails deep inside _build with a bare AttributeError.
 #
 # Selection model:
 #   search box  -> ticker / company / sector / country / index, accent- and
@@ -15,10 +17,6 @@
 #   sort        -> relevance, ticker, name, market cap, |σ|, signals, next report
 # Results span indices: picking a DAX name while showing the S&P rebinds the
 # chart to the DAX and tells the app shell to follow.
-#
-# Marker coordinates come from Step 2 (TRADE_DATE / PRICE_AT_EVENT), so
-# redrawing a name is a vectorised column assignment rather than a per-event
-# search through the price series.
 # ══════════════════════════════════════════════════════════════════════
 import numpy as np
 import pandas as pd
@@ -38,14 +36,14 @@ MARKER_STYLE = {
 CATEGORY_GLYPH = {'Major +': '▲▲', 'Moderate +': '▲', 'In Line': '•',
                   'Moderate −': '▼', 'Major −': '▼▼', 'Unrated': '○'}
 SIGNAL_GLYPH = {SIGNAL_LONG: '⚡L', SIGNAL_SHORT: '⚡S', SIGNAL_DIVERGENT: '≠'}
+SIGNAL_COLOR = {SIGNAL_LONG: THEME.MINT_GREEN, SIGNAL_SHORT: THEME.TIGER_ORANGE}
 
-# Trace slots, in the order _build adds them. Named so that inserting a trace
-# is a one-line change here rather than a hunt through draw() for magic
-# indices -- the previous version of this cell had the signal halo and the
-# earnings markers disagreeing about which slot they owned.
+# Trace slots, in the order _build adds them. Named so inserting a trace is a
+# one-line change here rather than a hunt through draw() for magic indices.
 T_FILL, T_UPPER, T_LOWER, T_MA, T_CLOSE, T_SIGNAL, T_EVENTS = range(7)
 
 RESULT_LIMIT = 300
+LABEL_OFFSETS = (-52, -88, -124)   # stagger for signals close together in time
 
 
 class EarningsGallery:
@@ -62,6 +60,7 @@ class EarningsGallery:
         self.ticker: str | None = None
         self.on_index_change = None      # set by the app shell to stay in sync
         self._series: pd.Series | None = None
+        self._envelope: pd.DataFrame | None = None   # what the y-range must fit
         self._rescaling = False          # re-entrancy guard for autoscale
         self._syncing = False            # guard while rewriting result options
         self._build()
@@ -69,6 +68,7 @@ class EarningsGallery:
     # ── construction ─────────────────────────────────────────────────
     def _build(self):
         band = f'BB{self.cfg.bb_window}'
+        price_hover = '%{y:.2f}<extra></extra>'
         fig = go.FigureWidget()
         # T_FILL — shaded band interior
         fig.add_trace(go.Scatter(fill='toself', fillcolor='rgba(75,95,128,0.08)',
@@ -76,55 +76,66 @@ class EarningsGallery:
                                  hoverinfo='skip', showlegend=False))
         # T_UPPER / T_LOWER — the band the signal is measured against
         fig.add_trace(go.Scatter(mode='lines', name=f'{band} upper',
+                                 hovertemplate=price_hover,
                                  line=dict(color='rgba(75,95,128,0.45)', width=1,
                                            dash='dot')))
         fig.add_trace(go.Scatter(mode='lines', name=f'{band} lower',
+                                 hovertemplate=price_hover,
                                  line=dict(color='rgba(75,95,128,0.45)', width=1,
                                            dash='dot')))
         # T_MA — long moving average
         fig.add_trace(go.Scatter(mode='lines', name=f'MA{self.cfg.ma_window}',
+                                 hovertemplate=price_hover,
                                  line=dict(color=THEME.GOLD_YELLOW, width=1.5)))
         # T_CLOSE — the price series itself
         fig.add_trace(go.Scatter(mode='lines', name='Close',
+                                 hovertemplate=price_hover,
                                  line=dict(color=THEME.BLUEBERRY_BLUE, width=2)))
         # T_SIGNAL — added before the severity markers so plotly draws the halo
         # underneath: the confirmation rings the print without hiding the
         # category colour or stealing its hover.
         fig.add_trace(go.Scatter(mode='markers', name='Band-confirmed signal',
                                  hoverinfo='skip',
-                                 marker=dict(symbol='circle-open', size=26,
+                                 marker=dict(symbol='circle-open', size=30,
                                              color=THEME.SPACE_BLUE,
-                                             line=dict(width=2))))
+                                             line=dict(width=3))))
         # T_EVENTS — one marker per quarterly print
         fig.add_trace(go.Scatter(mode='markers', name='Quarterly earnings',
                                  hovertemplate='%{hovertext}<extra></extra>'))
 
         fig.update_layout(**THEME.layout(
-            height=700, hovermode='x unified',
-            margin=dict(l=20, r=20, t=60, b=20),
+            height=620, hovermode='x unified',
+            margin=dict(l=20, r=20, t=64, b=20),
+            # An opaque white legend keeps the labels readable where they sit
+            # over the band fill.
+            legend=dict(orientation='h', yanchor='bottom', y=1.02,
+                        xanchor='right', x=1, bgcolor=THEME.WHITE,
+                        bordercolor=THEME.HAIRLINE, borderwidth=1),
+            hoverlabel=dict(bgcolor=THEME.WHITE, bordercolor=THEME.HAIRLINE,
+                            font=dict(family=THEME.FONT, size=12,
+                                      color=THEME.SPACE_BLUE)),
             xaxis=dict(
                 type='date', showline=True, linecolor=THEME.AXIS_COLOR,
                 gridcolor=THEME.GRID_COLOR,
                 rangeselector=dict(buttons=[
                     dict(count=3, label='3M', step='month', stepmode='backward'),
+                    dict(count=6, label='6M', step='month', stepmode='backward'),
                     dict(count=1, label='1Y', step='year', stepmode='backward'),
                     dict(count=3, label='3Y', step='year', stepmode='backward'),
-                    dict(step='all', label='Full 5Y'),
+                    dict(step='all', label='Full'),
                 ], bgcolor=THEME.ZEBRA, activecolor=THEME.BLUEBERRY_BLUE,
                     font=dict(color=THEME.SPACE_BLUE)),
-                rangeslider=dict(visible=True, thickness=0.08,
+                rangeslider=dict(visible=True, thickness=0.07,
                                  bgcolor=THEME.ZEBRA, bordercolor=THEME.AXIS_COLOR),
             ),
             yaxis=dict(showline=True, linecolor=THEME.AXIS_COLOR,
-                       gridcolor=THEME.GRID_COLOR, zeroline=False),
+                       gridcolor=THEME.GRID_COLOR, zeroline=False,
+                       tickformat=',.0f'),
         ))
         # Rescale y to whatever the x-window actually shows: without this the
         # 3M/1Y buttons zoom the x-axis while the series stays visually flat
-        # inside a range fixed by the full 5Y extremes.
+        # inside a range fixed by the full-history extremes.
         fig.layout.on_change(self._on_xrange, 'xaxis.range')
-        # Fail loudly if the slot constants and the traces above ever drift
-        # apart: a silent mismatch is what leaves the chart showing markers on
-        # an empty canvas.
         if len(fig.data) != T_EVENTS + 1:
             raise RuntimeError(f'gallery expects {T_EVENTS + 1} traces, '
                                f'built {len(fig.data)}')
@@ -133,7 +144,7 @@ class EarningsGallery:
         self.ui_search = widgets.Text(
             value='', placeholder='Search ticker, company, sector, country or index…',
             description='Search:', continuous_update=True,
-            style={'description_width': 'initial'}, layout={'width': '460px'})
+            style={'description_width': 'initial'}, layout={'width': '430px'})
         self.ui_clear = widgets.Button(description='✕', tooltip='Clear search',
                                        layout={'width': '36px'})
         self.ui_filter = widgets.Dropdown(
@@ -144,11 +155,19 @@ class EarningsGallery:
             style={'description_width': 'initial'}, layout={'width': '230px'})
         self.ui_scope = widgets.Checkbox(
             value=True, description='This index only', indent=False,
-            layout={'width': '150px'})
-        self.ui_results = widgets.Select(options=[], rows=11,
+            layout={'width': '145px'})
+        # Chart-side declutter: a name with twenty prints and two signals reads
+        # far better when the twenty are hidden.
+        self.ui_signals_only = widgets.Checkbox(
+            value=False, description='Signalled prints only', indent=False,
+            layout={'width': '190px'})
+        self.ui_labels = widgets.Checkbox(
+            value=True, description='Signal labels', indent=False,
+            layout={'width': '140px'})
+        self.ui_results = widgets.Select(options=[], rows=9,
                                          layout={'width': '520px'})
         self.ui_meta = widgets.HTML(layout={'margin': '0 0 0 16px',
-                                            'width': '420px'})
+                                            'width': '430px'})
         self.ui_prev = widgets.Button(description='◀ Prev', button_style='info',
                                       layout={'width': '80px'})
         self.ui_next = widgets.Button(description='Next ▶', button_style='info',
@@ -159,6 +178,8 @@ class EarningsGallery:
         self.ui_filter.observe(self._on_query, names='value')
         self.ui_sort.observe(self._on_query, names='value')
         self.ui_scope.observe(self._on_query, names='value')
+        self.ui_signals_only.observe(self._on_redraw, names='value')
+        self.ui_labels.observe(self._on_redraw, names='value')
         self.ui_clear.on_click(self._on_clear)
         self.ui_results.observe(self._on_pick, names='value')
         self.ui_prev.on_click(lambda _: self._step(-1))
@@ -174,8 +195,11 @@ class EarningsGallery:
                                     'margin': '6px 0 6px 0'})
         row3 = widgets.HBox([self.ui_results, self.ui_meta],
                             layout={'align_items': 'flex-start',
-                                    'margin': '0 0 12px 0'})
-        return widgets.VBox([row1, row2, row3, self.fig])
+                                    'margin': '0 0 8px 0'})
+        row4 = widgets.HBox([self.ui_signals_only, self.ui_labels],
+                            layout={'align_items': 'center',
+                                    'margin': '0 0 4px 0'})
+        return widgets.VBox([row1, row2, row3, row4, self.fig])
 
     # ── data binding ─────────────────────────────────────────────────
     def refresh_catalog(self):
@@ -206,10 +230,12 @@ class EarningsGallery:
 
     def _empty(self, message: str):
         self._series = None
+        self._envelope = None
         self.ticker = None
         with self.fig.batch_update():
             self.fig.layout.title = THEME.title(message, size=15)
             self.fig.layout.shapes = ()
+            self.fig.layout.annotations = ()
             for trace in self.fig.data:
                 trace.x, trace.y = [], []
         self.ui_meta.value = ''
@@ -310,6 +336,34 @@ class EarningsGallery:
         self.draw(ticker)
 
     # ── drawing ──────────────────────────────────────────────────────
+    def _signal_annotations(self, sig: pd.DataFrame) -> list[dict]:
+        """Date-and-direction labels for signalled prints.
+
+        Offsets are staggered so two prints a few weeks apart do not stack
+        their labels on top of each other -- the usual case for a name that
+        breaks the band two quarters running.
+        """
+        if sig.empty or not self.ui_labels.value:
+            return []
+        notes, last_date, tier = [], None, 0
+        for _, r in sig.iterrows():
+            date = pd.Timestamp(r['TRADE_DATE'])
+            if last_date is not None and (date - last_date).days < 200:
+                tier = (tier + 1) % len(LABEL_OFFSETS)
+            else:
+                tier = 0
+            last_date = date
+            colour = SIGNAL_COLOR.get(r['SIGNAL'], THEME.SPACE_BLUE)
+            sigma = (f" · {r['SIGMA']:+.1f}σ" if pd.notna(r.get('SIGMA')) else '')
+            notes.append(dict(
+                x=date, y=float(r['PRICE_AT_EVENT']), xref='x', yref='y',
+                text=f"<b>{r['SIGNAL']}</b> {date:%d %b %y}{sigma}",
+                showarrow=True, arrowhead=2, arrowsize=1, arrowwidth=1.5,
+                arrowcolor=colour, ax=0, ay=LABEL_OFFSETS[tier],
+                font=dict(family=THEME.FONT, size=11, color=THEME.WHITE),
+                bgcolor=colour, bordercolor=colour, borderpad=3, opacity=0.95))
+        return notes
+
     def draw(self, ticker: str):
         if self.prices.empty or ticker not in self.prices.columns:
             return
@@ -327,22 +381,33 @@ class EarningsGallery:
 
         ev = self.events[self.events.TICKER == ticker].sort_values('TRADE_DATE')
         ev = ev[ev['PRICE_AT_EVENT'].notna()]
-        styles = ev['CATEGORY'].map(MARKER_STYLE)
+        sig = (ev[ev['SIGNAL'].isin(ACTIVE_SIGNALS)] if 'SIGNAL' in ev.columns
+               else ev.iloc[0:0])
+        shown = sig if self.ui_signals_only.value else ev
+
+        styles = shown['CATEGORY'].map(MARKER_STYLE)
         fallback = MARKER_STYLE['Unrated']
         colors = [s[0] if isinstance(s, tuple) else fallback[0] for s in styles]
         symbols = [s[1] if isinstance(s, tuple) else fallback[1] for s in styles]
         sizes = [s[2] if isinstance(s, tuple) else fallback[2] for s in styles]
-        sig = (ev[ev['SIGNAL'].isin(ACTIVE_SIGNALS)] if 'SIGNAL' in ev.columns
-               else ev.iloc[0:0])
-        sig_colors = [THEME.MINT_GREEN if s == SIGNAL_LONG else THEME.TIGER_ORANGE
-                      for s in sig['SIGNAL']]
+        sig_colors = [SIGNAL_COLOR.get(s, THEME.SPACE_BLUE) for s in sig['SIGNAL']]
+
+        # Everything the y-range has to contain: clipping the band or a label
+        # is what made the chart hard to read.
+        self._envelope = pd.DataFrame({'close': px, 'upper': upper,
+                                       'lower': lower})
 
         idx = list(px.index)
         data = self.fig.data
         with self.fig.batch_update():
             name = ev['NAME'].iloc[0] if not ev.empty and 'NAME' in ev else ticker
+            n_sig = len(sig)
+            subtitle = (f"{n_sig} band signal{'s' if n_sig != 1 else ''}"
+                        if n_sig else 'no band signal')
             self.fig.layout.title = THEME.title(
-                f"<b>{ticker}</b> | {name} — {self.cfg.label(self.code)}", size=18)
+                f"<b>{ticker}</b> | {name} — {self.cfg.label(self.code)} "
+                f"<span style='font-size:13px;font-weight:400'>· {len(ev)} prints "
+                f"· {subtitle}</span>", size=18)
 
             # Band interior as one closed polygon: up the upper band, back down
             # the lower one.
@@ -361,20 +426,30 @@ class EarningsGallery:
             halo.marker.color = sig_colors or THEME.SPACE_BLUE
 
             marker = data[T_EVENTS]
-            marker.x = list(ev['TRADE_DATE'])
-            marker.y = list(ev['PRICE_AT_EVENT'])
+            marker.x = list(shown['TRADE_DATE'])
+            marker.y = list(shown['PRICE_AT_EVENT'])
             marker.marker = dict(color=colors, symbol=symbols, size=sizes,
                                  line=dict(color='rgba(32,41,69,0.6)', width=1))
-            marker.hovertext = [self._hover(r) for _, r in ev.iterrows()]
+            marker.hovertext = [self._hover(r) for _, r in shown.iterrows()]
 
-            # Vertical event guides as paper-referenced shapes: they always span
-            # the plot area and, unlike sentinel-valued traces, never interfere
-            # with the y-range we compute for the visible window.
-            self.fig.layout.shapes = tuple(
-                dict(type='line', xref='x', yref='paper', y0=0, y1=1,
-                     x0=d, x1=d, layer='below',
-                     line=dict(color='rgba(32,41,69,0.15)', width=1, dash='dash'))
-                for d in ev['TRADE_DATE'])
+            # Event guides: faint for an ordinary print, solid and coloured for
+            # a signalled one, so the signal dates are the ones that read as a
+            # line. Paper-referenced, so they always span the plot area and
+            # never interfere with the y-range computed for the window.
+            guides = [dict(type='line', xref='x', yref='paper', y0=0, y1=1,
+                           x0=d, x1=d, layer='below',
+                           line=dict(color='rgba(32,41,69,0.13)', width=1,
+                                     dash='dash'))
+                      for d in ev['TRADE_DATE']]
+            guides += [dict(type='line', xref='x', yref='paper', y0=0, y1=1,
+                            x0=pd.Timestamp(r['TRADE_DATE']),
+                            x1=pd.Timestamp(r['TRADE_DATE']), layer='below',
+                            line=dict(color=SIGNAL_COLOR.get(r['SIGNAL'],
+                                                             THEME.SPACE_BLUE),
+                                      width=2))
+                       for _, r in sig.iterrows()]
+            self.fig.layout.shapes = tuple(guides)
+            self.fig.layout.annotations = tuple(self._signal_annotations(sig))
             self.fig.layout.xaxis.range = [idx[0], idx[-1]]
         self._rescale([idx[0], idx[-1]])
 
@@ -388,121 +463,5 @@ class EarningsGallery:
         self.ui_meta.value = self._meta_html(ticker)
         self._status()
 
-    def _meta_html(self, ticker: str) -> str:
-        rows = self.catalog[(self.catalog.CODE == self.code) &
-                            (self.catalog.TICKER == ticker)]
-        if rows.empty:
-            return ''
-        r = rows.iloc[0]
-        cap = (f"{r.MKT_CAP_USD/1e9:,.1f}bn" if pd.notna(r.MKT_CAP_USD) else '—')
-        last = (f"{r.LAST_CATEGORY} ({r.LAST_SIGMA:+.2f}σ)"
-                if pd.notna(r.LAST_SIGMA) else str(r.LAST_CATEGORY or '—'))
-        nxt = (f"{pd.Timestamp(r.NEXT_DATE):%Y-%m-%d}"
-               + (f" · in {int(r.DAYS_TO_NEXT)}d" if pd.notna(r.DAYS_TO_NEXT) else '')
-               if pd.notna(r.NEXT_DATE) else '—')
-        rate = (f"{r.N_SURPRISES}/{r.N_PRINTS} prints ({r.SURPRISE_RATE:.0%})"
-                if pd.notna(r.SURPRISE_RATE) else '—')
-        signal = (f"{r.LAST_SIGNAL} ({r.LAST_CROSS} band)"
-                  if r.LAST_SIGNAL in ACTIVE_SIGNALS else
-                  ('divergent break' if r.LAST_SIGNAL == SIGNAL_DIVERGENT
-                   else 'no band cross'))
-        items = [('Bloomberg ID', r.ID if pd.notna(r.ID) else '—'),
-                 ('Index', f"{r.INDEX} ({r.CODE})"),
-                 ('Sector', r.SECTOR), ('Country', r.COUNTRY),
-                 ('Market cap', cap), ('Latest print', last),
-                 ('Latest signal', signal),
-                 (f'Band signals ({self.cfg.bb_window}d)', f"{r.N_SIGNALS}"),
-                 ('Surprise history', rate), ('Next report', nxt)]
-        body = "".join(
-            f"<div style='display:flex;justify-content:space-between;gap:12px;"
-            f"padding:3px 0;border-bottom:1px solid {THEME.HAIRLINE}'>"
-            f"<span style='font-weight:300;font-size:12px'>{k}</span>"
-            f"<span style='font-weight:700;font-size:12px;text-align:right'>{v}</span>"
-            f"</div>" for k, v in items)
-        head = (f"<div style='font-weight:800;font-size:14px;"
-                f"color:{THEME.SPACE_BLUE};margin-bottom:6px'>"
-                f"{r.TICKER} — {r.NAME}</div>")
-        return THEME.panel(head + body, pad='10px 14px')
 
-    @staticmethod
-    def _hover(row) -> str:
-        bits = [f"<b>{row['CATEGORY']}</b>",
-                f"Date: {pd.Timestamp(row['DATE']):%Y-%m-%d}"]
-        if pd.notna(row.get('SIGMA')):
-            bits.append(f"SUE: {row['SIGMA']:+.2f}σ")
-        if pd.notna(row.get('EPS_ACT')):
-            est = (f" vs est {row['EPS_EST']:.2f}"
-                   if pd.notna(row.get('EPS_EST')) else '')
-            bits.append(f"EPS: {row['EPS_ACT']:.2f}{est}")
-        # The most recent print is on the chart before its reaction window
-        # closes, so it has no return yet -- say so rather than print '+nan%'.
-        bits.append(f"Reaction: {row['RET(%)']:+.2f}%" if pd.notna(row.get('RET(%)'))
-                    else 'Reaction: pending — window not closed yet')
-        if pd.notna(row.get('ABN_RET(%)')):
-            bits.append(f"vs index: {row['ABN_RET(%)']:+.2f}%")
-        cross = row.get('BB_CROSS', CROSS_NA)
-        signal = row.get('SIGNAL', SIGNAL_NONE)
-        if signal in ACTIVE_SIGNALS:
-            bits.append(f"<b>Signal: {signal}</b> — closed through the "
-                        f"{str(cross).lower()} band")
-        elif signal == SIGNAL_DIVERGENT:
-            bits.append(f"Divergent: broke the {str(cross).lower()} band "
-                        f"against the surprise")
-        elif cross == CROSS_NONE:
-            bits.append('No band cross')
-        if pd.notna(row.get('FWD_20D')):
-            bits.append(f"20D drift: {row['FWD_20D']:+.2f}%")
-        return '<br>'.join(bits)
-
-    # ── interaction ──────────────────────────────────────────────────
-    def _on_xrange(self, layout, xrange):
-        self._rescale(xrange)
-
-    def _rescale(self, xrange):
-        if self._series is None or not xrange or self._rescaling:
-            return
-        try:
-            lo_x, hi_x = pd.Timestamp(xrange[0]), pd.Timestamp(xrange[1])
-        except (TypeError, ValueError):
-            return
-        visible = self._series[(self._series.index >= lo_x) &
-                               (self._series.index <= hi_x)]
-        if visible.empty:
-            return
-        self._rescaling = True
-        try:
-            pad = (visible.max() - visible.min()) * 0.08 or visible.max() * 0.05
-            self.fig.layout.yaxis.range = [float(visible.min() - pad),
-                                           float(visible.max() + pad)]
-        finally:
-            self._rescaling = False
-
-    def _on_query(self, change):
-        if self._syncing:
-            return
-        self._refresh_results(prefer=self.ticker)
-
-    def _on_clear(self, _):
-        if self.ui_search.value:
-            self.ui_search.value = ''      # observer refreshes the list
-
-    def _on_pick(self, change):
-        if self._syncing or not change.get('new'):
-            return
-        self.select(change['new'])
-
-    def _step(self, delta: int):
-        if not self.keys:
-            return
-        current = f"{self.code}|{self.ticker}"
-        i = (self.keys.index(current) if current in self.keys else 0) + delta
-        if 0 <= i < len(self.keys):
-            self._syncing = True
-            try:
-                self.ui_results.value = self.keys[i]
-            finally:
-                self._syncing = False
-            self.select(self.keys[i])
-
-
-print('Step 3 ready — EarningsGallery() with universal search')
+print('Step 3 (part 1) ready — now run Cell 5b to attach the remaining methods')

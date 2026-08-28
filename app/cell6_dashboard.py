@@ -1,5 +1,7 @@
 # ══════════════════════════════════════════════════════════════════════
-# CELL 6 — STEP 4: CONCLUSION DASHBOARD
+# CELL 6 — STEP 4: CONCLUSION DASHBOARD  (part 1 of 2)
+# Cards, tables and figures. Cell 6b assembles them into the tabbed panel
+# with its window / sector / signal controls.
 # Index-level read on the selected trailing window:
 #   KPI strip · sector & quarter breakdowns · drift by severity · pos/neg split
 #   per-category reaction + PEAD table · band-signal table
@@ -214,6 +216,42 @@ def radar_table_html(df: pd.DataFrame, tf_label: str) -> str:
         f"Tendency is the majority direction of that name's past surprises.")
 
 
+def recent_signals_html(ev: pd.DataFrame, n: int = 10) -> str:
+    """The last N band-confirmed signals: the app's actual output, at the top
+    of the page instead of buried under four figures."""
+    sig = signalled(surprises(rated(ev)))
+    if sig is None or sig.empty:
+        return THEME.note(
+            f"No band-confirmed signals in this window — every surprise either "
+            f"stayed inside the {CFG.bb_window}-day band or broke it against "
+            f"the surprise.", THEME.NEUTRAL)
+    sig = sig.sort_values('DATE', ascending=False).head(n)
+    headers = [('Reported', 'left'), ('Ticker', 'left'), ('Name', 'left'),
+               ('Signal', 'left'), ('Band', 'left'), ('SUE σ', 'right'),
+               ('React %', 'right'), ('Fwd 20D %', 'right')]
+    rows = ''
+    for i, (_, r) in enumerate(sig.iterrows()):
+        bg = THEME.WHITE if i % 2 == 0 else THEME.ZEBRA
+        tint = THEME.POSITIVE if r['SIGNAL'] == SIGNAL_LONG else THEME.NEGATIVE
+        rows += (f"<tr style='background-color:{bg} !important'>"
+                 + _cell(f"{pd.Timestamp(r['DATE']):%Y-%m-%d}", bg, align='left')
+                 + _cell(r['TICKER'], bg, THEME.SPACE_BLUE, 700, 'left')
+                 + _cell(r.get('NAME', '—'), bg, align='left')
+                 + _cell(r['SIGNAL'], bg, tint, 700, 'left')
+                 + _cell(f"{r['BB_CROSS']} band", bg, align='left')
+                 + _cell(fmt(r.get('SIGMA'), '', 2), bg)
+                 + _cell(fmt(r.get('RET(%)'), '%', 2), bg)
+                 + _cell(fmt(r.get('FWD_20D'), '%', 2), bg)
+                 + "</tr>")
+    return _table(
+        f'Latest band-confirmed signals — {len(signalled(surprises(rated(ev))))} '
+        f'in this window', headers, rows,
+        f"An earnings surprise whose close crossed the {CFG.bb_window}-day "
+        f"±{CFG.bb_sigma}σ band in the same direction during the reaction "
+        f"window. React % is the announcement reaction; Fwd 20D % is the drift "
+        f"measured from the close of that window.")
+
+
 # ─────────────────────────────────────────────────────────────
 # FIGURES
 # ─────────────────────────────────────────────────────────────
@@ -285,66 +323,4 @@ def detail_figure(country_bd, industry_bd, label, tf_label) -> go.Figure:
     return fig
 
 
-# ─────────────────────────────────────────────────────────────
-# DASHBOARD
-# ─────────────────────────────────────────────────────────────
-class ConclusionDashboard:
-    def __init__(self, store=STORE, cfg: Config = CFG):
-        self.store, self.cfg = store, cfg
-        self.code: str | None = None
-        self.out = widgets.Output()
-        self.ui_window = widgets.Dropdown(
-            options=TF_OPTIONS, value='5Y', description='Window:',
-            style={'description_width': 'initial'}, layout={'width': '230px'})
-        self.ui_window.observe(lambda ch: self.render(self.code), names='value')
-
-    @property
-    def widget(self):
-        return widgets.VBox([widgets.HBox([self.ui_window]), self.out])
-
-    def render(self, code: str | None):
-        if code is None:
-            return
-        self.code = code
-        tf = self.ui_window.value
-        label = self.cfg.label(code)
-        with self.out:
-            clear_output(wait=True)
-            events = self.store.get(code, 'events')
-            if events is None or events.empty:
-                display(HTML(THEME.note(
-                    f"No events loaded for <b>{label}</b> — run the pipeline "
-                    f"for this index first.", THEME.NEGATIVE)))
-                return
-
-            ev = prepare(events)
-            ev = ensure_forward_returns(ev, self.store.get(code, 'prices_wide'),
-                                        self.cfg)
-            ev, cutoff, anchor = filter_window(ev, tf)
-            if ev.empty:
-                display(HTML(THEME.note(
-                    f"No events inside the selected window for <b>{label}</b>.",
-                    THEME.NEGATIVE)))
-                return
-
-            sectors = self.store.get(code, 'sectors')
-            k = kpis(ev)
-            tbl = category_table(ev, self.cfg)
-
-            display(HTML(window_caption(tf, cutoff, anchor, k['total'], k)))
-            display(HTML(kpi_strip(k, label, drift_summary(tbl, self.cfg))))
-            display(_as_widget(overview_figure(
-                dim_breakdown(ev, sectors, 'SECTOR'), period_breakdown(ev),
-                tbl, k, label, TF_LABELS[tf], self.cfg)))
-            display(HTML(category_table_html(tbl, self.cfg)))
-            display(HTML(signal_table_html(signal_table(ev, self.cfg), self.cfg)))
-            display(_as_widget(detail_figure(
-                dim_breakdown(ev, sectors, 'COUNTRY'),
-                dim_breakdown(ev, sectors, 'INDUSTRY', top_n=12),
-                label, TF_LABELS[tf])))
-            display(HTML(radar_table_html(
-                radar_table(ev, sectors, self.store.get(code, 'next_earnings')),
-                TF_LABELS[tf])))
-
-
-print('Step 4 ready — ConclusionDashboard()')
+print('Step 4 (part 1) ready — now run Cell 6b for the dashboard panel')
