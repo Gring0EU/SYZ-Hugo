@@ -39,6 +39,12 @@ CATEGORY_GLYPH = {'Major +': '▲▲', 'Moderate +': '▲', 'In Line': '•',
                   'Moderate −': '▼', 'Major −': '▼▼', 'Unrated': '○'}
 SIGNAL_GLYPH = {SIGNAL_LONG: '⚡L', SIGNAL_SHORT: '⚡S', SIGNAL_DIVERGENT: '≠'}
 
+# Trace slots, in the order _build adds them. Named so that inserting a trace
+# is a one-line change here rather than a hunt through draw() for magic
+# indices -- the previous version of this cell had the signal halo and the
+# earnings markers disagreeing about which slot they owned.
+T_FILL, T_UPPER, T_LOWER, T_MA, T_CLOSE, T_SIGNAL, T_EVENTS = range(7)
+
 RESULT_LIMIT = 300
 
 
@@ -64,28 +70,32 @@ class EarningsGallery:
     def _build(self):
         band = f'BB{self.cfg.bb_window}'
         fig = go.FigureWidget()
-        # 0 band fill · 1 upper · 2 lower · 3 MA · 4 close · 5 signals · 6 events
+        # T_FILL — shaded band interior
         fig.add_trace(go.Scatter(fill='toself', fillcolor='rgba(75,95,128,0.08)',
                                  line=dict(color='rgba(255,255,255,0)'),
                                  hoverinfo='skip', showlegend=False))
+        # T_UPPER / T_LOWER — the band the signal is measured against
         fig.add_trace(go.Scatter(mode='lines', name=f'{band} upper',
                                  line=dict(color='rgba(75,95,128,0.45)', width=1,
                                            dash='dot')))
         fig.add_trace(go.Scatter(mode='lines', name=f'{band} lower',
                                  line=dict(color='rgba(75,95,128,0.45)', width=1,
                                            dash='dot')))
+        # T_MA — long moving average
         fig.add_trace(go.Scatter(mode='lines', name=f'MA{self.cfg.ma_window}',
                                  line=dict(color=THEME.GOLD_YELLOW, width=1.5)))
+        # T_CLOSE — the price series itself
         fig.add_trace(go.Scatter(mode='lines', name='Close',
                                  line=dict(color=THEME.BLUEBERRY_BLUE, width=2)))
-        # The signal halo is added before the severity markers so plotly draws
-        # it underneath: the confirmation rings the print without hiding the
+        # T_SIGNAL — added before the severity markers so plotly draws the halo
+        # underneath: the confirmation rings the print without hiding the
         # category colour or stealing its hover.
         fig.add_trace(go.Scatter(mode='markers', name='Band-confirmed signal',
                                  hoverinfo='skip',
                                  marker=dict(symbol='circle-open', size=26,
                                              color=THEME.SPACE_BLUE,
                                              line=dict(width=2))))
+        # T_EVENTS — one marker per quarterly print
         fig.add_trace(go.Scatter(mode='markers', name='Quarterly earnings',
                                  hovertemplate='%{hovertext}<extra></extra>'))
 
@@ -112,10 +122,13 @@ class EarningsGallery:
         # 3M/1Y buttons zoom the x-axis while the series stays visually flat
         # inside a range fixed by the full 5Y extremes.
         fig.layout.on_change(self._on_xrange, 'xaxis.range')
+        # Fail loudly if the slot constants and the traces above ever drift
+        # apart: a silent mismatch is what leaves the chart showing markers on
+        # an empty canvas.
+        if len(fig.data) != T_EVENTS + 1:
+            raise RuntimeError(f'gallery expects {T_EVENTS + 1} traces, '
+                               f'built {len(fig.data)}')
         self.fig = fig
-        # Trace slots, named once so drawing never indexes by position.
-        (self.t_fill, self.t_upper, self.t_lower, self.t_ma,
-         self.t_close, self.t_signal, self.t_events) = fig.data
 
         self.ui_search = widgets.Text(
             value='', placeholder='Search ticker, company, sector, country or index…',
@@ -310,7 +323,7 @@ class EarningsGallery:
         # the signal was tested against.
         mid, upper, lower = bollinger_bands(px, self.cfg)
         ma = px.rolling(self.cfg.ma_window,
-                        min_periods=self.cfg.ma_window // 2).mean()
+                        min_periods=max(2, self.cfg.ma_window // 2)).mean()
 
         ev = self.events[self.events.TICKER == ticker].sort_values('TRADE_DATE')
         ev = ev[ev['PRICE_AT_EVENT'].notna()]
@@ -319,28 +332,35 @@ class EarningsGallery:
         colors = [s[0] if isinstance(s, tuple) else fallback[0] for s in styles]
         symbols = [s[1] if isinstance(s, tuple) else fallback[1] for s in styles]
         sizes = [s[2] if isinstance(s, tuple) else fallback[2] for s in styles]
-        sig = ev[ev['SIGNAL'].isin(ACTIVE_SIGNALS)] if 'SIGNAL' in ev.columns \
-            else ev.iloc[0:0]
+        sig = (ev[ev['SIGNAL'].isin(ACTIVE_SIGNALS)] if 'SIGNAL' in ev.columns
+               else ev.iloc[0:0])
+        sig_colors = [THEME.MINT_GREEN if s == SIGNAL_LONG else THEME.TIGER_ORANGE
+                      for s in sig['SIGNAL']]
 
         idx = list(px.index)
+        data = self.fig.data
         with self.fig.batch_update():
             name = ev['NAME'].iloc[0] if not ev.empty and 'NAME' in ev else ticker
             self.fig.layout.title = THEME.title(
                 f"<b>{ticker}</b> | {name} — {self.cfg.label(self.code)}", size=18)
 
-            self.t_fill.x = idx + idx[::-1]
-            self.t_fill.y = list(upper) + list(lower)[::-1]
-            for trace, series in ((self.t_upper, upper), (self.t_lower, lower),
-                                  (self.t_ma, ma), (self.t_close, px)):
-                trace.x, trace.y = idx, list(series)
+            # Band interior as one closed polygon: up the upper band, back down
+            # the lower one.
+            data[T_FILL].x = idx + idx[::-1]
+            data[T_FILL].y = list(upper) + list(lower)[::-1]
+            for slot, series in ((T_UPPER, upper), (T_LOWER, lower),
+                                 (T_MA, ma), (T_CLOSE, px)):
+                data[slot].x = idx
+                data[slot].y = list(series)
 
-            self.t_signal.x = list(sig['TRADE_DATE'])
-            self.t_signal.y = list(sig['PRICE_AT_EVENT'])
-            self.t_signal.marker.color = [
-                THEME.MINT_GREEN if s == SIGNAL_LONG else THEME.TIGER_ORANGE
-                for s in sig['SIGNAL']]
+            halo = data[T_SIGNAL]
+            halo.x = list(sig['TRADE_DATE'])
+            halo.y = list(sig['PRICE_AT_EVENT'])
+            # An empty colour list is not a valid marker colour, so fall back
+            # to the scalar default when the name has no confirmed signal.
+            halo.marker.color = sig_colors or THEME.SPACE_BLUE
 
-            marker = self.t_events
+            marker = data[T_EVENTS]
             marker.x = list(ev['TRADE_DATE'])
             marker.y = list(ev['PRICE_AT_EVENT'])
             marker.marker = dict(color=colors, symbol=symbols, size=sizes,
@@ -421,10 +441,10 @@ class EarningsGallery:
         signal = row.get('SIGNAL', SIGNAL_NONE)
         if signal in ACTIVE_SIGNALS:
             bits.append(f"<b>Signal: {signal}</b> — closed through the "
-                        f"{cross.lower()} band")
+                        f"{str(cross).lower()} band")
         elif signal == SIGNAL_DIVERGENT:
-            bits.append(f"Divergent: broke the {cross.lower()} band against "
-                        f"the surprise")
+            bits.append(f"Divergent: broke the {str(cross).lower()} band "
+                        f"against the surprise")
         elif cross == CROSS_NONE:
             bits.append('No band cross')
         if pd.notna(row.get('FWD_20D')):
