@@ -133,57 +133,68 @@ def _hit_rate(df: pd.DataFrame) -> float:
     return float(np.nanmean(agree))
 
 
-def kpis(ev: pd.DataFrame) -> dict:
-    rat = rated(ev)
-    sur = surprises(rat)
-    pos, neg = sur[sur.DIR == 'POS'], sur[sur.DIR == 'NEG']
+def kpis(ev: pd.DataFrame, cfg: Config = CFG) -> dict:
+    """Everything the dashboard shows, measured on band crossings.
+
+    EPS never enters: a report either moved price out of its own volatility
+    range or it did not, and the numbers below describe the two populations
+    that follow from that.
+    """
     sig = signalled(ev)
-    agree = (int((sig['SUE_AGREES'] == AGREE_YES).sum())
-             if 'SUE_AGREES' in sig.columns and len(sig) else 0)
-    disagree = (int((sig['SUE_AGREES'] == AGREE_NO).sum())
-                if 'SUE_AGREES' in sig.columns and len(sig) else 0)
+    up, down = sig[sig.SIGNAL == SIGNAL_LONG], sig[sig.SIGNAL == SIGNAL_SHORT]
+    quiet = ev[ev['SIGNAL'] == SIGNAL_NONE] if not ev.empty else ev
+    drift = f'FWD_{cfg.horizons[1]}D' if len(cfg.horizons) > 1 else None
+
+    def mean(frame, col):
+        return frame[col].mean() if col and col in frame.columns and len(frame) \
+            else np.nan
+
     return dict(
-        total=len(rat),
-        unrated=int((ev['STATUS'] == STATUS_UNRATED).sum()) if not ev.empty else 0,
-        surprises=len(sur),
-        rate=(len(sur) / len(rat) if len(rat) else np.nan),
-        major=int((rat.STATUS == STATUS_MAJOR).sum()),
-        moderate=int((rat.STATUS == STATUS_MODERATE).sum()),
-        inline=int((rat.STATUS == STATUS_INLINE).sum()),
-        n_pos=len(pos), n_neg=len(neg),
-        avg_ret_pos=pos['RET(%)'].mean(), avg_ret_neg=neg['RET(%)'].mean(),
-        avg_abn_pos=pos['ABN_RET(%)'].mean(), avg_abn_neg=neg['ABN_RET(%)'].mean(),
-        pos_hit=_hit_rate(pos), neg_hit=_hit_rate(neg), hit=_hit_rate(sur),
-        signals=len(sig),
-        n_long=int((sig['SIGNAL'] == SIGNAL_LONG).sum()) if len(sig) else 0,
-        n_short=int((sig['SIGNAL'] == SIGNAL_SHORT).sum()) if len(sig) else 0,
-        sue_agrees=agree, sue_disagrees=disagree,
-        signal_rate=(len(sig) / len(ev) if len(ev) else np.nan),
-        pending=int((rat['RET(%)'].isna()).sum()) if len(rat) else 0,
-        analyst_share=((rat.SUE_SOURCE == 'analyst').mean()
-                       if 'SUE_SOURCE' in rat.columns and len(rat) else np.nan),
+        prints=len(ev),
+        signals=len(sig), n_long=len(up), n_short=len(down),
+        cross_rate=(len(sig) / len(ev) if len(ev) else np.nan),
+        avg_ret_long=mean(up, 'RET(%)'), avg_ret_short=mean(down, 'RET(%)'),
+        avg_abn_long=mean(up, 'ABN_RET(%)'), avg_abn_short=mean(down, 'ABN_RET(%)'),
+        drift_long=mean(up, drift), drift_short=mean(down, drift),
+        drift_quiet=mean(quiet, drift), drift_horizon=cfg.horizons[1]
+        if len(cfg.horizons) > 1 else cfg.horizons[0],
+        pending=int(ev['RET(%)'].isna().sum()) if len(ev) else 0,
+        names=int(ev['TICKER'].nunique()) if len(ev) else 0,
     )
 
 
 # ─────────────────────────────────────────────────────────────
 # BREAKDOWNS
 # ─────────────────────────────────────────────────────────────
+def signal_dir(ev: pd.DataFrame) -> pd.Series:
+    """POS / NEG for a band crossing, so every breakdown speaks one language.
+
+    The dashboard is about what price did after a report: a print that closed
+    through the upper band is positive, through the lower band negative, and
+    everything else is not an event at all.
+    """
+    return pd.Series(np.where(ev['SIGNAL'] == SIGNAL_LONG, 'POS',
+                              np.where(ev['SIGNAL'] == SIGNAL_SHORT, 'NEG', '')),
+                     index=ev.index)
+
+
 def dim_breakdown(ev: pd.DataFrame, sectors: pd.DataFrame, dim: str,
                   top_n: int | None = None) -> pd.DataFrame:
-    """Positive/negative surprise counts by classification dimension, sorted
-    ascending so the biggest group lands at the top of a horizontal bar chart."""
+    """Upper/lower band crossings by classification dimension, sorted ascending
+    so the biggest group lands at the top of a horizontal bar chart."""
     default = 'Unknown' if dim == 'COUNTRY' else 'Unclassified'
-    sur = surprises(rated(ev))
-    if sur.empty:
+    sig = signalled(ev)
+    if sig.empty:
         return pd.DataFrame(columns=['POS', 'NEG', 'TOT'])
+    sig = sig.assign(_DIR=signal_dir(sig))
     if sectors is not None and not sectors.empty and dim in sectors.columns:
-        sur = sur.merge(sectors[['TICKER', dim]].drop_duplicates('TICKER'),
+        sig = sig.merge(sectors[['TICKER', dim]].drop_duplicates('TICKER'),
                         on='TICKER', how='left')
     else:
-        sur = sur.assign(**{dim: default})
-    sur[dim] = sur[dim].fillna(default)
+        sig = sig.assign(**{dim: default})
+    sig[dim] = sig[dim].fillna(default)
 
-    g = sur.groupby([dim, 'DIR']).size().unstack(fill_value=0)
+    g = sig.groupby([dim, '_DIR']).size().unstack(fill_value=0)
     for col in ('POS', 'NEG'):
         if col not in g:
             g[col] = 0
@@ -193,10 +204,11 @@ def dim_breakdown(ev: pd.DataFrame, sectors: pd.DataFrame, dim: str,
 
 
 def period_breakdown(ev: pd.DataFrame) -> pd.DataFrame:
-    sur = surprises(rated(ev))
-    if sur.empty:
+    sig = signalled(ev)
+    if sig.empty:
         return pd.DataFrame(columns=['POS', 'NEG'])
-    g = sur.groupby(['QUARTER', 'DIR']).size().unstack(fill_value=0)
+    g = (sig.assign(_DIR=signal_dir(sig)).groupby(['QUARTER', '_DIR'])
+            .size().unstack(fill_value=0))
     for col in ('POS', 'NEG'):
         if col not in g:
             g[col] = 0
@@ -226,6 +238,11 @@ def category_table(ev: pd.DataFrame, cfg: Config = CFG) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+SIGNAL_GROUP_UP = 'Positive — closed through the upper band'
+SIGNAL_GROUP_DOWN = 'Negative — closed through the lower band'
+SIGNAL_GROUP_NONE = 'No band cross'
+
+
 def signal_table(ev: pd.DataFrame, cfg: Config = CFG) -> pd.DataFrame:
     """What each kind of print paid, split by what the band did.
 
@@ -238,9 +255,9 @@ def signal_table(ev: pd.DataFrame, cfg: Config = CFG) -> pd.DataFrame:
         return pd.DataFrame()
     fwd = [f'FWD_{h}D' for h in cfg.horizons]
     groups = [
-        ('Positive — closed through the upper band', ev[ev.SIGNAL == SIGNAL_LONG]),
-        ('Negative — closed through the lower band', ev[ev.SIGNAL == SIGNAL_SHORT]),
-        ('No band cross', ev[ev.SIGNAL == SIGNAL_NONE]),
+        (SIGNAL_GROUP_UP, ev[ev.SIGNAL == SIGNAL_LONG]),
+        (SIGNAL_GROUP_DOWN, ev[ev.SIGNAL == SIGNAL_SHORT]),
+        (SIGNAL_GROUP_NONE, ev[ev.SIGNAL == SIGNAL_NONE]),
     ]
     rows = []
     for name, g in groups:
@@ -259,29 +276,34 @@ def signal_table(ev: pd.DataFrame, cfg: Config = CFG) -> pd.DataFrame:
 
 
 def drift_summary(tbl: pd.DataFrame, cfg: Config = CFG) -> str:
-    """One-line read on whether the drift is tradeable in this window."""
-    if tbl.empty:
+    """One-line read on whether leaving the range paid, in this window."""
+    if tbl is None or tbl.empty:
         return ''
     col = f'FWD_{cfg.horizons[1]}D' if len(cfg.horizons) > 1 else f'FWD_{cfg.horizons[0]}D'
     if col not in tbl.columns:
         return ''
-    idx = tbl.set_index('Category')
+    idx = tbl.set_index('Group')
+    horizon = col.replace('FWD_', '').replace('D', 'D')
     parts = []
-    for cat, tag in (('Major +', 'Major&nbsp;+'), ('Major −', 'Major&nbsp;−')):
-        if cat in idx.index and np.isfinite(idx.loc[cat, col]):
-            parts.append(f"{tag} {col.replace('FWD_','').replace('D','D')} drift "
-                         f"<b>{idx.loc[cat, col]:+.2f}%</b>")
+    for group, tag in ((SIGNAL_GROUP_UP, 'Upper break'),
+                       (SIGNAL_GROUP_DOWN, 'Lower break'),
+                       (SIGNAL_GROUP_NONE, 'No cross')):
+        if group in idx.index and np.isfinite(idx.loc[group, col]):
+            parts.append(f"{tag} <b>{idx.loc[group, col]:+.2f}%</b>")
     if not parts:
         return ''
-    return ("Post-event drift — " + " &nbsp;·&nbsp; ".join(parts) +
-            " &nbsp;(continuation in the direction of the surprise is the "
-            "tradeable PEAD signature).")
+    return (f"Mean {horizon} drift after the reaction window — "
+            + " &nbsp;·&nbsp; ".join(parts) +
+            " &nbsp;(a break that keeps going is the tradeable case; compare "
+            "each against the prints that stayed inside the band).")
 
 
 def radar_table(ev: pd.DataFrame, sectors: pd.DataFrame,
-                next_earnings: pd.DataFrame, n: int = 15) -> pd.DataFrame:
-    """Soonest upcoming reporters, each carrying its own historical tendency
-    over the selected window -- the forward-looking half of the dashboard."""
+                next_earnings: pd.DataFrame, n: int = 15,
+                cfg: Config = CFG) -> pd.DataFrame:
+    """Soonest upcoming reporters, each carrying its own band history over the
+    selected window — how often this name's reports have left its range, which
+    way, and what happened after."""
     next_earnings = _with_ticker(next_earnings)
     if next_earnings is None or 'NEXT_EARNINGS_DATE' not in next_earnings.columns:
         return pd.DataFrame()
@@ -296,46 +318,33 @@ def radar_table(ev: pd.DataFrame, sectors: pd.DataFrame,
     if upcoming.empty:
         return upcoming
 
-    rat = rated(ev)
-    stats = rat.groupby('TICKER').agg(
-        Prints=('STATUS', 'size'),
-        Surprises=('STATUS', lambda s: int(s.isin(SURPRISE_STATUS).sum())),
-        AvgSigma=('SIGMA', 'mean'),
-        AvgRet=('RET(%)', 'mean'),
+    drift = f'FWD_{cfg.horizons[1]}D' if len(cfg.horizons) > 1 else f'FWD_{cfg.horizons[0]}D'
+    stats = ev.groupby('TICKER').agg(
+        Prints=('SIGNAL', 'size'),
+        Crossings=('SIGNAL', lambda s: int(s.isin(ACTIVE_SIGNALS).sum())),
+        Upper=('SIGNAL', lambda s: int((s == SIGNAL_LONG).sum())),
+        Lower=('SIGNAL', lambda s: int((s == SIGNAL_SHORT).sum())),
     ).reset_index()
-    if 'SIGNAL' in ev.columns:
-        sig = (ev.assign(_sig=ev['SIGNAL'].isin(ACTIVE_SIGNALS))
-                 .groupby('TICKER')['_sig'].sum().astype(int)
-                 .rename('Signals').reset_index())
-        stats = stats.merge(sig, on='TICKER', how='left')
+    sig = signalled(ev)
+    if not sig.empty:
+        paid = sig.groupby('TICKER').agg(
+            AvgReact=('RET(%)', 'mean'),
+            AvgDrift=(drift, 'mean') if drift in sig.columns else ('RET(%)', 'mean'),
+        ).reset_index()
+        stats = stats.merge(paid, on='TICKER', how='left')
+    stats['CrossRate'] = np.where(stats['Prints'] > 0,
+                                  stats['Crossings'] / stats['Prints'], np.nan)
+    stats['Tendency'] = np.where(stats.Crossings == 0, '—',
+                                 np.where(stats.Upper == stats.Lower, 'MIXED',
+                                          np.where(stats.Upper > stats.Lower,
+                                                   'POS', 'NEG')))
 
-    sur = surprises(rat)
-    if sur.empty:
-        tend = pd.DataFrame(columns=['TICKER', 'Tendency', 'HitRate'])
-    else:
-        counts = sur.groupby(['TICKER', 'DIR']).size().unstack(fill_value=0)
-        for col in ('POS', 'NEG'):
-            if col not in counts:
-                counts[col] = 0
-        tend = counts.assign(
-            Tendency=np.where(counts.POS == counts.NEG, 'MIXED',
-                              np.where(counts.POS > counts.NEG, 'POS', 'NEG'))
-        ).reset_index()[['TICKER', 'Tendency']]
-        agree = np.where(sur['DIR'] == 'POS', sur['RET(%)'] > 0, sur['RET(%)'] < 0)
-        hits = (sur.assign(_agree=agree).groupby('TICKER')['_agree']
-                   .mean().rename('HitRate').reset_index())
-        tend = tend.merge(hits, on='TICKER', how='left')
-
-    out = (upcoming.merge(stats, on='TICKER', how='left')
-                   .merge(tend, on='TICKER', how='left'))
+    out = upcoming.merge(stats, on='TICKER', how='left')
     if sectors is not None and not sectors.empty:
         cols = ['TICKER'] + [c for c in ('SECTOR', 'MKT_CAP_USD') if c in sectors.columns]
         out = out.merge(sectors[cols].drop_duplicates('TICKER'), on='TICKER', how='left')
     for col, default in (('SECTOR', 'Unclassified'), ('Tendency', '—')):
-        if col in out.columns:
-            out[col] = out[col].fillna(default)
-        else:
-            out[col] = default
+        out[col] = out[col].fillna(default) if col in out.columns else default
     out['DISPLAY_NAME'] = out['NAME'] if 'NAME' in out.columns else out['TICKER']
     out['DAYS_AWAY'] = (out['NEXT_EARNINGS_DATE'] - today).dt.days
     return out

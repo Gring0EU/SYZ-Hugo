@@ -4,8 +4,9 @@
 # without scrolling: a control bar (window · sector · signals only), then four
 # tabs instead of one long column.
 #
-#   Signals   — what fired, and the headline numbers behind it
-#   Breakdown — sector / quarter / drift / split figure, category + signal tables
+#   Signals   — what crossed, and the headline numbers behind it
+#   Breakdown — sector / quarter / drift / direction figure, and the table
+#               comparing crossings against the reports that stayed in range
 #   Detail    — country and industry
 #   Radar     — who reports next, and how they have behaved
 #
@@ -33,8 +34,8 @@ class ConclusionDashboard:
             style={'description_width': 'initial'}, layout={'width': '260px'})
         # The technical view: drop every print that price never confirmed.
         self.ui_signals_only = widgets.Checkbox(
-            value=False, description='Band-confirmed signals only', indent=False,
-            layout={'width': '250px'})
+            value=False, description='Band crossings only', indent=False,
+            layout={'width': '200px'})
         self.ui_caption = widgets.HTML()
 
         self.panels = [widgets.Output() for _ in TAB_TITLES]
@@ -84,7 +85,7 @@ class ConclusionDashboard:
             note.append(f"sector <b>{self.ui_sector.value}</b>")
         if self.ui_signals_only.value:
             ev = signalled(ev)
-            note.append('<b>band-confirmed signals only</b>')
+            note.append('<b>band crossings only</b>')
         return ev, note
 
     # ── rendering ────────────────────────────────────────────────────
@@ -112,10 +113,10 @@ class ConclusionDashboard:
                           f"<b>{label}</b>.", THEME.MANGO_AMBER)
             return
 
-        k = kpis(ev)
-        tbl = category_table(ev, self.cfg)
+        k = kpis(ev, self.cfg)
+        tbl = signal_table(ev, self.cfg)
         extra = (' &nbsp;·&nbsp; ' + ' &nbsp;·&nbsp; '.join(note)) if note else ''
-        self.ui_caption.value = (window_caption(tf, cutoff, anchor, k['total'], k)
+        self.ui_caption.value = (window_caption(tf, cutoff, anchor, k['prints'], k)
                                  + (THEME.note(f"Filtered by{extra}") if note else ''))
 
         # 1 — Signals: the output first, the headline numbers under it.
@@ -124,14 +125,13 @@ class ConclusionDashboard:
             display(HTML(kpi_strip(k, label, drift_summary(tbl, self.cfg))))
             display(HTML(recent_signals_html(ev)))
 
-        # 2 — Breakdown: where the surprises are and what they paid.
+        # 2 — Breakdown: where the crossings are and what they paid.
         with self.panels[1]:
             clear_output(wait=True)
             display(_as_widget(overview_figure(
                 dim_breakdown(ev, sectors, 'SECTOR'), period_breakdown(ev),
                 tbl, k, label, TF_LABELS[tf], self.cfg)))
-            display(HTML(category_table_html(tbl, self.cfg)))
-            display(HTML(signal_table_html(signal_table(ev, self.cfg), self.cfg)))
+            display(HTML(signal_table_html(tbl, self.cfg)))
 
         # 3 — Detail: geography and industry.
         with self.panels[2]:
@@ -145,8 +145,9 @@ class ConclusionDashboard:
         with self.panels[3]:
             clear_output(wait=True)
             display(HTML(radar_table_html(
-                radar_table(ev, sectors, self.store.get(code, 'next_earnings')),
-                TF_LABELS[tf])))
+                radar_table(ev, sectors, self.store.get(code, 'next_earnings'),
+                            cfg=self.cfg),
+                TF_LABELS[tf], self.cfg)))
 
     def _message(self, html: str, colour: str):
         self.ui_caption.value = ''

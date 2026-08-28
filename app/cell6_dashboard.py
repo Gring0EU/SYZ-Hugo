@@ -30,11 +30,12 @@ def _as_widget(fig: go.Figure):
 # HTML BLOCKS
 # ─────────────────────────────────────────────────────────────
 def kpi_strip(k: dict, label: str, note: str) -> str:
-    """Headline cards. 'Earnings prints' is every announcement in the window;
-    everything to its right narrows -- rated, then surprising, then confirmed
-    by the band -- so the strip reads left to right as a funnel and the counts
-    reconcile against the chart."""
+    """Headline cards, all of them about band crossings.
 
+    Reports -> crossings -> the two directions -> what the drift was. EPS does
+    not appear: the dashboard measures what price did after a report, and the
+    crossing is the event.
+    """
     def card(title, value, sub, accent):
         return (f"<div style='flex:1;min-width:132px;background:{THEME.SPACE_BLUE};"
                 f"border-radius:10px;padding:14px 16px;margin:4px;"
@@ -46,48 +47,44 @@ def kpi_strip(k: dict, label: str, note: str) -> str:
                 f"<div style='color:{accent};font-size:12px;font-weight:600'>{sub}</div>"
                 f"</div>")
 
-    rate = fmt(k['rate'] * 100 if np.isfinite(k['rate']) else None, '%', 0)
-    sig_rate = fmt(k['signal_rate'] * 100
-                   if np.isfinite(k.get('signal_rate', np.nan)) else None, '%', 0)
-    prints = k['total'] + k['unrated']
+    rate = fmt(k['cross_rate'] * 100 if np.isfinite(k.get('cross_rate', np.nan))
+               else None, '%', 0)
+    horizon = k.get('drift_horizon', 20)
     cards = "".join([
-        card('Earnings prints', f"{prints}",
-             f"{k['total']} rated · {k['unrated']} unrated", THEME.NEUTRAL),
-        card('Rated events', f"{k['total']}",
-             (f"{k['unrated']} unrated" if k['unrated'] else label), THEME.POSITIVE),
-        card('Surprises', f"{k['surprises']}", f"{rate} of rated", THEME.NEGATIVE),
-        card('Positive', f"{k['n_pos']}",
-             f"react {fmt(k['avg_ret_pos'], '%', 2)}", THEME.POSITIVE),
-        card('Negative', f"{k['n_neg']}",
-             f"react {fmt(k['avg_ret_neg'], '%', 2)}", THEME.NEGATIVE),
-        card('Band surprises', f"{k.get('signals', 0)}",
-             f"{k.get('n_long', 0)} upper / {k.get('n_short', 0)} lower "
-             f"· {sig_rate} of prints", THEME.GOLD_YELLOW),
-        card('Hit-rate', fmt(k['hit'] * 100 if k['hit'] == k['hit'] else None, '%', 0),
-             f"pos {fmt(k['pos_hit']*100 if k['pos_hit']==k['pos_hit'] else None,'%',0)}"
-             f" / neg {fmt(k['neg_hit']*100 if k['neg_hit']==k['neg_hit'] else None,'%',0)}",
+        card('Earnings reports', f"{k['prints']}",
+             f"{k.get('names', 0)} names" + (f" · {k['pending']} pending"
+                                             if k.get('pending') else ''),
              THEME.NEUTRAL),
+        card('Band crossings', f"{k['signals']}", f"{rate} of reports",
+             THEME.GOLD_YELLOW),
+        card('Upper break', f"{k['n_long']}",
+             f"react {fmt(k['avg_ret_long'], '%', 2)}", THEME.POSITIVE),
+        card('Lower break', f"{k['n_short']}",
+             f"react {fmt(k['avg_ret_short'], '%', 2)}", THEME.NEGATIVE),
+        card(f'Drift {horizon}D · upper', fmt(k.get('drift_long'), '%', 2),
+             f"lower {fmt(k.get('drift_short'), '%', 2)}", THEME.POSITIVE),
+        card(f'Drift {horizon}D · no cross', fmt(k.get('drift_quiet'), '%', 2),
+             'the comparison that matters', THEME.NEUTRAL),
     ])
     tail = THEME.note(note) if note else ''
     return (f"<div style='font-family:{THEME.FONT};background:{THEME.WHITE}'>"
             f"<div style='display:flex;flex-wrap:wrap'>{cards}</div>{tail}</div>")
 
 
-def window_caption(tf: str, cutoff, anchor, n_rated: int, k: dict) -> str:
+def window_caption(tf: str, cutoff, anchor, n_prints: int, k: dict) -> str:
     if anchor is None:
         return ''
-    span = (f"most recent print per constituent, as of {anchor:%Y-%m-%d}"
+    span = (f"most recent report per constituent, as of {anchor:%Y-%m-%d}"
             if tf == 'LAST' else f"{cutoff:%Y-%m-%d} → {anchor:%Y-%m-%d}")
-    src = (f" &nbsp;·&nbsp; {k['analyst_share']:.0%} of scores from consensus"
-           if np.isfinite(k.get('analyst_share', np.nan)) else '')
-    pending = (f" &nbsp;·&nbsp; {k['pending']} print(s) too recent to have a "
+    pending = (f" &nbsp;·&nbsp; {k['pending']} report(s) too recent to have a "
                f"completed reaction window" if k.get('pending') else '')
     return THEME.note(
         f"Window: <b>{TF_LABELS[tf]}</b> &nbsp;·&nbsp; {span} &nbsp;·&nbsp; "
-        f"{n_rated} rated prints{src}{pending}"
-        f"<br>Sector, quarter and pos/neg panels count <b>surprise prints "
-        f"only</b> (|SUE| ≥ {CFG.moderate_sigma}); the category and drift "
-        f"tables cover every rated print, In Line included.")
+        f"{n_prints} earnings reports{pending}"
+        f"<br>Every panel counts <b>Bollinger band crossings after an earnings "
+        f"report</b>: the close was inside the {CFG.bb_window}-day "
+        f"±{CFG.bb_sigma}σ band before the print and outside it after. Nothing "
+        f"here is derived from EPS.")
 
 
 def _table(title: str, headers, rows_html: str, footnote: str) -> str:
@@ -115,49 +112,15 @@ def _cell(text, bg, color=None, weight=300, align='right'):
             f"color:{color or THEME.SPACE_BLUE} !important'>{text}</td>")
 
 
-def category_table_html(tbl: pd.DataFrame, cfg: Config = CFG) -> str:
-    if tbl.empty:
-        return ''
-    fwd_cols = [f'FWD_{h}D' for h in cfg.horizons]
-    headers = ([('Category', 'left'), ('N', 'right'), ('Signals', 'right'),
-                ('Avg σ', 'right'), ('React %', 'right'), ('vs Index %', 'right')] +
-               [(f'Fwd {h}D', 'right') for h in cfg.horizons] +
-               [('Hit %', 'right')])
-    rows = ''
-    for i, (_, r) in enumerate(tbl.iterrows()):
-        bg = THEME.WHITE if i % 2 == 0 else THEME.ZEBRA
-        accent = THEME.CATEGORY_COLORS.get(r.Category, THEME.NEUTRAL)
-        cells = (_cell(r.Category, bg, accent, 700, 'left')
-                 + _cell(int(r.N), bg)
-                 + _cell(int(r.get('Signals', 0)), bg)
-                 + _cell(fmt(r.AvgSigma, '', 2), bg)
-                 + _cell(fmt(r.React, '%', 2), bg)
-                 + _cell(fmt(r.Abn, '%', 2), bg)
-                 + "".join(_cell(fmt(r.get(c), '%', 2), bg) for c in fwd_cols)
-                 + _cell(fmt(r.HitRate * 100 if pd.notna(r.HitRate) else None,
-                             '%', 0), bg))
-        rows += f"<tr style='background-color:{bg} !important'>{cells}</tr>"
-    return _table(
-        'Per-category performance — reaction and post-event drift', headers, rows,
-        f"React % = {cfg.reaction_pre}+{cfg.reaction_post} day reaction around the "
-        f"print. vs Index % = same window, benchmark-adjusted. Signals = prints in "
-        f"the bucket that also closed through the {cfg.bb_window}-day "
-        f"±{cfg.bb_sigma}σ Bollinger band. Fwd = mean return measured from the "
-        f"close of the reaction window, so it isolates drift from the announcement "
-        f"jump. Hit % = share of surprises whose reaction agreed with the SUE sign "
-        f"(undefined for In Line).")
-
-
 def signal_table_html(tbl: pd.DataFrame, cfg: Config = CFG) -> str:
     """Confirmed signals against the surprises that never broke the band."""
     if tbl is None or tbl.empty:
         return THEME.note('No rated surprises in this window, so no band '
                           'signals to compare.', THEME.NEUTRAL)
     fwd_cols = [f'FWD_{h}D' for h in cfg.horizons]
-    headers = ([('Group', 'left'), ('N', 'right'), ('Avg SUE σ', 'right'),
-                ('React %', 'right'), ('vs Index %', 'right')] +
-               [(f'Fwd {h}D', 'right') for h in cfg.horizons] +
-               [('EPS agreed %', 'right')])
+    headers = ([('Group', 'left'), ('N', 'right'), ('React %', 'right'),
+                ('vs Index %', 'right')] +
+               [(f'Fwd {h}D', 'right') for h in cfg.horizons])
     tint = {'Positive — closed through the upper band': THEME.POSITIVE,
             'Negative — closed through the lower band': THEME.NEGATIVE}
     rows = ''
@@ -165,12 +128,9 @@ def signal_table_html(tbl: pd.DataFrame, cfg: Config = CFG) -> str:
         bg = THEME.WHITE if i % 2 == 0 else THEME.ZEBRA
         cells = (_cell(r.Group, bg, tint.get(r.Group, THEME.NEUTRAL), 700, 'left')
                  + _cell(int(r.N), bg)
-                 + _cell(fmt(r.AvgSigma, '', 2), bg)
                  + _cell(fmt(r.React, '%', 2), bg)
                  + _cell(fmt(r.Abn, '%', 2), bg)
-                 + "".join(_cell(fmt(r.get(c), '%', 2), bg) for c in fwd_cols)
-                 + _cell(fmt(r.SueAgrees * 100 if pd.notna(r.SueAgrees) else None,
-                             '%', 0), bg))
+                 + "".join(_cell(fmt(r.get(c), '%', 2), bg) for c in fwd_cols))
         rows += f"<tr style='background-color:{bg} !important'>{cells}</tr>"
     return _table(
         'Band surprises — does leaving the range pay?',
@@ -183,15 +143,16 @@ def signal_table_html(tbl: pd.DataFrame, cfg: Config = CFG) -> str:
         f"keep only if the confirmed rows drift further than 'No band cross'.")
 
 
-def radar_table_html(df: pd.DataFrame, tf_label: str) -> str:
+def radar_table_html(df: pd.DataFrame, tf_label: str, cfg: Config = CFG) -> str:
     if df is None or df.empty:
         return THEME.note('No upcoming report dates in the loaded data — '
                           're-run the pipeline to refresh them.', THEME.NEUTRAL)
+    horizon = cfg.horizons[1] if len(cfg.horizons) > 1 else cfg.horizons[0]
     headers = [('Ticker', 'left'), ('Name', 'left'), ('Next report', 'left'),
                ('In', 'right'), ('Sector', 'left'), ('Mkt cap $bn', 'right'),
-               ('Prints', 'right'), ('Surprises', 'right'), ('Signals', 'right'),
-               ('Avg σ', 'right'), ('Avg react %', 'right'), ('Hit %', 'right'),
-               ('Tendency', 'left')]
+               ('Reports', 'right'), ('Crossings', 'right'), ('Cross rate', 'right'),
+               ('Upper', 'right'), ('Lower', 'right'), ('Avg react %', 'right'),
+               (f'Avg {horizon}D %', 'right'), ('Tendency', 'left')]
     rows = ''
     for i, (_, r) in enumerate(df.iterrows()):
         bg = THEME.WHITE if i % 2 == 0 else THEME.ZEBRA
@@ -199,9 +160,11 @@ def radar_table_html(df: pd.DataFrame, tf_label: str) -> str:
         tint = (THEME.POSITIVE if tend == 'POS' else
                 THEME.NEGATIVE if tend == 'NEG' else THEME.NEUTRAL)
         cap = r.get('MKT_CAP_USD')
-        prints_ = r.get('Prints')
-        surp = r.get('Surprises')
-        sigs = r.get('Signals')
+
+        def count(key):
+            v = r.get(key)
+            return '—' if v is None or pd.isna(v) else int(v)
+
         cells = (_cell(r['TICKER'], bg, THEME.SPACE_BLUE, 700, 'left')
                  + _cell(r['DISPLAY_NAME'], bg, align='left')
                  + _cell(f"{pd.Timestamp(r['NEXT_EARNINGS_DATE']):%Y-%m-%d}", bg,
@@ -209,77 +172,82 @@ def radar_table_html(df: pd.DataFrame, tf_label: str) -> str:
                  + _cell(f"{int(r['DAYS_AWAY'])}d", bg)
                  + _cell(r.get('SECTOR', '—'), bg, align='left')
                  + _cell(fmt(cap / 1e9 if pd.notna(cap) else None, '', 1), bg)
-                 + _cell('—' if pd.isna(prints_) else int(prints_), bg)
-                 + _cell('—' if pd.isna(surp) else int(surp), bg)
-                 + _cell('—' if sigs is None or pd.isna(sigs) else int(sigs), bg)
-                 + _cell(fmt(r.get('AvgSigma'), '', 2), bg)
-                 + _cell(fmt(r.get('AvgRet'), '%', 2), bg)
-                 + _cell(fmt(r['HitRate'] * 100 if pd.notna(r.get('HitRate'))
+                 + _cell(count('Prints'), bg)
+                 + _cell(count('Crossings'), bg)
+                 + _cell(fmt(r['CrossRate'] * 100 if pd.notna(r.get('CrossRate'))
                              else None, '%', 0), bg)
+                 + _cell(count('Upper'), bg)
+                 + _cell(count('Lower'), bg)
+                 + _cell(fmt(r.get('AvgReact'), '%', 2), bg)
+                 + _cell(fmt(r.get('AvgDrift'), '%', 2), bg)
                  + _cell(tend, bg, tint, 700, 'left'))
         rows += f"<tr style='background-color:{bg} !important'>{cells}</tr>"
     return _table(
-        'Upcoming earnings radar — next reports vs historical tendency', headers,
-        rows,
-        f"Report dates are Bloomberg estimates and can move. History columns are "
-        f"computed over the selected window ({tf_label}); Signals counts past "
-        f"prints where a surprise was confirmed by a Bollinger band cross; "
-        f"Tendency is the majority direction of that name's past surprises.")
+        'Upcoming reports — how often this name leaves its range', headers, rows,
+        f"Report dates are Bloomberg estimates and can move. History is computed "
+        f"over the selected window ({tf_label}): Crossings counts reports whose "
+        f"close broke the {cfg.bb_window}-day band, Cross rate is that as a share "
+        f"of the name's reports, and Tendency is the direction it breaks more "
+        f"often.")
 
 
-def recent_signals_html(ev: pd.DataFrame, n: int = 10) -> str:
-    """The last N band-confirmed signals: the app's actual output, at the top
-    of the page instead of buried under four figures."""
+def recent_signals_html(ev: pd.DataFrame, n: int = 12) -> str:
+    """The last N band crossings: the app's actual output, at the top of the
+    page rather than buried under the figures."""
     sig = signalled(ev)
     if sig is None or sig.empty:
         return THEME.note(
-            f"No band-confirmed signals in this window — every surprise either "
-            f"stayed inside the {CFG.bb_window}-day band or broke it against "
-            f"the surprise.", THEME.NEUTRAL)
+            f"No band crossings in this window — every report left the price "
+            f"inside its {CFG.bb_window}-day ±{CFG.bb_sigma}σ range.",
+            THEME.NEUTRAL)
+    total = len(sig)
     sig = sig.sort_values('DATE', ascending=False).head(n)
     headers = [('Reported', 'left'), ('Ticker', 'left'), ('Name', 'left'),
-               ('Signal', 'left'), ('Band', 'left'), ('SUE σ', 'right'),
-               ('React %', 'right'), ('Fwd 20D %', 'right')]
+               ('Direction', 'left'), ('Band crossed', 'left'),
+               ('Close', 'right'), ('React %', 'right'), ('Fwd 20D %', 'right')]
     rows = ''
     for i, (_, r) in enumerate(sig.iterrows()):
         bg = THEME.WHITE if i % 2 == 0 else THEME.ZEBRA
-        tint = THEME.POSITIVE if r['SIGNAL'] == SIGNAL_LONG else THEME.NEGATIVE
+        up = r['SIGNAL'] == SIGNAL_LONG
+        tint = THEME.POSITIVE if up else THEME.NEGATIVE
         rows += (f"<tr style='background-color:{bg} !important'>"
                  + _cell(f"{pd.Timestamp(r['DATE']):%Y-%m-%d}", bg, align='left')
                  + _cell(r['TICKER'], bg, THEME.SPACE_BLUE, 700, 'left')
                  + _cell(r.get('NAME', '—'), bg, align='left')
-                 + _cell(r['SIGNAL'], bg, tint, 700, 'left')
-                 + _cell(f"{r['BB_CROSS']} band", bg, align='left')
-                 + _cell(fmt(r.get('SIGMA'), '', 2), bg)
+                 + _cell('Positive' if up else 'Negative', bg, tint, 700, 'left')
+                 + _cell(f"{str(r['BB_CROSS']).lower()} band", bg, align='left')
+                 + _cell(fmt(r.get('PRICE_AT_EVENT'), '', 2), bg)
                  + _cell(fmt(r.get('RET(%)'), '%', 2), bg)
                  + _cell(fmt(r.get('FWD_20D'), '%', 2), bg)
                  + "</tr>")
     return _table(
-        f'Latest band surprises — {len(signalled(ev))} in this window',
+        f'Latest band crossings after an earnings report — {total} in this window',
         headers, rows,
-        f"An earnings surprise whose close crossed the {CFG.bb_window}-day "
-        f"±{CFG.bb_sigma}σ band in the same direction during the reaction "
-        f"window. React % is the announcement reaction; Fwd 20D % is the drift "
-        f"measured from the close of that window.")
+        f"The close was inside the {CFG.bb_window}-day ±{CFG.bb_sigma}σ band "
+        f"before the report and outside it after: through the upper band is a "
+        f"positive surprise, through the lower a negative one. React % is the "
+        f"reaction around the print; Fwd 20D % is the drift measured from the "
+        f"close of that window.")
 
 
 # ─────────────────────────────────────────────────────────────
 # FIGURES
 # ─────────────────────────────────────────────────────────────
-def overview_figure(sector_bd, period_bd, tbl, k, label, tf_label,
+def overview_figure(sector_bd, period_bd, sig_tbl, k, label, tf_label,
                     cfg: Config = CFG) -> go.Figure:
+    """Where the crossings are, when they happened, and what they paid."""
     fig = make_subplots(
         rows=2, cols=2,
-        subplot_titles=('Surprise prints by GICS sector',
-                        'Surprise prints by quarter',
-                        'Post-event drift by severity — all rated prints',
-                        'Surprise prints: positive vs negative'),
+        subplot_titles=('Band crossings by GICS sector',
+                        'Band crossings by quarter',
+                        'Mean return after the report, by what the band did',
+                        'Crossing direction'),
         specs=[[{'type': 'xy'}, {'type': 'xy'}],
                [{'type': 'xy'}, {'type': 'domain'}]],
         horizontal_spacing=0.12, vertical_spacing=0.16)
 
-    for col, colour, name, show in (('POS', THEME.POSITIVE, 'Positive', True),
-                                    ('NEG', THEME.NEGATIVE, 'Negative', True)):
+    for col, colour, name, show in (('POS', THEME.POSITIVE, 'Upper break', True),
+                                    ('NEG', THEME.NEGATIVE, 'Lower break', True)):
         fig.add_trace(go.Bar(y=sector_bd.index, x=sector_bd.get(col, []),
                              name=name, orientation='h', marker_color=colour,
                              legendgroup=name, showlegend=show), 1, 1)
@@ -287,17 +255,27 @@ def overview_figure(sector_bd, period_bd, tbl, k, label, tf_label,
                              name=name, marker_color=colour,
                              legendgroup=name, showlegend=False), 1, 2)
 
-    cats = [c for c in CAT_ORDER if c in set(tbl.Category)] if not tbl.empty else []
-    sub = tbl.set_index('Category').reindex(cats) if cats else pd.DataFrame()
-    for h in cfg.horizons:
-        col = f'FWD_{h}D'
-        if not sub.empty and col in sub.columns:
-            fig.add_trace(go.Bar(x=cats, y=sub[col], name=f'{h}D',
-                                 marker_color=THEME.HORIZON_COLORS.get(
-                                     h, THEME.NEUTRAL)), 2, 1)
+    # The third panel is the whole argument: a break that keeps drifting, next
+    # to the reports that never left the range.
+    order = [SIGNAL_GROUP_UP, SIGNAL_GROUP_DOWN, SIGNAL_GROUP_NONE]
+    short = {SIGNAL_GROUP_UP: 'Upper break', SIGNAL_GROUP_DOWN: 'Lower break',
+             SIGNAL_GROUP_NONE: 'No cross'}
+    groups = [g for g in order if not sig_tbl.empty and g in set(sig_tbl.Group)]
+    sub = sig_tbl.set_index('Group').reindex(groups) if groups else pd.DataFrame()
+    if not sub.empty:
+        fig.add_trace(go.Bar(x=[short[g] for g in groups], y=sub['React'],
+                             name='Reaction', marker_color=THEME.BLUEBERRY_BLUE),
+                      2, 1)
+        for h in cfg.horizons:
+            col = f'FWD_{h}D'
+            if col in sub.columns:
+                fig.add_trace(go.Bar(x=[short[g] for g in groups], y=sub[col],
+                                     name=f'{h}D drift',
+                                     marker_color=THEME.HORIZON_COLORS.get(
+                                         h, THEME.NEUTRAL)), 2, 1)
 
-    fig.add_trace(go.Pie(labels=['Positive', 'Negative'],
-                         values=[k['n_pos'], k['n_neg']], hole=.55,
+    fig.add_trace(go.Pie(labels=['Upper break', 'Lower break'],
+                         values=[k['n_long'], k['n_short']], hole=.55,
                          marker_colors=[THEME.POSITIVE, THEME.NEGATIVE],
                          sort=False, textinfo='label+percent',
                          showlegend=False), 2, 2)
@@ -305,20 +283,21 @@ def overview_figure(sector_bd, period_bd, tbl, k, label, tf_label,
     fig.update_layout(**THEME.layout(
         height=760, barmode='group', bargap=0.25,
         margin=dict(l=20, r=20, t=90, b=20),
-        title=THEME.title(f"<b>{label}</b> — {tf_label} earnings-surprise conclusion")))
+        title=THEME.title(f"<b>{label}</b> — {tf_label} band crossings after "
+                          f"earnings")))
     THEME.style_axes(fig)
     fig.update_yaxes(row=1, col=1, automargin=True)
     fig.update_xaxes(row=1, col=2, tickangle=-45)
-    fig.update_yaxes(row=2, col=1, title_text='Mean fwd return %')
+    fig.update_yaxes(row=2, col=1, title_text='Mean return %')
     return fig
 
 
 def detail_figure(country_bd, industry_bd, label, tf_label) -> go.Figure:
     fig = make_subplots(rows=1, cols=2, horizontal_spacing=0.16,
-                        subplot_titles=('Surprises by country',
-                                        'Surprises by industry (top 12)'))
-    for col, colour, name in (('POS', THEME.POSITIVE, 'Positive'),
-                              ('NEG', THEME.NEGATIVE, 'Negative')):
+                        subplot_titles=('Band crossings by country',
+                                        'Band crossings by industry (top 12)'))
+    for col, colour, name in (('POS', THEME.POSITIVE, 'Upper break'),
+                              ('NEG', THEME.NEGATIVE, 'Lower break')):
         fig.add_trace(go.Bar(y=country_bd.index, x=country_bd.get(col, []),
                              name=name, orientation='h', marker_color=colour,
                              legendgroup=name, showlegend=True), 1, 1)

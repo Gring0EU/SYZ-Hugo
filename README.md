@@ -75,11 +75,22 @@ the whole vocabulary.
 
 ## Reading the dashboard
 
-Controls: window · sector · band-confirmed signals only. Four tabs:
+The dashboard measures **Bollinger band crossings that follow an earnings
+report**, and nothing else — no EPS, no SUE, no consensus. A report either
+moved price out of its own volatility range or it did not, and every panel
+describes the two populations that follow.
 
-* **Signals** — KPI strip and the latest band-confirmed signals
-* **Breakdown** — sector/quarter/drift figure, per-category table, and the
-  signal table comparing confirmed signals against surprises that never broke
-  the band
-* **Detail** — country and industry
-* **Radar** — upcoming reporters and their history
+Controls: window · sector · band crossings only. Four tabs:
+
+* **Signals** — reports, crossings, upper/lower counts with their reactions,
+  drift for each direction against the drift of reports that stayed in range,
+  and the latest crossings with date, direction, band, close, reaction and drift
+* **Breakdown** — crossings by sector and by quarter, mean return by what the
+  band did (upper / lower / no cross), the direction split, and the table
+  comparing all three groups
+* **Detail** — crossings by country and industry
+* **Radar** — upcoming reporters with how often each leaves its range, which
+  way, and what it paid
+
+SUE stays in the event table as chart context only — the marker symbols in the
+gallery — and never reaches these numbers.
