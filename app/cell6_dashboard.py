@@ -30,6 +30,11 @@ def _as_widget(fig: go.Figure):
 # HTML BLOCKS
 # ─────────────────────────────────────────────────────────────
 def kpi_strip(k: dict, label: str, note: str) -> str:
+    """Headline cards. 'Earnings prints' is every announcement in the window;
+    everything to its right narrows -- rated, then surprising, then confirmed
+    by the band -- so the strip reads left to right as a funnel and the counts
+    reconcile against the chart."""
+
     def card(title, value, sub, accent):
         return (f"<div style='flex:1;min-width:132px;background:{THEME.SPACE_BLUE};"
                 f"border-radius:10px;padding:14px 16px;margin:4px;"
@@ -44,7 +49,10 @@ def kpi_strip(k: dict, label: str, note: str) -> str:
     rate = fmt(k['rate'] * 100 if np.isfinite(k['rate']) else None, '%', 0)
     sig_rate = fmt(k['signal_rate'] * 100
                    if np.isfinite(k.get('signal_rate', np.nan)) else None, '%', 0)
+    prints = k['total'] + k['unrated']
     cards = "".join([
+        card('Earnings prints', f"{prints}",
+             f"{k['total']} rated · {k['unrated']} unrated", THEME.NEUTRAL),
         card('Rated events', f"{k['total']}",
              (f"{k['unrated']} unrated" if k['unrated'] else label), THEME.POSITIVE),
         card('Surprises', f"{k['surprises']}", f"{rate} of rated", THEME.NEGATIVE),
@@ -74,8 +82,12 @@ def window_caption(tf: str, cutoff, anchor, n_rated: int, k: dict) -> str:
            if np.isfinite(k.get('analyst_share', np.nan)) else '')
     pending = (f" &nbsp;·&nbsp; {k['pending']} print(s) too recent to have a "
                f"completed reaction window" if k.get('pending') else '')
-    return THEME.note(f"Window: <b>{TF_LABELS[tf]}</b> &nbsp;·&nbsp; {span} "
-                      f"&nbsp;·&nbsp; {n_rated} rated prints{src}{pending}")
+    return THEME.note(
+        f"Window: <b>{TF_LABELS[tf]}</b> &nbsp;·&nbsp; {span} &nbsp;·&nbsp; "
+        f"{n_rated} rated prints{src}{pending}"
+        f"<br>Sector, quarter and pos/neg panels count <b>surprise prints "
+        f"only</b> (|SUE| ≥ {CFG.moderate_sigma}); the category and drift "
+        f"tables cover every rated print, In Line included.")
 
 
 def _table(title: str, headers, rows_html: str, footnote: str) -> str:
@@ -259,8 +271,10 @@ def overview_figure(sector_bd, period_bd, tbl, k, label, tf_label,
                     cfg: Config = CFG) -> go.Figure:
     fig = make_subplots(
         rows=2, cols=2,
-        subplot_titles=('Surprises by GICS sector', 'Surprises by quarter',
-                        'Post-event drift by severity', 'Positive vs negative'),
+        subplot_titles=('Surprise prints by GICS sector',
+                        'Surprise prints by quarter',
+                        'Post-event drift by severity — all rated prints',
+                        'Surprise prints: positive vs negative'),
         specs=[[{'type': 'xy'}, {'type': 'xy'}],
                [{'type': 'xy'}, {'type': 'domain'}]],
         horizontal_spacing=0.12, vertical_spacing=0.16)
