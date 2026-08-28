@@ -1,58 +1,67 @@
-# Spread variation since 14 July 2026
+# Spread variation since 14 July 2026 — USD and EUR lists
 
-`SYZ_Spread_Since_14Jul2026.xlsx` — a clean, **formula-only** workbook (no macro, no VBA)
-that shows the spread move of every bond since a fixed anchor date, plus the Bloomberg
-company description and reference data.
+`Spread_Variation_USD_EUR_since_14Jul2026.xlsx` — one sheet, two tables, all Bloomberg
+formulas. No macro.
 
-## Sheets
+Scope is exactly the two lists supplied: **18 USD bonds** and **47 EUR bonds**.
 
-| Sheet | What it is |
+## Layout
+
+| | |
 |---|---|
-| **Spread Monitor** | One row per bond (763 ISINs). Everything except column A is a formula. Filter/sort with the arrows on row 6. |
-| **Top & Bottom** | Top 10 wideners and Top 10 tighteners per currency (USD, EUR, GBP, CHF), pulled live from Spread Monitor. |
-| **Company_desc** | Input data — the ISIN → company-description library from the original workbook. |
-| **SYZ_static** | Input data — the SYZ-internal fields (SYZ view, Ind LV., Bond Classification, Tax Group, rating) that are not Bloomberg fields. |
-| **ReadMe** | Legend and field list, inside the workbook. |
+| `B2` | Anchor date, **14.07.2026** — blue on yellow, the only input cell. Both tables pass it to Bloomberg as `SETTLE_DT`; the two section titles restate it via `TEXT($B$2,"dd.mm.yyyy")`. |
+| `tblUSD` (rows 6–30) | The 18 USD ISINs + 6 spare rows. |
+| `tblEUR` (rows 44–97) | The 47 EUR ISINs + 6 spare rows. |
+| Summary under each table | Bonds priced, average and median spread change, wider/tighter split, and the biggest widener and tightener with the issuer name. |
 
-## How it works
+Both are real Excel tables, so each has its own filter arrows and can be sorted
+independently. Spare rows are live: paste an ISIN into column A and the row fills itself.
 
-`Spread Monitor!B2` holds the anchor date (**14.07.2026**), blue on yellow — the only input
-cell. Every "since" column passes it to Bloomberg as `SETTLE_DT`, and the four affected
-headers rewrite themselves via `TEXT($B$2,"dd.mm.yyyy")`, so changing that one cell re-bases
-the whole analysis.
+## Columns
 
-Columns:
-
-| Col | Source |
+| Col | Formula |
 |---|---|
-| B Company | `PROPER(BDP(ISIN & " Corp","NAME"))` |
-| C Company description | `INDEX/MATCH` on Company_desc, falling back to SYZ_static |
-| D SYZ view / I Classification | `INDEX/MATCH` on SYZ_static |
-| E Sector / F Country / G Ccy / J Structure | `BDP("INDUSTRY_SECTOR")`, `PROPER(BDP("COUNTRY_FULL_NAME"))`, `BDP("CRNCY")`, `BDP("PAYMENT_RANK")` |
-| H Rating | SYZ_static lookup, falling back to `BDP("RTG_SP")` |
-| K–P | `BDP` for `CPN`, `MATURITY`, `MIN_PIECE`/1000, `PX_LAST`, `YAS_BOND_YLD` (flag 15), `YAS_MOD_DUR` |
-| Q Spread today | `BDP("YAS_OAS_SPRD")` |
-| R Spread on anchor | `BDP("YAS_OAS_SPRD","SETTLE_DT",$B$2)` |
-| S Spread change | `Q − R` (plain subtraction, not a third Bloomberg call) |
-| T/U YTW on anchor, YTW change | `BDP("YAS_BOND_YLD",…,"SETTLE_DT",$B$2)` and `O − T` |
-| V–Y | Hidden ranking helpers: rank within currency via `COUNTIFS`, with a running `COUNTIFS` tie-break so equal moves never share a rank, and a `ccy|rank` key for the Top & Bottom lookups. |
+| B Security | `BDP(ISIN & " Corp","SECURITY_DES")` |
+| C Company | `PROPER(BDP("NAME"))` |
+| D Company description | `BDP("CIE_DES")` |
+| E / F Sector, Industry group | `BDP("INDUSTRY_SECTOR")` / `BDP("INDUSTRY_GROUP")` |
+| G Country | `PROPER(BDP("COUNTRY_FULL_NAME"))` |
+| H Ccy | `BDP("CRNCY")` |
+| I Rating (comp.) | `BDP("BB_COMPOSITE")`, falling back to `BDP("RTG_SP")` |
+| J Structure | `BDP("PAYMENT_RANK")` |
+| K / L Coupon, Maturity | `BDP("CPN")` / `BDP("MATURITY")` |
+| M Den. (k) | `BDP("MIN_PIECE")/1000` |
+| N Price | `BDP("PX_LAST")` |
+| O YTW (%) | `BDP("YAS_BOND_YLD","YAS_YLD_FLAG=15")` |
+| P Mod. dur. | `BDP("YAS_MOD_DUR")` |
+| Q Spread today (bp) | `BDP("YAS_OAS_SPRD")` |
+| R Spread @ anchor (bp) | `BDP("YAS_OAS_SPRD","SETTLE_DT",$B$2)` |
+| **S Spread change (bp)** | `Q − R` — red when wider, green when tighter |
+| T YTW @ anchor (%) | `BDP("YAS_BOND_YLD","YAS_YLD_FLAG=15","SETTLE_DT",$B$2)` |
+| U YTW change (%) | `O − T` |
 
-Every formula is wrapped in `IF($A="","",…)`, so the rows below the last ISIN stay empty
-instead of filling with errors. Formulas run to row 850 — paste new ISINs into column A and
-they populate themselves.
+Every formula is wrapped in `IF($A="","",…)` so spare rows stay blank. The two change
+columns are subtractions of the visible columns, not extra Bloomberg calls, so the three
+numbers on a row always agree.
+
+## Notes
+
+- Open with the Bloomberg add-in connected and press **Ctrl+Alt+F9**. `_xll.BDP` resolves
+  only on a terminal, so the cells read blank until then.
+- The `"since"` columns are headed `@ anchor` rather than a spelled-out date: an Excel table
+  header cannot hold a formula, so this way nothing goes stale when you change `B2`.
+- `CIE_DES` and `BB_COMPOSITE` are not populated for every issuer; both are wrapped in
+  `IFERROR` so one missing field cannot blank a row.
+- Only 1 of these 65 ISINs appears in the description library from the old workbook, so the
+  descriptions come from Bloomberg rather than that lookup.
 
 ## Verification
 
-LibreOffice is non-functional in the build container (a three-cell file times out), so the
-workbook could not be recalculated the usual way. Instead the logic was checked with the
-`formulas` Excel engine on a 90-bond copy with the Bloomberg calls replaced by seeded data
-(`verify.py`, `verify2.py`):
+LibreOffice is non-functional in the build container, so the workbook could not be
+recalculated the usual way. `verify_two.py` instead evaluates it with the `formulas` Excel
+engine on a copy with the Bloomberg calls replaced by seeded numbers: both summary blocks —
+counts, average, median, wider/tighter split, max/min and the two `INDEX/MATCH` "which bond"
+lines — matched an independent computation, and every spare row evaluated blank.
+The ISINs in the file were diffed against the supplied lists: exact match, in order.
 
-- **80/80** ranked rows across 8 blocks matched an independently computed ranking, ties included.
-- **360/360** lookup cells (description, SYZ view, classification, rating) matched.
-- Rows without an ISIN evaluated to blank in every guarded column.
-
-The `_xll.BDP` values themselves cannot be resolved off a Bloomberg terminal — open the file
-with the add-in connected and press Ctrl+Alt+F9.
-
-`build_clean.py` regenerates the workbook from the original `USD.xlsm` data.
+`build_two.py` regenerates the workbook from `lists.json`.
