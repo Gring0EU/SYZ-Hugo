@@ -15,8 +15,7 @@ a copy-paste that loses its tail fails loudly instead of silently.
 | 2 | `app/cell2_ingest.py` | Step 1 — live ingest (constituents, prices, EPS, dates, GICS) |
 | 3 | `app/cell3_events.py` | Step 2 — SUE scoring, Bollinger bands, band signal, event table |
 | 4 | `app/cell4_analytics.py` | Aggregations, catalog and search |
-| 5 | `app/cell5_gallery.py` | Step 3 — gallery class |
-| 5b | `app/cell5b_gallery_methods.py` | Step 3 — meta panel, hover, interaction |
+| 5 | `app/cell5_gallery.py` | Step 3 — per-asset chart gallery |
 | 6 | `app/cell6_dashboard.py` | Step 4 — cards, tables, figures |
 | 6b | `app/cell6b_dashboard_ui.py` | Step 4 — tabbed panel with window/sector/signal controls |
 | 7 | `app/cell7_app.py` | Pipeline orchestration and app shell |
@@ -49,10 +48,10 @@ NaN and every mean skips them.
 ## Reading the chart
 
 Close, the 100-day band and its shaded interior, MA200, and one marker per
-print coloured by surprise severity. A signalled print carries a solid coloured
-guide on its announcement date, an enlarged halo, and a label with direction,
-date and SUE. Two chart toggles: **Signalled prints only** and **Signal
-labels**. The y-axis fits the band as well as the price, so nothing is clipped.
+print coloured by surprise severity — the same six traces the chart has always
+had. A signalled print is emphasis on its own marker: a thick coloured outline,
+a solid coloured guide on the announcement date, and a dated label. The y-axis
+fits the band as well as the price, so the band is never clipped.
 
 ## Reading the dashboard
 
