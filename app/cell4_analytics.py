@@ -359,10 +359,9 @@ def radar_table(ev: pd.DataFrame, sectors: pd.DataFrame,
 # ══════════════════════════════════════════════════════════════════════
 CATALOG_COLUMNS = [
     'CODE', 'INDEX', 'TICKER', 'ID', 'EXCHANGE', 'NAME', 'SECTOR', 'COUNTRY',
-    'MKT_CAP_USD', 'N_PRINTS', 'N_SURPRISES', 'SURPRISE_RATE', 'N_SIGNALS',
-    'LAST_DATE', 'LAST_CATEGORY', 'LAST_STATUS', 'LAST_DIR', 'LAST_SIGMA',
-    'LAST_RET', 'LAST_SIGNAL', 'LAST_CROSS', 'NEXT_DATE', 'DAYS_SINCE',
-    'DAYS_TO_NEXT',
+    'MKT_CAP_USD', 'N_PRINTS', 'N_SIGNALS', 'N_UPPER', 'N_LOWER', 'CROSS_RATE',
+    'LAST_DATE', 'LAST_RET', 'LAST_SIGNAL', 'LAST_CROSS', 'NEXT_DATE',
+    'DAYS_SINCE', 'DAYS_TO_NEXT',
 ]
 _SEARCH_COLUMNS = ['_TICKER_F', '_NAME_F', '_NUM', '_KEY']
 
@@ -386,30 +385,27 @@ def _catalog_for(store, code: str, cfg: Config = CFG) -> pd.DataFrame:
     if events is None or events.empty:
         return pd.DataFrame(columns=CATALOG_COLUMNS)
     ev = prepare(events)
-    rat = rated(ev)
 
     per_name = ev.sort_values('DATE').groupby('TICKER')
     latest = per_name.tail(1).set_index('TICKER')
-    counts = rat.groupby('TICKER').agg(
-        N_PRINTS=('STATUS', 'size'),
-        N_SURPRISES=('STATUS', lambda s: int(s.isin(SURPRISE_STATUS).sum())))
-    # Band crossings are counted over every print: an unrated print can still
-    # leave its range, and that is the event.
-    counts = counts.join(ev.groupby('TICKER')['SIGNAL'].apply(
-        lambda s: int(s.isin(ACTIVE_SIGNALS).sum())).rename('N_SIGNALS'))
+    # Counted over every report: the band cross is the event, and a report with
+    # no usable EPS history can still take price out of its range.
+    counts = ev.groupby('TICKER').agg(
+        N_PRINTS=('SIGNAL', 'size'),
+        N_SIGNALS=('SIGNAL', lambda s: int(s.isin(ACTIVE_SIGNALS).sum())),
+        N_UPPER=('SIGNAL', lambda s: int((s == SIGNAL_LONG).sum())),
+        N_LOWER=('SIGNAL', lambda s: int((s == SIGNAL_SHORT).sum())))
 
     base = pd.DataFrame({'TICKER': sorted(ev['TICKER'].unique())})
     base['CODE'] = code
     base['INDEX'] = cfg.label(code)
     base = base.join(counts, on='TICKER')
-    for col in ('N_PRINTS', 'N_SURPRISES', 'N_SIGNALS'):
+    for col in ('N_PRINTS', 'N_SIGNALS', 'N_UPPER', 'N_LOWER'):
         base[col] = base[col].fillna(0).astype(int)
-    base['SURPRISE_RATE'] = np.where(base['N_PRINTS'] > 0,
-                                     base['N_SURPRISES'] / base['N_PRINTS'], np.nan)
+    base['CROSS_RATE'] = np.where(base['N_PRINTS'] > 0,
+                                  base['N_SIGNALS'] / base['N_PRINTS'], np.nan)
 
-    for col, src in (('LAST_DATE', 'DATE'), ('LAST_CATEGORY', 'CATEGORY'),
-                     ('LAST_STATUS', 'STATUS'), ('LAST_DIR', 'DIR'),
-                     ('LAST_SIGMA', 'SIGMA'), ('LAST_RET', 'RET(%)'),
+    for col, src in (('LAST_DATE', 'DATE'), ('LAST_RET', 'RET(%)'),
                      ('LAST_SIGNAL', 'SIGNAL'), ('LAST_CROSS', 'BB_CROSS'),
                      ('NAME', 'NAME'), ('ID', 'ID')):
         base[col] = base['TICKER'].map(latest[src]) if src in latest.columns else np.nan
@@ -521,49 +517,40 @@ def search_catalog(catalog: pd.DataFrame, query: str,
 # DAYS_SINCE / DAYS_TO_NEXT rather than a hard-coded date.
 ASSET_FILTERS = [
     ('All constituents',                    'ALL'),
-    ('Latest print · surprise',             'LAST_SURPRISE'),
-    ('Latest print · positive surprise',    'LAST_POS'),
-    ('Latest print · negative surprise',    'LAST_NEG'),
-    ('Latest print · major surprise',       'LAST_MAJOR'),
-    ('Latest print · band signal',          'LAST_SIGNAL'),
-    ('Latest print · long signal',          'LAST_LONG'),
-    ('Latest print · short signal',         'LAST_SHORT'),
+    ('Latest report · crossed a band',      'LAST_SIGNAL'),
+    ('Latest report · upper break',         'LAST_LONG'),
+    ('Latest report · lower break',         'LAST_SHORT'),
+    ('Latest report · stayed in range',     'LAST_NONE'),
     ('Reported in last 30 days',            'RECENT_30'),
     ('Reporting in next 30 days',           'UPCOMING_30'),
-    ('Frequent surprisers (≥50%)',          'FREQUENT'),
+    ('Frequent crossers (≥25% of reports)', 'FREQUENT'),
 ]
 
-# Filters that ask a question about the most recent print. Picking one means
-# "show me who just did this", so the chart opens on that print rather than on
-# five years of history the question was not about.
-LATEST_FILTERS = {'LAST_SURPRISE', 'LAST_POS', 'LAST_NEG', 'LAST_MAJOR',
-                  'LAST_SIGNAL', 'LAST_LONG', 'LAST_SHORT'}
+# Filters that ask a question about the most recent report. Picking one means
+# "show me who just did this", and the chart marks that report so the answer is
+# identifiable without hiding the rest of the history.
+LATEST_FILTERS = {'LAST_SIGNAL', 'LAST_LONG', 'LAST_SHORT', 'LAST_NONE'}
 
 
 def apply_asset_filter(catalog: pd.DataFrame, key: str) -> pd.DataFrame:
+    """Narrow the result list. Every question here is about the band."""
     if catalog.empty or key == 'ALL':
         return catalog
     c = catalog
-    if key == 'LAST_SURPRISE':
-        return c[c.LAST_STATUS.isin(SURPRISE_STATUS)]
-    if key == 'LAST_POS':
-        return c[c.LAST_STATUS.isin(SURPRISE_STATUS) & (c.LAST_DIR == 'POS')]
-    if key == 'LAST_NEG':
-        return c[c.LAST_STATUS.isin(SURPRISE_STATUS) & (c.LAST_DIR == 'NEG')]
-    if key == 'LAST_MAJOR':
-        return c[c.LAST_STATUS == STATUS_MAJOR]
     if key == 'LAST_SIGNAL':
         return c[c.LAST_SIGNAL.isin(ACTIVE_SIGNALS)]
     if key == 'LAST_LONG':
         return c[c.LAST_SIGNAL == SIGNAL_LONG]
     if key == 'LAST_SHORT':
         return c[c.LAST_SIGNAL == SIGNAL_SHORT]
+    if key == 'LAST_NONE':
+        return c[c.LAST_SIGNAL == SIGNAL_NONE]
     if key == 'RECENT_30':
         return c[c.DAYS_SINCE.between(0, 30)]
     if key == 'UPCOMING_30':
         return c[c.DAYS_TO_NEXT.between(0, 30)]
     if key == 'FREQUENT':
-        return c[(c.SURPRISE_RATE >= 0.5) & (c.N_PRINTS >= 4)]
+        return c[(c.CROSS_RATE >= 0.25) & (c.N_PRINTS >= 4)]
     return c
 
 
@@ -572,8 +559,8 @@ ASSET_SORTS = [
     ('Ticker A–Z',        'TICKER'),
     ('Company A–Z',       'NAME'),
     ('Market cap',        'CAP'),
-    ('Latest surprise |σ|', 'SIGMA'),
-    ('Band signals',      'SIGNALS'),
+    ('Band crossings',    'SIGNALS'),
+    ('Cross rate',        'CROSS_RATE'),
     ('Next report date',  'NEXT'),
 ]
 
@@ -588,15 +575,13 @@ def sort_catalog(catalog: pd.DataFrame, key: str) -> pd.DataFrame:
             return catalog
         key = 'CAP'
     specs = {
-        'TICKER':  (['_TICKER_F'], [True]),
-        'NAME':    (['_NAME_F'], [True]),
-        'CAP':     (['MKT_CAP_USD'], [False]),
-        'SIGNALS': (['N_SIGNALS', 'MKT_CAP_USD'], [False, False]),
-        'NEXT':    (['DAYS_TO_NEXT'], [True]),
+        'TICKER':     (['_TICKER_F'], [True]),
+        'NAME':       (['_NAME_F'], [True]),
+        'CAP':        (['MKT_CAP_USD'], [False]),
+        'SIGNALS':    (['N_SIGNALS', 'MKT_CAP_USD'], [False, False]),
+        'CROSS_RATE': (['CROSS_RATE', 'N_PRINTS'], [False, False]),
+        'NEXT':       (['DAYS_TO_NEXT'], [True]),
     }
-    if key == 'SIGMA':
-        return catalog.assign(_ABS=catalog['LAST_SIGMA'].abs()).sort_values(
-            '_ABS', ascending=False, na_position='last').drop(columns='_ABS')
     cols, asc = specs.get(key, (['_TICKER_F'], [True]))
     return catalog.sort_values(cols, ascending=asc, na_position='last')
 

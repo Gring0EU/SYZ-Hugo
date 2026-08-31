@@ -54,24 +54,22 @@ NaN and every mean skips them.
 ## Reading the chart
 
 Close, the 100-day band and its shaded interior, MA200, and one marker per
-print. **Every quarterly report is a light vertical bar** behind the price:
-neutral grey where the print stayed inside the band, green where it closed
-through the upper band, orange through the lower — so the earnings calendar and
-its outcomes read at a glance. Crossings also carry a dated `▲ Positive` /
-`▼ Negative` label. Marker symbol and size are the EPS context (direction and
-severity of the SUE), not the surprise itself. One tooltip for the point under
-the cursor. The y-axis fits the band as well as the price, so the band is never
-clipped.
+earnings report. **Every report is a light vertical bar** behind the price,
+tinted by what the band did: neutral where the price stayed inside the range,
+green where the close broke out through the upper band, orange through the
+lower. Markers follow the same three colours — ▲ upper break, ▼ lower break,
+• stayed in range — and crossings carry a dated `▲ Positive` / `▼ Negative`
+label. The latest report has a dark ring, a dashed edge and its own label.
+The y-axis fits the band as well as the price, so the band is never clipped.
 
-The gallery filters all ask about the **latest print** ("Latest print · major
-surprise"): they choose which *names* appear in the result list. The chart
-always shows every print in the plotted window — the latest one is ringed in
-Space Blue, carries a dashed guide and a `Latest · <category> · <date>` label,
-so the print the filter asked about is identifiable without hiding the rest.
+The gallery filters ask only about the band: crossed a band, upper break,
+lower break, stayed in range, plus recency and frequent crossers. They choose
+which *names* are listed; the chart always shows the full history of every
+report for the selected name, with the latest one marked. Sorts are market cap,
+band crossings, cross rate, ticker, name and next report date.
 
-Direction is the marker symbol, severity is its size, and an In Line print is
-small and grey so the surprises read first. A key strip under the chart names
-the whole vocabulary.
+Nothing in the chart section is derived from EPS — the SUE columns stay in the
+event table for reference but are not drawn, filtered or sorted on.
 
 ## Reading the dashboard
 

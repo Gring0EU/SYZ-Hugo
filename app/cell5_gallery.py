@@ -27,32 +27,23 @@ import plotly.graph_objects as go
 import ipywidgets as widgets
 from IPython.display import display
 
-# CATEGORY -> (colour, symbol, size). Same severity language as the dashboard.
-# CATEGORY -> (colour, symbol, size). Direction is the symbol, severity is the
-# size, and an In Line print is deliberately small and grey: every print stays
-# on the chart, but the ones that surprised are the ones that read.
+# SIGNAL -> (colour, symbol, size). The chart says one thing: did this report
+# take price out of its own range, and which way. EPS decides nothing here.
 MARKER_STYLE = {
-    'Major +':    (THEME.MINT_GREEN,   'triangle-up',   18),
-    'Moderate +': (THEME.TEAL_GREEN,   'triangle-up',   12),
-    'In Line':    ('rgba(75,95,128,0.40)', 'circle',     6),
-    'Moderate −': (THEME.MANGO_AMBER,  'triangle-down', 12),
-    'Major −':    (THEME.TIGER_ORANGE, 'triangle-down', 18),
-    'Unrated':    ('rgba(75,95,128,0.25)', 'circle-open', 6),
+    SIGNAL_LONG:  (THEME.MINT_GREEN,   'triangle-up',   16),
+    SIGNAL_SHORT: (THEME.TIGER_ORANGE, 'triangle-down', 16),
+    SIGNAL_NONE:  ('rgba(75,95,128,0.45)', 'circle',      7),
 }
-CATEGORY_GLYPH = {'Major +': '▲▲', 'Moderate +': '▲', 'In Line': '•',
-                  'Moderate −': '▼', 'Major −': '▼▼', 'Unrated': '○'}
-SIGNAL_GLYPH = {SIGNAL_LONG: '▲ band', SIGNAL_SHORT: '▼ band'}
+SIGNAL_GLYPH = {SIGNAL_LONG: '▲ upper', SIGNAL_SHORT: '▼ lower'}
 SIGNAL_COLOR = {SIGNAL_LONG: THEME.MINT_GREEN, SIGNAL_SHORT: THEME.TIGER_ORANGE}
-# The label says what happened, in the vocabulary of the definition: the band
-# crossing is the surprise, so it is named positive or negative rather than
-# long or short.
+# The label names what happened in the vocabulary of the definition: the band
+# crossing is the surprise, so it reads positive or negative.
 SIGNAL_LABEL = {SIGNAL_LONG: '▲ Positive', SIGNAL_SHORT: '▼ Negative'}
-# A white edge lifts a marker off the price line it sits on; the latest print
-# and a signalled print override it with a colour of their own.
+# A white edge lifts a marker off the price line it sits on; the latest report
+# overrides it with a dark ring.
 MARKER_EDGE = THEME.WHITE
-# Every quarterly print is drawn as a light vertical bar behind the price, so
-# the earnings calendar is readable at a glance. The bar carries the band
-# outcome -- the surprise itself -- while the marker carries the EPS context.
+# Every quarterly report is a light vertical bar behind the price, tinted by
+# what the band did, so the earnings calendar reads at a glance.
 BAR_HALF_WIDTH = pd.Timedelta(days=3)
 BAR_FILL = {SIGNAL_LONG: 'rgba(59,175,144,0.20)',
             SIGNAL_SHORT: 'rgba(255,108,14,0.18)',
@@ -187,30 +178,23 @@ class EarningsGallery:
 
     @staticmethod
     def _marker_key() -> str:
-        """Legend for the markers, in the chart's own colours."""
-        items = [(THEME.MINT_GREEN, '▲', 'Major EPS beat'),
-                 (THEME.TEAL_GREEN, '▲', 'Moderate beat'),
-                 ('rgba(75,95,128,0.55)', '•', 'EPS in line'),
-                 (THEME.MANGO_AMBER, '▼', 'Moderate miss'),
-                 (THEME.TIGER_ORANGE, '▼', 'Major miss')]
-        glyphs = " &nbsp;·&nbsp; ".join(
-            f"<span style='color:{c};font-size:14px'>{g}</span> {t}"
-            for c, g, t in items)
-        extra = (
-            f"<br><span style='background:rgba(32,41,69,0.055);padding:1px 7px'>"
-            f"&nbsp;</span> every quarterly report &nbsp;·&nbsp; "
+        """What the chart is saying, in its own colours. Only the band."""
+        return (
+            f"<div style='font-family:{THEME.FONT};font-weight:300;"
+            f"font-size:12px;color:{THEME.SPACE_BLUE};background:{THEME.WHITE};"
+            f"padding:8px 4px'>"
+            f"<span style='background:rgba(32,41,69,0.055);padding:1px 7px'>"
+            f"&nbsp;</span> <span style='color:rgba(75,95,128,0.75)'>•</span> "
+            f"earnings report, price stayed inside the band &nbsp;·&nbsp; "
             f"<span style='background:rgba(59,175,144,0.20);padding:1px 7px'>"
-            f"&nbsp;</span> closed through the <b>upper</b> band — positive "
-            f"surprise &nbsp;·&nbsp; "
+            f"&nbsp;</span> <span style='color:{THEME.MINT_GREEN}'>▲</span> "
+            f"closed through the <b>upper</b> band — positive surprise "
+            f"&nbsp;·&nbsp; "
             f"<span style='background:rgba(255,108,14,0.18);padding:1px 7px'>"
-            f"&nbsp;</span> closed through the <b>lower</b> band — negative "
-            f"surprise &nbsp;·&nbsp; dashed edge = latest print, the one the "
-            f"filter asks about"
-            f"<br>Symbols above show what EPS did (context); the band decides "
-            f"the surprise.")
-        return (f"<div style='font-family:{THEME.FONT};font-weight:300;"
-                f"font-size:12px;color:{THEME.SPACE_BLUE};background:{THEME.WHITE};"
-                f"padding:8px 4px'>{glyphs}{extra}</div>")
+            f"&nbsp;</span> <span style='color:{THEME.TIGER_ORANGE}'>▼</span> "
+            f"closed through the <b>lower</b> band — negative surprise "
+            f"&nbsp;·&nbsp; dark ring and dashed edge = latest report, the one "
+            f"the filter asks about</div>")
 
     # ── data binding ─────────────────────────────────────────────────
     def refresh_catalog(self):
@@ -271,11 +255,12 @@ class EarningsGallery:
         name = str(row.NAME)
         name = name if len(name) <= 30 else name[:29] + '…'
         bits = [f"{row.TICKER:<8}", name]
-        if pd.notna(row.LAST_CATEGORY):
-            glyph = CATEGORY_GLYPH.get(row.LAST_CATEGORY, '')
-            sig = (f" {row.LAST_SIGMA:+.1f}σ" if pd.notna(row.LAST_SIGMA) else '')
-            mark = SIGNAL_GLYPH.get(getattr(row, 'LAST_SIGNAL', None), '')
-            bits.append(f"{glyph}{sig}{(' ' + mark) if mark else ''}")
+        mark = SIGNAL_GLYPH.get(getattr(row, 'LAST_SIGNAL', None))
+        ret = getattr(row, 'LAST_RET', None)
+        if mark:                       # the latest report crossed a band
+            bits.append(mark + (f" {ret:+.1f}%" if pd.notna(ret) else ''))
+        elif getattr(row, 'N_SIGNALS', 0):
+            bits.append(f"{int(row.N_SIGNALS)}/{int(row.N_PRINTS)} crossed")
         bits.append(str(row.CODE))
         if pd.notna(row.DAYS_TO_NEXT) and 0 <= row.DAYS_TO_NEXT <= 99:
             bits.append(f"in {int(row.DAYS_TO_NEXT)}d")
@@ -366,28 +351,24 @@ class EarningsGallery:
 
         ev = self.events[self.events.TICKER == ticker].sort_values('TRADE_DATE')
         ev = ev[ev['PRICE_AT_EVENT'].notna()]
-        styles = ev['CATEGORY'].map(MARKER_STYLE)
-        fallback = MARKER_STYLE['Unrated']
-        colors = [s[0] if isinstance(s, tuple) else fallback[0] for s in styles]
-        symbols = [s[1] if isinstance(s, tuple) else fallback[1] for s in styles]
-        sizes = [s[2] if isinstance(s, tuple) else fallback[2] for s in styles]
-
-        # Signals are drawn as emphasis on these same markers -- a thick
-        # coloured outline and a couple of extra pixels -- rather than as a
-        # separate trace to keep in step with them.
         signals = (list(ev['SIGNAL']) if 'SIGNAL' in ev.columns
                    else [SIGNAL_NONE] * len(ev))
         fired = [s in ACTIVE_SIGNALS for s in signals]
+        fallback = MARKER_STYLE[SIGNAL_NONE]
+        styles = [MARKER_STYLE.get(sig, fallback) for sig in signals]
+        colors = [st[0] for st in styles]
+        symbols = [st[1] for st in styles]
+        sizes = [st[2] for st in styles]
         # The result list is filtered on the latest print, so that print is the
         # one the user came to see. It keeps its own category colour and gains
         # a dark ring, a dashed guide and a label -- every earlier print stays
         # exactly where it is.
         latest = [i == len(ev) - 1 for i in range(len(ev))]
-        edges = [SIGNAL_COLOR[s] if f else (THEME.SPACE_BLUE if n else MARKER_EDGE)
-                 for s, f, n in zip(signals, fired, latest)]
-        widths = [3 if f else (2 if n else 1.5) for f, n in zip(fired, latest)]
-        sizes = [z + (6 if f else 0) + (4 if n else 0)
-                 for z, f, n in zip(sizes, fired, latest)]
+        # Colour already says what the band did, so the edge is free to mark
+        # the one report the filter asked about.
+        edges = [THEME.SPACE_BLUE if n else MARKER_EDGE for n in latest]
+        widths = [2 if n else 1.2 for n in latest]
+        sizes = [z + (4 if n else 0) for z, n in zip(sizes, latest)]
 
         idx = list(px.index)
         with self.fig.batch_update():
@@ -395,8 +376,8 @@ class EarningsGallery:
             n_fired = sum(fired)
             self.fig.layout.title = THEME.title(
                 f"<b>{ticker}</b> | {name} — {self.cfg.label(self.code)} "
-                f"<span style='font-size:13px;font-weight:400'>· {len(ev)} prints "
-                f"· {n_fired} band signal{'s' if n_fired != 1 else ''}</span>",
+                f"<span style='font-size:13px;font-weight:400'>· {len(ev)} reports "
+                f"· {n_fired} band crossing{'s' if n_fired != 1 else ''}</span>",
                 size=18)
 
             self.fig.data[0].x = idx + idx[::-1]
@@ -436,19 +417,20 @@ class EarningsGallery:
             # whatever it did -- the two are stacked at different heights when
             # they land on the same date.
             notes = []
-            for i, (d, y, cat, s, f, n) in enumerate(zip(
-                    ev['TRADE_DATE'], ev['PRICE_AT_EVENT'], ev['CATEGORY'],
-                    signals, fired, latest)):
+            for d, y, cross, sig, f, n in zip(
+                    ev['TRADE_DATE'], ev['PRICE_AT_EVENT'], ev['BB_CROSS'],
+                    signals, fired, latest):
                 if f:
                     notes.append(self._label(
-                        d, y, f"<b>{SIGNAL_LABEL[s]}</b> · "
+                        d, y, f"<b>{SIGNAL_LABEL[sig]}</b> · "
                               f"{pd.Timestamp(d):%d %b %y}",
-                        SIGNAL_COLOR[s], -46))
+                        SIGNAL_COLOR[sig], -46))
                 if n:
-                    notes.append(self._label(d, y, f"Latest · {cat} · "
-                                             f"{pd.Timestamp(d):%d %b %y}",
-                                             THEME.SPACE_BLUE,
-                                             -84 if f else -46))
+                    verdict = (f"crossed the {str(cross).lower()} band" if f
+                               else 'stayed in range')
+                    notes.append(self._label(
+                        d, y, f"Latest · {verdict} · {pd.Timestamp(d):%d %b %y}",
+                        THEME.SPACE_BLUE, -84 if f else -46))
             self.fig.layout.annotations = tuple(notes)
             self.fig.layout.xaxis.range = [idx[0], idx[-1]]
         self._rescale([idx[0], idx[-1]])
@@ -479,22 +461,25 @@ class EarningsGallery:
             return ''
         r = rows.iloc[0]
         cap = (f"{r.MKT_CAP_USD/1e9:,.1f}bn" if pd.notna(r.MKT_CAP_USD) else '—')
-        last = (f"{r.LAST_CATEGORY} ({r.LAST_SIGMA:+.2f}σ)"
-                if pd.notna(r.LAST_SIGMA) else str(r.LAST_CATEGORY or '—'))
         nxt = (f"{pd.Timestamp(r.NEXT_DATE):%Y-%m-%d}"
                + (f" · in {int(r.DAYS_TO_NEXT)}d" if pd.notna(r.DAYS_TO_NEXT) else '')
                if pd.notna(r.NEXT_DATE) else '—')
-        rate = (f"{r.N_SURPRISES}/{r.N_PRINTS} prints ({r.SURPRISE_RATE:.0%})"
-                if pd.notna(r.SURPRISE_RATE) else '—')
-        signal = (f"{r.LAST_SIGNAL} ({r.LAST_CROSS} band)"
-                  if getattr(r, 'LAST_SIGNAL', None) in ACTIVE_SIGNALS else '—')
-        items = [('Bloomberg ID', r.ID if pd.notna(r.ID) else '—'),
-                 ('Index', f"{r.INDEX} ({r.CODE})"),
+        rate = (f"{int(r.N_SIGNALS)}/{int(r.N_PRINTS)} reports ({r.CROSS_RATE:.0%})"
+                if pd.notna(r.CROSS_RATE) else '—')
+        crossed = r.LAST_SIGNAL in ACTIVE_SIGNALS
+        last = (f"crossed the {str(r.LAST_CROSS).lower()} band" if crossed
+                else 'stayed in range')
+        tint = SIGNAL_COLOR.get(r.LAST_SIGNAL, THEME.SPACE_BLUE)
+        reaction = f"{r.LAST_RET:+.2f}%" if pd.notna(r.LAST_RET) else 'pending'
+        items = [('Latest report', f"<span style='color:{tint}'>{last}</span>"),
+                 ('Its reaction', reaction),
+                 (f'Crossings ({BB_WINDOW}d band)', rate),
+                 ('Upper / lower', f"{int(r.N_UPPER)} / {int(r.N_LOWER)}"),
+                 ('Next report', nxt),
                  ('Sector', r.SECTOR), ('Country', r.COUNTRY),
-                 ('Market cap', cap), ('Latest print', last),
-                 ('Latest signal', signal),
-                 (f'Band signals ({BB_WINDOW}d)', f"{getattr(r, 'N_SIGNALS', '—')}"),
-                 ('Surprise history', rate), ('Next report', nxt)]
+                 ('Market cap', cap),
+                 ('Index', f"{r.INDEX} ({r.CODE})"),
+                 ('Bloomberg ID', r.ID if pd.notna(r.ID) else '—')]
         body = "".join(
             f"<div style='display:flex;justify-content:space-between;gap:12px;"
             f"padding:3px 0;border-bottom:1px solid {THEME.HAIRLINE}'>"
@@ -508,27 +493,24 @@ class EarningsGallery:
 
     @staticmethod
     def _hover(row) -> str:
-        bits = [f"<b>{row['CATEGORY']}</b>",
-                f"Date: {pd.Timestamp(row['DATE']):%Y-%m-%d}"]
-        if pd.notna(row.get('SIGMA')):
-            bits.append(f"SUE: {row['SIGMA']:+.2f}σ")
-        if pd.notna(row.get('EPS_ACT')):
-            est = (f" vs est {row['EPS_EST']:.2f}"
-                   if pd.notna(row.get('EPS_EST')) else '')
-            bits.append(f"EPS: {row['EPS_ACT']:.2f}{est}")
+        signal = row.get('SIGNAL', SIGNAL_NONE)
+        if signal in ACTIVE_SIGNALS:
+            side = 'Positive' if signal == SIGNAL_LONG else 'Negative'
+            head = (f"<b>{side} surprise</b> — closed through the "
+                    f"{str(row.get('BB_CROSS', '')).lower()} band")
+        else:
+            head = '<b>Earnings report</b> — stayed inside the band'
+        bits = [head, f"Date: {pd.Timestamp(row['DATE']):%Y-%m-%d}"]
+        for label, key in (('Close', 'PRICE_AT_EVENT'),
+                           ('Upper band', 'BB_UPPER'),
+                           ('Lower band', 'BB_LOWER')):
+            if pd.notna(row.get(key)):
+                bits.append(f"{label}: {row[key]:.2f}")
+        # The newest report is on the chart before its window closes.
         bits.append(f"Reaction: {row['RET(%)']:+.2f}%" if pd.notna(row.get('RET(%)'))
                     else 'Reaction: pending — window not closed yet')
         if pd.notna(row.get('ABN_RET(%)')):
             bits.append(f"vs index: {row['ABN_RET(%)']:+.2f}%")
-        signal = row.get('SIGNAL', SIGNAL_NONE)
-        if signal in ACTIVE_SIGNALS:
-            side = 'Positive' if signal == SIGNAL_LONG else 'Negative'
-            agree = {'YES': ' · EPS agreed', 'NO': ' · EPS pointed the other way'}
-            bits.append(f"<b>{side} surprise</b> — closed through the "
-                        f"{str(row.get('BB_CROSS', '')).lower()} band"
-                        f"{agree.get(row.get('SUE_AGREES'), '')}")
-        else:
-            bits.append('Stayed inside the band')
         if pd.notna(row.get('FWD_20D')):
             bits.append(f"20D drift: {row['FWD_20D']:+.2f}%")
         return '<br>'.join(bits)
