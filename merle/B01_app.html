@@ -70,6 +70,8 @@
   .step3 .table-wrap { margin: 10px 0; }
   .email-field { width: 100%; font-family: var(--mono); font-size: 13px; padding: 6px 8px; border: 1px solid var(--line);
                  border-radius: 6px; background: var(--card); color: var(--ink); resize: vertical; }
+  .lang-row { display: flex; align-items: center; gap: 8px; margin: 12px 16px 4px; font-size: 13px; color: var(--muted); }
+  .lang-row select { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; }
   .preview { background: #ffffff; color: #222; border: 1px solid var(--line); border-radius: 8px; padding: 14px; margin-top: 6px; overflow-x: auto; }
   footer { margin-top: 28px; color: var(--muted); font-size: 12px; }
 </style>
@@ -89,7 +91,7 @@
   <footer>Runs entirely in this browser window. Term sheets are not uploaded anywhere. Rules version 2026-10-15.</footer>
 </main>
 
-<script>window.TS_RULES = {"_comment": "Editable naming rules for term sheet file names. Regex patterns are case-insensitive and tolerant of missing spaces only where written with \\s*.", "name_template": "{fixing_date} - {currency} {duration} {issuer} {product_type} {coupon} {underlyings} - {identifier}", "date_format": "%y%m%d", "underlying_separator": "-", "_label_comment": "Step 2: short booking label built from the name (ISSUER TYPE COUPON UNDERLYINGS). Must be at most label_max_length characters; if too long the product type is dropped first, then the '%' signs.", "label_max_length": 25, "instructions_template": "Produit pour SYZ uniquement, merci d'utiliser le libellé suivant:\n{label}\nMerci de mettre PS code instrument O29\nMerci d’ouvrir et débloquer la place de bourse YDER dans le listing\nMerci de mettre la place de bourse YCHD en Main Trading Place et de la bloquer dans le listing\nMerci de préciser entity group owner SYZG", "_email_comment": "Step 3: trade confirmation email. Greeting, intro and footer around the Advisory Workbench 'Term sheet' card (G01 workbench): grey title band with the orange title, label / value rows, underlyings in orange bold, the coupon in the orange cell. Every value is editable in the tool before it is copied. 'product_titles' is the card title after the maturity ('6M Reverse Convertible with Low Strike'); 'style' is the workbench's Outlook palette.", "email": {"greeting": "Hello,", "intro": "Voici la confirmation du Trade comme discuté par téléphone traité avec {issuer}:", "settlement_lag": "T+5", "product_titles": {"default": "Structured Product", "AC": "Reverse Autocallable", "RC": "Reverse Convertible", "BRC": "Barrier Reverse Convertible", "BTB": "Beat the Benchmark", "CPN": "Capital Protected Note", "SN": "Shark Note", "SHARK NOTE": "Shark Note", "DC": "Discount Certificate", "BC": "Bonus Certificate", "TRK": "Tracker Certificate", "CLN": "Credit-Linked Note"}, "style": {"font": "'Segoe UI',Arial,sans-serif", "paper": "#FFFFFF", "text": "#000000", "band": "#F2F2F2", "orange": "#EE5A00", "line": "#D0D0D0", "coupon_text": "#FFFFFF"}}, "issuers": [{"code": "TCM", "patterns": ["TCM[-\\s]*Collateralised", "Collateral\\s*Provider\\s*\\(TCM\\)", "TCM\\s*Security\\s*Agreement"], "priority": true}, {"code": "OPS", "patterns": ["Opus\\s*\\(Public\\)\\s*Chartered\\s*Issuance"], "priority": true}, {"code": "CORN", "patterns": ["Corn[èe]r\\s*Bank"]}, {"code": "BIL", "patterns": ["Banque\\s*Internationale\\s*[àa]\\s*Luxembourg"]}, {"code": "RAF", "patterns": ["Raiffeisen"]}, {"code": "BOFA", "patterns": ["Merrill\\s*Lynch", "Bank\\s*of\\s*America", "\\bBofA\\b"]}, {"code": "GS", "patterns": ["Goldman\\s*Sachs"]}, {"code": "BNP", "patterns": ["BNP\\s*Paribas"]}, {"code": "SG", "patterns": ["Soci[ée]t[ée]\\s*G[ée]n[ée]rale", "SG\\s*Issuer"]}, {"code": "EFG", "patterns": ["EFG\\s*International", "EFG\\s*Bank", "\\bEFG\\b"]}, {"code": "JB", "patterns": ["Julius\\s*B(?:ae|ä|a)r"]}, {"code": "POST", "patterns": ["Post\\s*Finance"]}, {"code": "AKB", "patterns": ["Aargauische\\s*Kantonalbank"]}, {"code": "UBS", "patterns": ["\\bUBS\\b"]}, {"code": "VON", "patterns": ["Vontobel"]}, {"code": "CITI", "patterns": ["Citigroup", "\\bCiti\\b"]}, {"code": "BARC", "patterns": ["Barclays"]}, {"code": "STAN", "patterns": ["Standard\\s*Chartered"]}, {"code": "JPM", "patterns": ["J\\.?P\\.?\\s*Morgan", "JPMorgan"]}, {"code": "MS", "patterns": ["Morgan\\s*Stanley"]}], "_product_types_comment": "Checked in order; FIRST MATCH WINS, and the order is the rule, not a detail. The desk names a sheet after its early-redemption FEATURE, not after its SSPA base payoff: across the 65 reference sheets the SSPA code says 1220 (Reverse Convertible) on 45 sheets the desk called AC, 1230 (Barrier Reverse Convertible) on 5 more it also called AC, and 1260 (Express) on 2 more. Not one 1230 sheet was ever named BRC. So AC must be tested before BRC and RC: an autocallable barrier reverse convertible is AC. BTB and SN come before AC because a Beat-the-Benchmark or Shark note is also autocallable but keeps its own code. BRC and RC are reached only when nothing autocallable was found. 'coupon_style' fills the coupon slot of the name differently and flags it: 'benchmark' = 'SPX 12.50%', 'capital_protection' = '122% - 90% KG -'. 'coupon_note' flags the coupon for manual check. 'verified' = confirmed by reference examples. 'name' overrides the code in the file name: the desk writes 'Shark Note' in full. 'shark' = '95 KG' (the capital protection level, no '%'). Morgan Stanley does not say 'Shark' anywhere: its sharks are 'Capital Protection Notes with Barrier' (SSPA 1130) paying 'Par * (Capital Protection + Rebate)' after a Knock Out Event, so the knock-out-plus-rebate wording is what identifies them, and SN must stay before AC, whose 'Knock Out Event' pattern they also match.", "product_types": [{"code": "BTB", "verified": true, "patterns": ["Beat\\s*the\\s*Benchmark", "BENCHMARK\\s*UNDERLYING", "Benchmark\\s*Performance", "Name\\s*of\\s*the\\s*Benchmark"], "coupon_style": "benchmark"}, {"code": "SN", "verified": true, "patterns": ["Shark\\s*Note", "Shark\\s*Fin", "Capital\\s*Protection\\s*\\+\\s*Rebate", "Knock[-\\s]*Out\\s*Barrier[\\s\\S]{0,600}?\\bRebate\\b", "\\bRebate\\b[\\s\\S]{0,600}?Knock[-\\s]*Out\\s*Barrier"], "name": "Shark Note", "coupon_style": "shark"}, {"code": "AC", "verified": true, "patterns": ["Autocall", "Auto-Callable", "Automatic\\s*Early\\s*Redemption", "Express\\s*Certificate", "SSPA[^.]{0,40}\\b1260\\b", "Phoenix", "Knock[-\\s]*out\\s*(?:Determination|Event|Date)"]}, {"code": "BRC", "verified": true, "patterns": ["Barrier\\s*Reverse\\s*Convertible", "SSPA[^.]{0,40}\\b1230\\b"]}, {"code": "RC", "verified": true, "patterns": ["Reverse\\s*Convertible", "SSPA[^.]{0,40}\\b1220\\b"]}, {"code": "CPN", "verified": true, "patterns": ["Capital\\s*Protect(?:ion|ed)(?!\\s*:?\\s*No\\b)", "SSPA[^.]{0,40}\\b11[0-4]0\\b"], "coupon_style": "capital_protection"}, {"code": "DC", "verified": false, "patterns": ["Discount\\s*Certificate", "SSPA[^.]{0,40}\\b1200\\b"]}, {"code": "BC", "verified": false, "patterns": ["Bonus\\s*Certificate", "SSPA[^.]{0,40}\\b1320\\b"]}, {"code": "TRK", "verified": false, "patterns": ["Tracker\\s*Certificate", "SSPA[^.]{0,40}\\b1300\\b"]}, {"code": "CLN", "verified": false, "patterns": ["Credit[-\\s]*Linked", "SSPA[^.]{0,40}\\b14\\d0\\b"]}], "_issuer_call_comment": "A product the ISSUER may redeem early at its own discretion, with no trigger level -- 'Callable', not 'Autocallable'. The reference set holds three, and the desk named them three different ways: SG's 'Callable Reverse Convertible' became AC, JPM's 'Callable Barrier Reverse Convertible' became BRC, and Corner's 'Multi Reverse Convertible / Callable / LowStrike' became RC. The first and the last are the same structure (SSPA 1220, low strike, issuer call) under two different codes, so there is no convention to follow here. Merle therefore keeps the code the SSPA base payoff gives and asks, rather than guessing. Only checked when the product type resolved to one of 'applies_to' -- an autocallable sheet is AC whatever else it says, and the label 'Issuer Call: Not Applicable' must not count as evidence, which is why the bare label is not a pattern.", "issuer_call": {"patterns": ["\\bCallable\\b", "at\\s*the\\s*option\\s*of\\s*the\\s*Issuer", "Issuer\\s*has\\s*the\\s*(?:sole\\s*)?right[\\s\\S]{0,60}?(?:redeem|Redempt)"], "applies_to": ["RC", "BRC", "DC", "BC", "TRK"], "warning": "Issuer-callable, not autocallable: the desk has named these AC, BRC and RC. Please confirm the code"}, "_indices_comment": "Bloomberg index tickers; name patterns are used when the sheet gives no Bloomberg code.", "indices": [{"ticker": "SX5E", "patterns": ["EURO\\s*STOXX\\s*50"]}, {"ticker": "SX7E", "patterns": ["EURO\\s*STOXX\\s*Banks"]}, {"ticker": "SXXP", "patterns": ["STOXX\\s*Europe\\s*600"]}, {"ticker": "NKY", "patterns": ["NIKKEI\\s*225"]}, {"ticker": "TPX", "patterns": ["TOPIX"]}, {"ticker": "SPX", "patterns": ["S&P\\s*500"]}, {"ticker": "NDX", "patterns": ["NASDAQ[-\\s]*100"]}, {"ticker": "RTY", "patterns": ["Russell\\s*2000"]}, {"ticker": "INDU", "patterns": ["Dow\\s*Jones\\s*Industrial"]}, {"ticker": "SMI", "patterns": ["Swiss\\s*Market\\s*Index", "\\bSMI\\b"]}, {"ticker": "DAX", "patterns": ["\\bDAX\\b"]}, {"ticker": "CAC", "patterns": ["CAC\\s*40"]}, {"ticker": "UKX", "patterns": ["FTSE\\s*100"]}, {"ticker": "FTSEMIB", "patterns": ["FTSE\\s*MIB"]}, {"ticker": "IBEX", "patterns": ["IBEX\\s*35"]}, {"ticker": "HSCEI", "patterns": ["Hang\\s*Seng\\s*China\\s*Enterprises"]}, {"ticker": "HSI", "patterns": ["Hang\\s*Seng\\s*Index"]}, {"ticker": "AS51", "patterns": ["S&P/ASX\\s*200"]}, {"ticker": "KOSPI2", "patterns": ["KOSPI\\s*200"]}], "_exchange_codes_comment": "Bloomberg exchange suffixes stripped from equity tickers (e.g. 'AIR FP' -> 'AIR').", "exchange_codes": ["UN", "UW", "UQ", "UA", "UP", "UR", "UV", "US", "SW", "SE", "VX", "FP", "GY", "GR", "GF", "NA", "BB", "LN", "IM", "SM", "SQ", "JT", "JP", "AT", "AU", "HK", "CN", "CT", "KS", "DC", "FH", "NO", "SS", "ID", "PL", "AV", "TT", "SP", "CH", "C1", "C2"], "currencies": ["USD", "EUR", "CHF", "GBP", "JPY", "AUD", "CAD", "HKD", "SGD", "SEK", "NOK", "DKK", "CNH", "CNY", "NZD", "ZAR", "PLN", "CZK", "HUF", "MXN", "BRL", "TRY", "ILS", "AED"]};</script>
+<script>window.TS_RULES = {"_comment": "Editable naming rules for term sheet file names. Regex patterns are case-insensitive and tolerant of missing spaces only where written with \\s*.", "name_template": "{fixing_date} - {currency} {duration} {issuer} {product_type} {coupon} {underlyings} - {identifier}", "date_format": "%y%m%d", "underlying_separator": "-", "_label_comment": "Step 2: short booking label built from the name (ISSUER TYPE COUPON UNDERLYINGS). Must be at most label_max_length characters; if too long the product type is dropped first, then the '%' signs.", "label_max_length": 25, "instructions_template": "Produit pour SYZ uniquement, merci d'utiliser le libellé suivant:\n{label}\nMerci de mettre PS code instrument O29\nMerci d’ouvrir et débloquer la place de bourse YDER dans le listing\nMerci de mettre la place de bourse YCHD en Main Trading Place et de la bloquer dans le listing\nMerci de préciser entity group owner SYZG", "_email_comment": "Step 3: trade confirmation email. Greeting, intro and footer around the Advisory Workbench 'Term sheet' card (G01 workbench): grey title band with the orange title, label / value rows, underlyings in orange bold, the coupon in the orange cell. Every value is editable in the tool before it is copied. 'product_titles' is the card title after the maturity ('6M Reverse Convertible with Low Strike'); 'style' is the workbench's Outlook palette.", "email": {"settlement_lag": "T+5", "product_titles": {"default": "Structured Product", "AC": "Reverse Autocallable", "RC": "Reverse Convertible", "BRC": "Barrier Reverse Convertible", "BTB": "Beat the Benchmark", "CPN": "Capital Protected Note", "SN": "Shark Note", "SHARK NOTE": "Shark Note", "DC": "Discount Certificate", "BC": "Bonus Certificate", "TRK": "Tracker Certificate", "CLN": "Credit-Linked Note"}, "style": {"font": "'Segoe UI',Arial,sans-serif", "paper": "#FFFFFF", "text": "#000000", "band": "#F2F2F2", "orange": "#EE5A00", "line": "#D0D0D0", "coupon_text": "#FFFFFF"}, "_languages_comment": "Step 3 can write the email in any language listed here; the tool offers them in this order and remembers the last one used. 'labels' and 'values' translate the card's row labels and fixed values; 'titles' replaces 'product_titles' entries; 'title_patterns' builds the card title ({base}, {level}); 'decimal' is the decimal separator.", "default_language": "fr", "languages": {"fr": {"name": "Français", "greeting": "Bonjour,", "intro": "Voici la confirmation du Trade comme discuté par téléphone traité avec {issuer}:", "decimal": ",", "months": "{n} mois", "pa": "p.a.", "title_patterns": {"low_strike": "{base} avec Low Strike", "protected": "{base} protégée à {level}", "capital_protected": "Note à capital protégé à {level}"}, "titles": {}, "labels": {"Currency": "Devise", "Nominal": "Nominal", "Maturity": "Maturité", "Underlying": "Sous-jacent", "Strike": "Strike", "Autocall Trigger": "Niveau d'autocall", "Autocall Frequency": "Fréquence d'autocall", "Non-Call period": "Période sans rappel", "Coupon Frequency": "Fréquence du coupon", "Coupon": "Coupon", "Capital Protection": "Protection du capital", "Knock-out Barrier": "Barrière knock-out", "Rebate": "Rebate", "Participation": "Participation"}, "values": {"Monthly": "Mensuelle", "Bi-Monthly": "Bimestrielle", "Quarterly": "Trimestrielle", "Every 4 months": "Tous les 4 mois", "Semi-Annually": "Semestrielle", "Annually": "Annuelle", "In fine": "In fine", "at maturity": "à l'échéance", "if knocked out": "en cas de knock-out", "of the rise": "de la hausse", "stepping down to": "dégressif jusqu'à", "None": "Aucune", "1st call in {n} month": "1er rappel dans {n} mois", "1st call in {n} months": "1er rappel dans {n} mois", "Strike Close": "Strike à la clôture", "Physical Delivery": "Livraison physique", "Cash Settlement": "Règlement en espèces"}}, "en": {"name": "English", "greeting": "Hello,", "intro": "Please find below the confirmation of the trade discussed by phone, traded with {issuer}:", "decimal": ".", "months": "{n}-Months", "pa": "p.a.", "title_patterns": {"low_strike": "{base} with Low Strike", "protected": "{level} Protected {base}", "capital_protected": "{level} Capital Protected Note"}, "titles": {}, "labels": {}, "values": {}}}}, "issuers": [{"code": "TCM", "patterns": ["TCM[-\\s]*Collateralised", "Collateral\\s*Provider\\s*\\(TCM\\)", "TCM\\s*Security\\s*Agreement"], "priority": true}, {"code": "OPS", "patterns": ["Opus\\s*\\(Public\\)\\s*Chartered\\s*Issuance"], "priority": true}, {"code": "CORN", "patterns": ["Corn[èe]r\\s*Bank"]}, {"code": "BIL", "patterns": ["Banque\\s*Internationale\\s*[àa]\\s*Luxembourg"]}, {"code": "RAF", "patterns": ["Raiffeisen"]}, {"code": "BOFA", "patterns": ["Merrill\\s*Lynch", "Bank\\s*of\\s*America", "\\bBofA\\b"]}, {"code": "GS", "patterns": ["Goldman\\s*Sachs"]}, {"code": "BNP", "patterns": ["BNP\\s*Paribas"]}, {"code": "SG", "patterns": ["Soci[ée]t[ée]\\s*G[ée]n[ée]rale", "SG\\s*Issuer"]}, {"code": "EFG", "patterns": ["EFG\\s*International", "EFG\\s*Bank", "\\bEFG\\b"]}, {"code": "JB", "patterns": ["Julius\\s*B(?:ae|ä|a)r"]}, {"code": "POST", "patterns": ["Post\\s*Finance"]}, {"code": "AKB", "patterns": ["Aargauische\\s*Kantonalbank"]}, {"code": "UBS", "patterns": ["\\bUBS\\b"]}, {"code": "VON", "patterns": ["Vontobel"]}, {"code": "CITI", "patterns": ["Citigroup", "\\bCiti\\b"]}, {"code": "BARC", "patterns": ["Barclays"]}, {"code": "STAN", "patterns": ["Standard\\s*Chartered"]}, {"code": "JPM", "patterns": ["J\\.?P\\.?\\s*Morgan", "JPMorgan"]}, {"code": "MS", "patterns": ["Morgan\\s*Stanley"]}], "_product_types_comment": "Checked in order; FIRST MATCH WINS, and the order is the rule, not a detail. The desk names a sheet after its early-redemption FEATURE, not after its SSPA base payoff: across the 65 reference sheets the SSPA code says 1220 (Reverse Convertible) on 45 sheets the desk called AC, 1230 (Barrier Reverse Convertible) on 5 more it also called AC, and 1260 (Express) on 2 more. Not one 1230 sheet was ever named BRC. So AC must be tested before BRC and RC: an autocallable barrier reverse convertible is AC. BTB and SN come before AC because a Beat-the-Benchmark or Shark note is also autocallable but keeps its own code. BRC and RC are reached only when nothing autocallable was found. 'coupon_style' fills the coupon slot of the name differently and flags it: 'benchmark' = 'SPX 12.50%', 'capital_protection' = '122% - 90% KG -'. 'coupon_note' flags the coupon for manual check. 'verified' = confirmed by reference examples. 'name' overrides the code in the file name: the desk writes 'Shark Note' in full. 'shark' = '95 KG' (the capital protection level, no '%'). Morgan Stanley does not say 'Shark' anywhere: its sharks are 'Capital Protection Notes with Barrier' (SSPA 1130) paying 'Par * (Capital Protection + Rebate)' after a Knock Out Event, so the knock-out-plus-rebate wording is what identifies them, and SN must stay before AC, whose 'Knock Out Event' pattern they also match.", "product_types": [{"code": "BTB", "verified": true, "patterns": ["Beat\\s*the\\s*Benchmark", "BENCHMARK\\s*UNDERLYING", "Benchmark\\s*Performance", "Name\\s*of\\s*the\\s*Benchmark"], "coupon_style": "benchmark"}, {"code": "SN", "verified": true, "patterns": ["Shark\\s*Note", "Shark\\s*Fin", "Capital\\s*Protection\\s*\\+\\s*Rebate", "Knock[-\\s]*Out\\s*Barrier[\\s\\S]{0,600}?\\bRebate\\b", "\\bRebate\\b[\\s\\S]{0,600}?Knock[-\\s]*Out\\s*Barrier"], "name": "Shark Note", "coupon_style": "shark"}, {"code": "AC", "verified": true, "patterns": ["Autocall", "Auto-Callable", "Automatic\\s*Early\\s*Redemption", "Express\\s*Certificate", "SSPA[^.]{0,40}\\b1260\\b", "Phoenix", "Knock[-\\s]*out\\s*(?:Determination|Event|Date)"]}, {"code": "BRC", "verified": true, "patterns": ["Barrier\\s*Reverse\\s*Convertible", "SSPA[^.]{0,40}\\b1230\\b"]}, {"code": "RC", "verified": true, "patterns": ["Reverse\\s*Convertible", "SSPA[^.]{0,40}\\b1220\\b"]}, {"code": "CPN", "verified": true, "patterns": ["Capital\\s*Protect(?:ion|ed)(?!\\s*:?\\s*No\\b)", "SSPA[^.]{0,40}\\b11[0-4]0\\b"], "coupon_style": "capital_protection"}, {"code": "DC", "verified": false, "patterns": ["Discount\\s*Certificate", "SSPA[^.]{0,40}\\b1200\\b"]}, {"code": "BC", "verified": false, "patterns": ["Bonus\\s*Certificate", "SSPA[^.]{0,40}\\b1320\\b"]}, {"code": "TRK", "verified": false, "patterns": ["Tracker\\s*Certificate", "SSPA[^.]{0,40}\\b1300\\b"]}, {"code": "CLN", "verified": false, "patterns": ["Credit[-\\s]*Linked", "SSPA[^.]{0,40}\\b14\\d0\\b"]}], "_issuer_call_comment": "A product the ISSUER may redeem early at its own discretion, with no trigger level -- 'Callable', not 'Autocallable'. The reference set holds three, and the desk named them three different ways: SG's 'Callable Reverse Convertible' became AC, JPM's 'Callable Barrier Reverse Convertible' became BRC, and Corner's 'Multi Reverse Convertible / Callable / LowStrike' became RC. The first and the last are the same structure (SSPA 1220, low strike, issuer call) under two different codes, so there is no convention to follow here. Merle therefore keeps the code the SSPA base payoff gives and asks, rather than guessing. Only checked when the product type resolved to one of 'applies_to' -- an autocallable sheet is AC whatever else it says, and the label 'Issuer Call: Not Applicable' must not count as evidence, which is why the bare label is not a pattern.", "issuer_call": {"patterns": ["\\bCallable\\b", "at\\s*the\\s*option\\s*of\\s*the\\s*Issuer", "Issuer\\s*has\\s*the\\s*(?:sole\\s*)?right[\\s\\S]{0,60}?(?:redeem|Redempt)"], "applies_to": ["RC", "BRC", "DC", "BC", "TRK"], "warning": "Issuer-callable, not autocallable: the desk has named these AC, BRC and RC. Please confirm the code"}, "_indices_comment": "Bloomberg index tickers; name patterns are used when the sheet gives no Bloomberg code.", "indices": [{"ticker": "SX5E", "patterns": ["EURO\\s*STOXX\\s*50"]}, {"ticker": "SX7E", "patterns": ["EURO\\s*STOXX\\s*Banks"]}, {"ticker": "SXXP", "patterns": ["STOXX\\s*Europe\\s*600"]}, {"ticker": "NKY", "patterns": ["NIKKEI\\s*225"]}, {"ticker": "TPX", "patterns": ["TOPIX"]}, {"ticker": "SPX", "patterns": ["S&P\\s*500"]}, {"ticker": "NDX", "patterns": ["NASDAQ[-\\s]*100"]}, {"ticker": "RTY", "patterns": ["Russell\\s*2000"]}, {"ticker": "INDU", "patterns": ["Dow\\s*Jones\\s*Industrial"]}, {"ticker": "SMI", "patterns": ["Swiss\\s*Market\\s*Index", "\\bSMI\\b"]}, {"ticker": "DAX", "patterns": ["\\bDAX\\b"]}, {"ticker": "CAC", "patterns": ["CAC\\s*40"]}, {"ticker": "UKX", "patterns": ["FTSE\\s*100"]}, {"ticker": "FTSEMIB", "patterns": ["FTSE\\s*MIB"]}, {"ticker": "IBEX", "patterns": ["IBEX\\s*35"]}, {"ticker": "HSCEI", "patterns": ["Hang\\s*Seng\\s*China\\s*Enterprises"]}, {"ticker": "HSI", "patterns": ["Hang\\s*Seng\\s*Index"]}, {"ticker": "AS51", "patterns": ["S&P/ASX\\s*200"]}, {"ticker": "KOSPI2", "patterns": ["KOSPI\\s*200"]}], "_exchange_codes_comment": "Bloomberg exchange suffixes stripped from equity tickers (e.g. 'AIR FP' -> 'AIR').", "exchange_codes": ["UN", "UW", "UQ", "UA", "UP", "UR", "UV", "US", "SW", "SE", "VX", "FP", "GY", "GR", "GF", "NA", "BB", "LN", "IM", "SM", "SQ", "JT", "JP", "AT", "AU", "HK", "CN", "CT", "KS", "DC", "FH", "NO", "SS", "ID", "PL", "AV", "TT", "SP", "CH", "C1", "C2"], "currencies": ["USD", "EUR", "CHF", "GBP", "JPY", "AUD", "CAD", "HKD", "SGD", "SEK", "NOK", "DKK", "CNH", "CNY", "NZD", "ZAR", "PLN", "CZK", "HUF", "MXN", "BRL", "TRY", "ILS", "AED"]};</script>
 <script>/**
  * @licstart The following is the entire license notice for the
  * JavaScript code in this page
@@ -300,23 +302,44 @@ const TSN = (() => {
   const GROWTH = ["CPN", "SN", "SHARK NOTE"];
   const LOW_STRIKE = ["AC", "RC", "BRC"];
 
+  // The email languages (rules "email.languages"), in the order the tool offers them.
+  const LANGUAGES = Object.entries(RULES.email.languages).map(([code, l]) => [code, l.name]);
+  const language = (code) => RULES.email.languages[code] || RULES.email.languages[RULES.email.default_language];
+  const fill = (pattern, vars) => pattern.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? "");
+
   // Card title: "6M Reverse Convertible with Low Strike", "18M 95% Protected Shark Note".
-  function cardTitle(values, ts) {
+  function cardTitle(values, ts, L) {
     const type = (values.product_type || "").toUpperCase();
-    const titles = RULES.email.product_titles;
+    const titles = { ...RULES.email.product_titles, ...L.titles };
     const months = monthsOfDuration(values.duration);
     let base = titles[type] || titles.default;
-    const protection = parseFloat(ts.protection.value);
-    if (type === "CPN" && protection) base = `${pctText(protection)} ${base}`;
-    else if ((type === "SN" || type === "SHARK NOTE") && protection) base = `${pctText(protection)} Protected ${base}`;
+    const level = parseFloat(ts.protection.value) ? localPct(pctText(parseFloat(ts.protection.value)), L) : "";
+    if (type === "CPN" && level) base = fill(L.title_patterns.capital_protected, { base, level });
+    else if ((type === "SN" || type === "SHARK NOTE") && level) base = fill(L.title_patterns.protected, { base, level });
     const strike = parseFloat(ts.strike.value);
-    if (LOW_STRIKE.includes(type) && strike && strike < 100) base += " with Low Strike";
+    if (LOW_STRIKE.includes(type) && strike && strike < 100) base = fill(L.title_patterns.low_strike, { base });
     return [months ? `${months}M` : "", base].filter(Boolean).join(" ");
+  }
+
+  // "68.16%" -> "68,16%" where the language writes a decimal comma.
+  const localPct = (text, L) => (L.decimal === "." ? text : text.replace(/(\d)\.(\d)/g, `$1${L.decimal}$2`));
+  // Translate the fixed words in a value ("Monthly", "95% at maturity", "3 (1st call in 4 months)").
+  function localValue(text, L) {
+    let out = String(text || "");
+    const words = Object.entries(L.values).sort((a, b) => b[0].length - a[0].length);
+    for (const [en, local] of words) {
+      if (en.includes("{n}")) {
+        const re = rx(esc(en).replace("\\{n\\}", "(\\d+)"), "g");
+        out = out.replace(re, (_, n) => fill(local, { n }));
+      } else out = out.replace(rx(`(?<![A-Za-z])${esc(en)}(?![A-Za-z])`, "g"), () => local);
+    }
+    return localPct(out, L);
   }
 
   // Everything the email needs, ready to be shown (and edited) in the page.
   // rows: [{ label, value, kind }] in table order; kind "bold", "names" (one per line) or "coupon" (orange cell).
-  function emailValues(ts) {
+  function emailValues(ts, lang) {
+    const L = language(lang);
     const values = valuesOf(ts);
     const type = (values.product_type || "").toUpperCase();
     const months = monthsOfDuration(values.duration);
@@ -326,7 +349,7 @@ const TSN = (() => {
     const rows = [
       { label: "Currency", value: values.currency || "", kind: "bold" },
       { label: "Nominal", value: "" }, // the traded amount: left blank, the row is dropped if it stays blank
-      { label: "Maturity", value: months ? `${months}-Months` : "" },
+      { label: "Maturity", value: months ? fill(L.months, { n: months }) : "" },
       { label: "Underlying", value: names.join("\n"), kind: "names" },
     ];
     if (GROWTH.includes(type)) {
@@ -345,14 +368,19 @@ const TSN = (() => {
           { label: "Non-Call period", value: ts.non_call.value });
       } else rows.push({ label: "Coupon Frequency", value: ts.frequency.value });
       const rate = /^([\d.]+)%$/.exec(values.coupon || "");
-      rows.push({ label: "Coupon", value: rate ? `${parseFloat(rate[1]).toFixed(2)} % p.a.` : values.coupon ? `${values.coupon} p.a.` : "", kind: "coupon" });
+      rows.push({ label: "Coupon", value: rate ? `${parseFloat(rate[1]).toFixed(2)} % ${L.pa}` : values.coupon ? `${values.coupon} ${L.pa}` : "", kind: "coupon" });
+    }
+    for (const r of rows) {
+      r.key = r.label;
+      r.label = L.labels[r.label] || r.label;
+      if (r.kind !== "names") r.value = localValue(r.value, L);
     }
     return {
-      greeting: RULES.email.greeting,
-      intro: RULES.email.intro.replace("{issuer}", () => values.issuer || ""),
-      title: cardTitle(values, ts),
+      greeting: L.greeting,
+      intro: fill(L.intro, { issuer: values.issuer || "" }),
+      title: cardTitle(values, ts, L),
       rows,
-      footer: ["Strike Close", ts.settlement.value || "Physical Delivery", RULES.email.settlement_lag].filter(Boolean).join("\n"),
+      footer: localValue(["Strike Close", ts.settlement.value || "Physical Delivery", RULES.email.settlement_lag].filter(Boolean).join("\n"), L),
     };
   }
 
@@ -1344,7 +1372,7 @@ const TSN = (() => {
 
   const valuesOf = (ts) => Object.fromEntries(Object.entries(ts).map(([k, f]) => [k, f.value]));
 
-  return { pdfText, extractFields, buildName, buildLabel, buildInstructions, emailValues, renderHtml, renderText, copyHtml,
+  return { pdfText, extractFields, buildName, buildLabel, buildInstructions, emailValues, renderHtml, renderText, copyHtml, LANGUAGES,
     durationFromValues, valuesOf, FIELD_KEYS,
     _test: { parseDate, durationLabel, formatCoupon, isinIsValid } };
 })();
@@ -1456,8 +1484,17 @@ function render(card, file, bytes, ts) {
   const draftBtn = el("button", { className: "act", textContent: "Copy email" });
   const resetBtn = el("button", { className: "act ghost", textContent: "Reset from term sheet" });
   const emailStatus = el("div", { className: "status" });
+  const langSelect = el("select", { className: "email-lang" },
+    ...TSN.LANGUAGES.map(([code, name]) => el("option", { value: code, textContent: name })));
+  langSelect.value = savedLanguage();
+  langSelect.onchange = () => {
+    try { localStorage.setItem("merle.emailLanguage", langSelect.value); } catch { /* private window: not remembered */ }
+    resetEmail();
+    setStatus(emailStatus, "Email rewritten in " + langSelect.selectedOptions[0].textContent + " (manual edits reset)");
+  };
   card.append(el("details", { className: "step3" },
     el("summary", { textContent: "Step 3 · Confirmation email" }),
+    el("label", { className: "lang-row" }, "Language ", langSelect),
     el("div", { className: "table-wrap" }, el("table", {}, emailTable)),
     el("div", { className: "name-row" }, draftBtn, resetBtn), emailStatus,
     el("label", { className: "spaced", textContent: "Preview" }), preview));
@@ -1479,12 +1516,12 @@ function render(card, file, bytes, ts) {
   };
   const resetEmail = () => {
     for (const [key, input] of Object.entries(inputs)) ts[key].value = input.value; // use the edited fields
-    const values = TSN.emailValues(ts);
+    const values = TSN.emailValues(ts, langSelect.value);
     emailTable.replaceChildren();
     emailRows = values.rows;
     for (const [key, label, rows] of EMAIL_TEXT) emailField(key, label, rows, values[key] || "");
     emailRows.forEach((r, i) => emailField("row" + i, r.label, r.kind === "names" ? 3 : 1, r.value || "",
-      r.label === "Nominal" ? "traded amount (optional)" : "blank = row left out"));
+      r.key === "Nominal" ? "traded amount (optional)" : "blank = row left out"));
     emailField("footer", "Footer lines", 3, values.footer || "");
     emailTouched = false;
     refreshPreview();
@@ -1551,6 +1588,12 @@ function render(card, file, bytes, ts) {
     setTimeout(() => URL.revokeObjectURL(url), 10000);
     setStatus(status, `Downloaded as "${safe}.pdf" (check your Downloads folder)`);
   };
+}
+
+function savedLanguage() {
+  let code = null;
+  try { code = localStorage.getItem("merle.emailLanguage"); } catch { /* storage blocked */ }
+  return TSN.LANGUAGES.some(([c]) => c === code) ? code : TS_RULES.email.default_language;
 }
 
 function setStatus(node, text, isError = false) {
