@@ -1193,6 +1193,7 @@ ${body}
   const valuesOf = (ts) => Object.fromEntries(Object.entries(ts).map(([k, f]) => [k, f.value]));
 
   return { pdfText, extractFields, buildName, buildLabel, buildInstructions, emailValues, renderHtml, buildEml,
+    EMAIL_ROWS: RULES.email.rows,
     durationFromValues, valuesOf, FIELD_KEYS,
     _test: { parseDate, durationLabel, formatCoupon, isinIsValid } };
 })();
@@ -1201,7 +1202,7 @@ ${body}
 "use strict";
 // Step 3 email fields: key, label, rows (1 = single line).
 const EMAIL_FIELDS = [
-  ["to", "To", 1], ["subject", "Subject", 1], ["greeting", "Greeting", 1], ["intro", "Intro line", 2],
+  ["greeting", "Greeting", 1], ["intro", "Intro line", 2],
   ["title", "Title bar", 1], ["currency", "Currency", 1], ["maturity", "Maturity", 1],
   ["underlyings", "Underlying", 3], ["strike", "Strike", 1], ["frequency", "Frequency", 1],
   ["coupon", "Guaranteed Coupon", 1], ["footer", "Footer lines", 3],
@@ -1313,7 +1314,7 @@ function render(card, file, bytes, ts) {
       el("td", {}, input)));
   }
   const preview = el("div", { className: "preview" });
-  const draftBtn = el("button", { className: "act", textContent: "Download Outlook draft (.eml)" });
+  const draftBtn = el("button", { className: "act", textContent: "Copy email" });
   const resetBtn = el("button", { className: "act ghost", textContent: "Reset from term sheet" });
   const emailStatus = el("div", { className: "status" });
   card.append(el("details", { className: "step3" },
@@ -1337,16 +1338,29 @@ function render(card, file, bytes, ts) {
     input.addEventListener("input", () => { emailTouched = true; refreshPreview(); });
   }
   resetBtn.onclick = () => { resetEmail(); setStatus(emailStatus, "Reset from the term sheet"); };
-  draftBtn.onclick = () => {
-    const base = nameInput.value.replace(/[<>:"/\\|?*]/g, "").trim() || "termsheet";
-    const blob = TSN.buildEml(emailFieldValues(), { name: base + ".pdf", bytes: new Uint8Array(bytes) });
-    const url = URL.createObjectURL(blob);
-    const a = el("a", { href: url, download: base + ".eml" });
-    document.body.append(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 10000);
-    setStatus(emailStatus, `Saved "${base}.eml" in Downloads — double-click it to open the draft in Outlook`);
+  // Copy the email body as formatted HTML (paste into Outlook keeps the table) plus a plain-text fallback.
+  draftBtn.onclick = async () => {
+    const values = emailFieldValues();
+    const html = TSN.renderHtml(values);
+    const text = [values.greeting, values.intro, values.title,
+      ...TSN.EMAIL_ROWS.map(([key, label]) => `${label}: ${(values[key] || "").replace(/\n/g, ", ")}`), values.footer]
+      .filter(Boolean).join("\n");
+    try {
+      await navigator.clipboard.write([new ClipboardItem({
+        "text/html": new Blob([html], { type: "text/html" }),
+        "text/plain": new Blob([text], { type: "text/plain" }),
+      })]);
+    } catch {
+      // Older browsers or file:// without clipboard access: copy the rendered preview instead.
+      const range = document.createRange();
+      range.selectNodeContents(preview);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      document.execCommand("copy");
+      sel.removeAllRanges();
+    }
+    setStatus(emailStatus, "Email copied — paste it into a new Outlook message");
   };
 
   let labelTouched = false;
