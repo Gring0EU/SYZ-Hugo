@@ -1,7 +1,7 @@
-"""Refresh the market data inside Term Sheet Studio from Yahoo Finance (yfinance).
+"""Refresh the market data inside Life Syzcle from Yahoo Finance (yfinance).
 
     pip install yfinance
-    python3 termsheet-studio/refresh_market_data.py [termsheet-studio/T01_termsheet_studio.html]
+    python3 termsheet-studio/refresh_market_data.py [termsheet-studio/T01_life_syzcle.html]
 
 The page carries the workbench's snapshot (<script id="sp-data">: quotes and
 daily closes for the Core List, gzipped JSON). This script downloads the last
@@ -31,7 +31,7 @@ import sys
 import yfinance as yf
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-DEFAULT = os.path.join(HERE, "T01_termsheet_studio.html")
+DEFAULT = os.path.join(HERE, "T01_life_syzcle.html")
 TAG = re.compile(r'(<script id="sp-data" type="application/octet-stream">)(.*?)(</script>)', re.S)
 BATCH = 150
 OVERLAP = 10   # days of stored history re-taken from Yahoo

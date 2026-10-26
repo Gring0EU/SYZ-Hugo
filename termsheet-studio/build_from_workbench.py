@@ -1,8 +1,8 @@
-"""Build Term Sheet Studio from the Advisory Workbench single-file build.
+"""Build Life Syzcle from the Advisory Workbench single-file build.
 
     python3 -I termsheet-studio/build_from_workbench.py path/to/G01_workbench_YYYY-MM-DD.html
 
-Writes termsheet-studio/T01_termsheet_studio.html next to this script: the
+Writes termsheet-studio/T01_life_syzcle.html next to this script: the
 workbench's Term Sheet module (Term sheet, Fact sheet, SP Event) as a
 standalone page. Everything else -- Portfolio Screener, Structured Product
 Screener, basket lab and optimiser, Excel export, simulator -- is left out.
@@ -25,7 +25,7 @@ import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(HERE, "T01_termsheet_studio.html")
+OUT = os.path.join(HERE, "T01_life_syzcle.html")
 LOGO = os.path.join(HERE, "syz_logo.png")   # the orange Syz signature, transparent, 96 px high
 
 
@@ -100,11 +100,14 @@ def main(path):
     css = css.replace(between(css, "/* --- basket ideas view", "/* --- term sheet card", "basket and saved-basket styles"), "")
     css = re.sub(r"\.subtabs? ?\{[^}]*\}\n|\.subtab[.:][^{]*\{[^}]*\}\n|\.idea-filters[^{]*\{[^}]*\}\n|\.kpis? [^{]*\{[^}]*\}\n|\.kpi b \{[^}]*\}\n", "", css)
     css += """
-/* --- Term Sheet Studio ------------------------------------------------------ */
+/* --- Life Syzcle ----------------------------------------------------------- */
 .module-btn small { display: block; font-size: 11px; font-weight: 300; color: #C9CCD6; }
 .module-btn.is-active small { color: #FFF; }
-.brand { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
-.brand img { height: 34px; width: auto; display: block; }
+/* the brand: "Life" + the Syz signature + "cle" */
+.brand { display: flex; flex-direction: column; justify-content: center; padding: 8px 0; color: #FFF; }
+.brand-name { display: flex; align-items: flex-end; font-size: 22px; line-height: 1; letter-spacing: -.01em; color: #FFF; }
+.brand-name img { height: 34px; width: auto; display: block; margin: 0 1px 0 3px; position: relative; top: 7px; }
+.brand-tag { margin-top: 9px; font-size: 11px; font-weight: 300; color: #C9CCD6; white-space: nowrap; }
 /* the 300px box was for pasting portfolio extracts: here a text box is as tall as its rows */
 textarea { min-height: 0; }
 /* a label whose text holds bold words reads as one line, with its box below */
@@ -166,7 +169,7 @@ TAIWAN SEMICONDUCTOR MANUFACTURING CO LTD</textarea>""",
   SP.local = {
     post: function (url, body) {
       var fn = ROUTES[url];
-      if (!fn) return Promise.reject(new Error("Not available in Term Sheet Studio: " + url));
+      if (!fn) return Promise.reject(new Error("Not available in Life Syzcle: " + url));
       return SP.data.ready().then(function () {
         return new Promise(function (resolve) { setTimeout(resolve, 30); });   // let the busy overlay paint
       }).then(function () { return fn(JSON.parse(JSON.stringify(body || {}))); });
@@ -176,7 +179,7 @@ TAIWAN SEMICONDUCTOR MANUFACTURING CO LTD</textarea>""",
 """
 
     helpers = """
-/* Term Sheet Studio -- shared helpers (window.W): the part of the workbench's helpers the three
+/* Life Syzcle -- shared helpers (window.W): the part of the workbench's helpers the three
    screens use: DOM, escaping, the in-page requests, the banner and busy overlay, file drops,
    selects and the tabs. */
 (function () {
@@ -296,7 +299,7 @@ TAIWAN SEMICONDUCTOR MANUFACTURING CO LTD</textarea>""",
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Term Sheet Studio</title>
+<title>Life Syzcle</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;700&display=swap">
@@ -306,7 +309,9 @@ TAIWAN SEMICONDUCTOR MANUFACTURING CO LTD</textarea>""",
 <body>
 
 <header class="topbar">
-  <div class="brand"><img src="data:image/png;base64,%s" alt="SYZ"><span>Term Sheet Studio</span></div>
+  <div class="brand" title="Life Syzcle: a structured product's whole life, from term sheet to the last coupon">
+    <span class="brand-name">Life<img src="data:image/png;base64,%s" alt="Syz">cle</span>
+    <small class="brand-tag">Born on a term sheet, raised on coupons</small></div>
   <nav class="modules" role="tablist" aria-label="Tools">
     <button type="button" class="module-btn is-active" role="tab" aria-selected="true" data-screen="t-term">Term sheet <small>Format the card and table</small></button>
     <button type="button" class="module-btn" role="tab" aria-selected="false" data-screen="t-fact">Fact sheet <small>Client proposal</small></button>

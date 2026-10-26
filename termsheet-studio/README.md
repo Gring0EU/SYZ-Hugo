@@ -1,6 +1,9 @@
-# Term Sheet Studio
+# Life Syzcle
 
-`T01_termsheet_studio.html` is the Advisory Workbench's Term Sheet module on its
+*Born on a term sheet, raised on coupons.* A structured product's whole
+life, from the first quote to the last coupon, with Syz in the middle of it.
+
+`T01_life_syzcle.html` is the Advisory Workbench's Term Sheet module on its
 own: one HTML file, opened in the browser, nothing to install.
 
 | Tab | What it does |
