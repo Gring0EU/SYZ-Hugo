@@ -19,12 +19,14 @@ screens call. Every cut is an exact text replacement that must match once,
 so a workbench change that moves the code fails the build loudly instead of
 producing a half-working page.
 """
+import base64
 import os
 import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "T01_termsheet_studio.html")
+LOGO = os.path.join(HERE, "syz_logo.png")   # the orange Syz signature, transparent, 96 px high
 
 
 def cut(text, old, new, what):
@@ -101,6 +103,8 @@ def main(path):
 /* --- Term Sheet Studio ------------------------------------------------------ */
 .module-btn small { display: block; font-size: 11px; font-weight: 300; color: #C9CCD6; }
 .module-btn.is-active small { color: #FFF; }
+.brand { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
+.brand img { height: 34px; width: auto; display: block; }
 /* the 300px box was for pasting portfolio extracts: here a text box is as tall as its rows */
 textarea { min-height: 0; }
 /* a label whose text holds bold words reads as one line, with its box below */
@@ -288,7 +292,7 @@ textarea { min-height: 0; }
 <body>
 
 <header class="topbar">
-  <div class="brand">SYZ <span>Term Sheet Studio</span></div>
+  <div class="brand"><img src="data:image/png;base64,%s" alt="SYZ"><span>Term Sheet Studio</span></div>
   <nav class="modules" role="tablist" aria-label="Tools">
     <button type="button" class="module-btn is-active" role="tab" aria-selected="true" data-screen="t-term">Term sheet <small>Format the card and table</small></button>
     <button type="button" class="module-btn" role="tab" aria-selected="false" data-screen="t-fact">Fact sheet <small>Client proposal</small></button>
@@ -299,7 +303,7 @@ textarea { min-height: 0; }
 
 <main>
 
-""" % (os.path.basename(path), css)
+""" % (os.path.basename(path), css, base64.b64encode(open(LOGO, "rb").read()).decode("ascii"))
 
     scripts = (util, data, universe, analytics, market, local, helpers, families, termsheet, factsheet, event)
     head = head.replace(css, prune_css(css, screens + "".join(scripts) + head.replace(css, "")))
