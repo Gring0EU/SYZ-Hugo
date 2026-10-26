@@ -122,6 +122,13 @@ textarea { min-height: 0; }
       <button type="button" id="ts-from-lab" class="btn">Use basket lab names</button>
 """, "", "basket lab buttons")
     screens = cut(screens, '<h2>SP Event</h2>', '<h2>Lifecycle events</h2>', "SP Event heading")
+    # first use: no sample basket or coupon, the form waits for a pricer page or typed terms
+    screens = cut(screens, """<textarea id="ts-names" rows="4">NVIDIA CORP
+ASML HOLDING NV
+TAIWAN SEMICONDUCTOR MANUFACTURING CO LTD</textarea>""",
+                  """<textarea id="ts-names" rows="4" placeholder="e.g.&#10;NVIDIA CORP&#10;ASML HOLDING NV"></textarea>""", "sample names")
+    screens = cut(screens, '<input type="number" id="ts-coupon" value="13.33" step="0.01">',
+                  '<input type="number" id="ts-coupon" step="0.01" placeholder="from the pricer">', "sample coupon")
 
     # --- engine: only what the Fact sheet reads --------------------------------------------
     data_blob = between(src, '<script id="sp-data"', "</script>", "market-data snapshot", include_end=True)
@@ -242,17 +249,20 @@ textarea { min-height: 0; }
     });
     $all(".screen").forEach(function (s) { s.classList.toggle("is-active", s.dataset.screen === screen); });
     window.scrollTo(0, 0);
-    try { localStorage.setItem("ts-studio.screen", screen); } catch (e) { /* storage blocked: not remembered */ }
     if (hooks[screen]) hooks[screen]();
   }
   function onShow(screen, fn) { hooks[screen] = fn; }
   $all(".module-btn").forEach(function (b) { b.addEventListener("click", function () { show(b.dataset.screen); }); });
-  // Open on the tab used last, once the screens have registered their hooks.
-  window.addEventListener("load", function () {
-    var last = null;
-    try { last = localStorage.getItem("ts-studio.screen"); } catch (e) { last = null; }
-    if (last && last !== "t-term" && $all(".screen").some(function (s) { return s.dataset.screen === last; })) show(last);
-  });
+  try { localStorage.removeItem("ts-studio.screen"); } catch (e) { /* earlier builds remembered the tab */ }
+
+  // The date of the market data in the page (Yahoo Finance, refreshed by refresh_market_data.py).
+  window.SP.data.ready().then(function (raw) {
+    var d = /^(\\d{4})-(\\d{2})-(\\d{2})(?: (\\d{2}:\\d{2}))?/.exec(raw.asof || "");
+    if (!d) return;
+    var month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][+d[2] - 1];
+    $("#asof").textContent = "Market data " + +d[3] + " " + month + " " + d[1] + (d[4] ? " " + d[4] : "");
+    $("#asof").title = "Yahoo Finance quotes and daily closes, as of " + raw.asof;
+  }).catch(function () { /* no data: the Fact sheet says so when it is built */ });
 
   window.W = { $: $, $all: $all, esc: esc, post: post, banner: banner, busy: busy, run: run,
                wireDrop: wireDrop, fillSelect: fillSelect, show: show, onShow: onShow };
@@ -274,6 +284,10 @@ textarea { min-height: 0; }
                     """'<b>not found</b> <small class="muted">not in the market data: the fact sheet shows its terms only</small>'""",
                     "not-found hint")
     termsheet = termsheet.replace(between(termsheet, '  $("#ts-to-lab").addEventListener("click"', '  $("#ts-reset-title")', "basket lab handlers"), "")
+    clean = ("  // Every visit starts clean: the last session's quote is not brought back.\n"
+             "  try { localStorage.removeItem(STORE); } catch (e) { /* storage blocked: nothing to clear */ }\n")
+    termsheet = cut(termsheet, "  restore();\n  render();\n", clean + "  render();\n", "term sheet restore")
+    factsheet = cut(factsheet, "\n  restore();\n", "\n" + clean.replace("quote", "fact sheet settings"), "fact sheet restore")
     if "labBasket" in termsheet or "openLab" in termsheet or "ts-to-lab" in termsheet:
         sys.exit("build: basket lab code left in the term sheet")
 
@@ -298,6 +312,7 @@ textarea { min-height: 0; }
     <button type="button" class="module-btn" role="tab" aria-selected="false" data-screen="t-fact">Fact sheet <small>Client proposal</small></button>
     <button type="button" class="module-btn" role="tab" aria-selected="false" data-screen="t-event">Lifecycle events <small>Autocall, expiry, delivery emails</small></button>
   </nav>
+  <div class="actions"><span id="asof" class="asof"></span></div>
 </header>
 <div id="banner" class="banner" hidden></div>
 
