@@ -89,7 +89,7 @@
   <footer>Runs entirely in this browser window. Term sheets are not uploaded anywhere. Rules version 2026-10-15.</footer>
 </main>
 
-<script>window.TS_RULES = {"_comment": "Editable naming rules for term sheet file names. Regex patterns are case-insensitive and tolerant of missing spaces only where written with \\s*.", "name_template": "{fixing_date} - {currency} {duration} {issuer} {product_type} {coupon} {underlyings} - {identifier}", "date_format": "%y%m%d", "underlying_separator": "-", "_label_comment": "Step 2: short booking label built from the name (ISSUER TYPE COUPON UNDERLYINGS). Must be at most label_max_length characters; if too long the product type is dropped first, then the '%' signs.", "label_max_length": 25, "instructions_template": "Produit pour SYZ uniquement, merci d'utiliser le libellé suivant:\n{label}\nMerci de mettre PS code instrument O29\nMerci d’ouvrir et débloquer la place de bourse YDER dans le listing\nMerci de mettre la place de bourse YCHD en Main Trading Place et de la bloquer dans le listing\nMerci de préciser entity group owner SYZG", "_email_comment": "Step 3: trade confirmation email. Every value is editable in the tool before the Outlook draft is written; this is only the wording and the layout. 'rows' is [field, label] in table order.", "email": {"greeting": "Hello,", "intro": "Voici la confirmation du Trade comme discuté par téléphone traité avec {issuer}:", "settlement_lag": "T+5", "rows": [["currency", "Currency"], ["maturity", "Maturity"], ["underlyings", "Underlying"], ["strike", "Strike"], ["frequency", "Frequency"], ["coupon", "Guaranteed Coupon"]], "product_titles": {"default": "Structured Product", "AC": "Reverse Autocall with Low Strike", "RC": "Reverse Convertible", "BRC": "Barrier Reverse Convertible", "BTB": "Beat the Benchmark", "CPN": "Capital Protection Note", "SN": "Shark Note", "DC": "Discount Certificate", "BC": "Bonus Certificate", "TRK": "Tracker Certificate", "CLN": "Credit-Linked Note", "SHARK NOTE": "Shark Note"}, "style": {"font": "Segoe UI, Arial, sans-serif", "text": "#222222", "accent": "#E8622A", "title_background": "#F2F2F2", "border": "#DDDDDD"}}, "issuers": [{"code": "TCM", "patterns": ["TCM[-\\s]*Collateralised", "Collateral\\s*Provider\\s*\\(TCM\\)", "TCM\\s*Security\\s*Agreement"], "priority": true}, {"code": "OPS", "patterns": ["Opus\\s*\\(Public\\)\\s*Chartered\\s*Issuance"], "priority": true}, {"code": "CORN", "patterns": ["Corn[èe]r\\s*Bank"]}, {"code": "BIL", "patterns": ["Banque\\s*Internationale\\s*[àa]\\s*Luxembourg"]}, {"code": "RAF", "patterns": ["Raiffeisen"]}, {"code": "BOFA", "patterns": ["Merrill\\s*Lynch", "Bank\\s*of\\s*America", "\\bBofA\\b"]}, {"code": "GS", "patterns": ["Goldman\\s*Sachs"]}, {"code": "BNP", "patterns": ["BNP\\s*Paribas"]}, {"code": "SG", "patterns": ["Soci[ée]t[ée]\\s*G[ée]n[ée]rale", "SG\\s*Issuer"]}, {"code": "EFG", "patterns": ["EFG\\s*International", "EFG\\s*Bank", "\\bEFG\\b"]}, {"code": "JB", "patterns": ["Julius\\s*B(?:ae|ä|a)r"]}, {"code": "POST", "patterns": ["Post\\s*Finance"]}, {"code": "AKB", "patterns": ["Aargauische\\s*Kantonalbank"]}, {"code": "UBS", "patterns": ["\\bUBS\\b"]}, {"code": "VON", "patterns": ["Vontobel"]}, {"code": "CITI", "patterns": ["Citigroup", "\\bCiti\\b"]}, {"code": "BARC", "patterns": ["Barclays"]}, {"code": "STAN", "patterns": ["Standard\\s*Chartered"]}, {"code": "JPM", "patterns": ["J\\.?P\\.?\\s*Morgan", "JPMorgan"]}, {"code": "MS", "patterns": ["Morgan\\s*Stanley"]}], "_product_types_comment": "Checked in order; FIRST MATCH WINS, and the order is the rule, not a detail. The desk names a sheet after its early-redemption FEATURE, not after its SSPA base payoff: across the 65 reference sheets the SSPA code says 1220 (Reverse Convertible) on 45 sheets the desk called AC, 1230 (Barrier Reverse Convertible) on 5 more it also called AC, and 1260 (Express) on 2 more. Not one 1230 sheet was ever named BRC. So AC must be tested before BRC and RC: an autocallable barrier reverse convertible is AC. BTB and SN come before AC because a Beat-the-Benchmark or Shark note is also autocallable but keeps its own code. BRC and RC are reached only when nothing autocallable was found. 'coupon_style' fills the coupon slot of the name differently and flags it: 'benchmark' = 'SPX 12.50%', 'capital_protection' = '122% - 90% KG -'. 'coupon_note' flags the coupon for manual check. 'verified' = confirmed by reference examples. 'name' overrides the code in the file name: the desk writes 'Shark Note' in full. 'shark' = '95 KG' (the capital protection level, no '%'). Morgan Stanley does not say 'Shark' anywhere: its sharks are 'Capital Protection Notes with Barrier' (SSPA 1130) paying 'Par * (Capital Protection + Rebate)' after a Knock Out Event, so the knock-out-plus-rebate wording is what identifies them, and SN must stay before AC, whose 'Knock Out Event' pattern they also match.", "product_types": [{"code": "BTB", "verified": true, "patterns": ["Beat\\s*the\\s*Benchmark", "BENCHMARK\\s*UNDERLYING", "Benchmark\\s*Performance", "Name\\s*of\\s*the\\s*Benchmark"], "coupon_style": "benchmark"}, {"code": "SN", "verified": true, "patterns": ["Shark\\s*Note", "Shark\\s*Fin", "Capital\\s*Protection\\s*\\+\\s*Rebate", "Knock[-\\s]*Out\\s*Barrier[\\s\\S]{0,600}?\\bRebate\\b", "\\bRebate\\b[\\s\\S]{0,600}?Knock[-\\s]*Out\\s*Barrier"], "name": "Shark Note", "coupon_style": "shark"}, {"code": "AC", "verified": true, "patterns": ["Autocall", "Auto-Callable", "Automatic\\s*Early\\s*Redemption", "Express\\s*Certificate", "SSPA[^.]{0,40}\\b1260\\b", "Phoenix", "Knock[-\\s]*out\\s*(?:Determination|Event|Date)"]}, {"code": "BRC", "verified": true, "patterns": ["Barrier\\s*Reverse\\s*Convertible", "SSPA[^.]{0,40}\\b1230\\b"]}, {"code": "RC", "verified": true, "patterns": ["Reverse\\s*Convertible", "SSPA[^.]{0,40}\\b1220\\b"]}, {"code": "CPN", "verified": true, "patterns": ["Capital\\s*Protect(?:ion|ed)(?!\\s*:?\\s*No\\b)", "SSPA[^.]{0,40}\\b11[0-4]0\\b"], "coupon_style": "capital_protection"}, {"code": "DC", "verified": false, "patterns": ["Discount\\s*Certificate", "SSPA[^.]{0,40}\\b1200\\b"]}, {"code": "BC", "verified": false, "patterns": ["Bonus\\s*Certificate", "SSPA[^.]{0,40}\\b1320\\b"]}, {"code": "TRK", "verified": false, "patterns": ["Tracker\\s*Certificate", "SSPA[^.]{0,40}\\b1300\\b"]}, {"code": "CLN", "verified": false, "patterns": ["Credit[-\\s]*Linked", "SSPA[^.]{0,40}\\b14\\d0\\b"]}], "_issuer_call_comment": "A product the ISSUER may redeem early at its own discretion, with no trigger level -- 'Callable', not 'Autocallable'. The reference set holds three, and the desk named them three different ways: SG's 'Callable Reverse Convertible' became AC, JPM's 'Callable Barrier Reverse Convertible' became BRC, and Corner's 'Multi Reverse Convertible / Callable / LowStrike' became RC. The first and the last are the same structure (SSPA 1220, low strike, issuer call) under two different codes, so there is no convention to follow here. Merle therefore keeps the code the SSPA base payoff gives and asks, rather than guessing. Only checked when the product type resolved to one of 'applies_to' -- an autocallable sheet is AC whatever else it says, and the label 'Issuer Call: Not Applicable' must not count as evidence, which is why the bare label is not a pattern.", "issuer_call": {"patterns": ["\\bCallable\\b", "at\\s*the\\s*option\\s*of\\s*the\\s*Issuer", "Issuer\\s*has\\s*the\\s*(?:sole\\s*)?right[\\s\\S]{0,60}?(?:redeem|Redempt)"], "applies_to": ["RC", "BRC", "DC", "BC", "TRK"], "warning": "Issuer-callable, not autocallable: the desk has named these AC, BRC and RC. Please confirm the code"}, "_indices_comment": "Bloomberg index tickers; name patterns are used when the sheet gives no Bloomberg code.", "indices": [{"ticker": "SX5E", "patterns": ["EURO\\s*STOXX\\s*50"]}, {"ticker": "SX7E", "patterns": ["EURO\\s*STOXX\\s*Banks"]}, {"ticker": "SXXP", "patterns": ["STOXX\\s*Europe\\s*600"]}, {"ticker": "NKY", "patterns": ["NIKKEI\\s*225"]}, {"ticker": "TPX", "patterns": ["TOPIX"]}, {"ticker": "SPX", "patterns": ["S&P\\s*500"]}, {"ticker": "NDX", "patterns": ["NASDAQ[-\\s]*100"]}, {"ticker": "RTY", "patterns": ["Russell\\s*2000"]}, {"ticker": "INDU", "patterns": ["Dow\\s*Jones\\s*Industrial"]}, {"ticker": "SMI", "patterns": ["Swiss\\s*Market\\s*Index", "\\bSMI\\b"]}, {"ticker": "DAX", "patterns": ["\\bDAX\\b"]}, {"ticker": "CAC", "patterns": ["CAC\\s*40"]}, {"ticker": "UKX", "patterns": ["FTSE\\s*100"]}, {"ticker": "FTSEMIB", "patterns": ["FTSE\\s*MIB"]}, {"ticker": "IBEX", "patterns": ["IBEX\\s*35"]}, {"ticker": "HSCEI", "patterns": ["Hang\\s*Seng\\s*China\\s*Enterprises"]}, {"ticker": "HSI", "patterns": ["Hang\\s*Seng\\s*Index"]}, {"ticker": "AS51", "patterns": ["S&P/ASX\\s*200"]}, {"ticker": "KOSPI2", "patterns": ["KOSPI\\s*200"]}], "_exchange_codes_comment": "Bloomberg exchange suffixes stripped from equity tickers (e.g. 'AIR FP' -> 'AIR').", "exchange_codes": ["UN", "UW", "UQ", "UA", "UP", "UR", "UV", "US", "SW", "SE", "VX", "FP", "GY", "GR", "GF", "NA", "BB", "LN", "IM", "SM", "SQ", "JT", "JP", "AT", "AU", "HK", "CN", "CT", "KS", "DC", "FH", "NO", "SS", "ID", "PL", "AV", "TT", "SP", "CH", "C1", "C2"], "currencies": ["USD", "EUR", "CHF", "GBP", "JPY", "AUD", "CAD", "HKD", "SGD", "SEK", "NOK", "DKK", "CNH", "CNY", "NZD", "ZAR", "PLN", "CZK", "HUF", "MXN", "BRL", "TRY", "ILS", "AED"]};</script>
+<script>window.TS_RULES = {"_comment": "Editable naming rules for term sheet file names. Regex patterns are case-insensitive and tolerant of missing spaces only where written with \\s*.", "name_template": "{fixing_date} - {currency} {duration} {issuer} {product_type} {coupon} {underlyings} - {identifier}", "date_format": "%y%m%d", "underlying_separator": "-", "_label_comment": "Step 2: short booking label built from the name (ISSUER TYPE COUPON UNDERLYINGS). Must be at most label_max_length characters; if too long the product type is dropped first, then the '%' signs.", "label_max_length": 25, "instructions_template": "Produit pour SYZ uniquement, merci d'utiliser le libellé suivant:\n{label}\nMerci de mettre PS code instrument O29\nMerci d’ouvrir et débloquer la place de bourse YDER dans le listing\nMerci de mettre la place de bourse YCHD en Main Trading Place et de la bloquer dans le listing\nMerci de préciser entity group owner SYZG", "_email_comment": "Step 3: trade confirmation email. Greeting, intro and footer around the Advisory Workbench 'Term sheet' card (G01 workbench): grey title band with the orange title, label / value rows, underlyings in orange bold, the coupon in the orange cell. Every value is editable in the tool before it is copied. 'product_titles' is the card title after the maturity ('6M Reverse Convertible with Low Strike'); 'style' is the workbench's Outlook palette.", "email": {"greeting": "Hello,", "intro": "Voici la confirmation du Trade comme discuté par téléphone traité avec {issuer}:", "settlement_lag": "T+5", "product_titles": {"default": "Structured Product", "AC": "Reverse Autocallable", "RC": "Reverse Convertible", "BRC": "Barrier Reverse Convertible", "BTB": "Beat the Benchmark", "CPN": "Capital Protected Note", "SN": "Shark Note", "SHARK NOTE": "Shark Note", "DC": "Discount Certificate", "BC": "Bonus Certificate", "TRK": "Tracker Certificate", "CLN": "Credit-Linked Note"}, "style": {"font": "'Segoe UI',Arial,sans-serif", "paper": "#FFFFFF", "text": "#000000", "band": "#F2F2F2", "orange": "#EE5A00", "line": "#D0D0D0", "coupon_text": "#FFFFFF"}}, "issuers": [{"code": "TCM", "patterns": ["TCM[-\\s]*Collateralised", "Collateral\\s*Provider\\s*\\(TCM\\)", "TCM\\s*Security\\s*Agreement"], "priority": true}, {"code": "OPS", "patterns": ["Opus\\s*\\(Public\\)\\s*Chartered\\s*Issuance"], "priority": true}, {"code": "CORN", "patterns": ["Corn[èe]r\\s*Bank"]}, {"code": "BIL", "patterns": ["Banque\\s*Internationale\\s*[àa]\\s*Luxembourg"]}, {"code": "RAF", "patterns": ["Raiffeisen"]}, {"code": "BOFA", "patterns": ["Merrill\\s*Lynch", "Bank\\s*of\\s*America", "\\bBofA\\b"]}, {"code": "GS", "patterns": ["Goldman\\s*Sachs"]}, {"code": "BNP", "patterns": ["BNP\\s*Paribas"]}, {"code": "SG", "patterns": ["Soci[ée]t[ée]\\s*G[ée]n[ée]rale", "SG\\s*Issuer"]}, {"code": "EFG", "patterns": ["EFG\\s*International", "EFG\\s*Bank", "\\bEFG\\b"]}, {"code": "JB", "patterns": ["Julius\\s*B(?:ae|ä|a)r"]}, {"code": "POST", "patterns": ["Post\\s*Finance"]}, {"code": "AKB", "patterns": ["Aargauische\\s*Kantonalbank"]}, {"code": "UBS", "patterns": ["\\bUBS\\b"]}, {"code": "VON", "patterns": ["Vontobel"]}, {"code": "CITI", "patterns": ["Citigroup", "\\bCiti\\b"]}, {"code": "BARC", "patterns": ["Barclays"]}, {"code": "STAN", "patterns": ["Standard\\s*Chartered"]}, {"code": "JPM", "patterns": ["J\\.?P\\.?\\s*Morgan", "JPMorgan"]}, {"code": "MS", "patterns": ["Morgan\\s*Stanley"]}], "_product_types_comment": "Checked in order; FIRST MATCH WINS, and the order is the rule, not a detail. The desk names a sheet after its early-redemption FEATURE, not after its SSPA base payoff: across the 65 reference sheets the SSPA code says 1220 (Reverse Convertible) on 45 sheets the desk called AC, 1230 (Barrier Reverse Convertible) on 5 more it also called AC, and 1260 (Express) on 2 more. Not one 1230 sheet was ever named BRC. So AC must be tested before BRC and RC: an autocallable barrier reverse convertible is AC. BTB and SN come before AC because a Beat-the-Benchmark or Shark note is also autocallable but keeps its own code. BRC and RC are reached only when nothing autocallable was found. 'coupon_style' fills the coupon slot of the name differently and flags it: 'benchmark' = 'SPX 12.50%', 'capital_protection' = '122% - 90% KG -'. 'coupon_note' flags the coupon for manual check. 'verified' = confirmed by reference examples. 'name' overrides the code in the file name: the desk writes 'Shark Note' in full. 'shark' = '95 KG' (the capital protection level, no '%'). Morgan Stanley does not say 'Shark' anywhere: its sharks are 'Capital Protection Notes with Barrier' (SSPA 1130) paying 'Par * (Capital Protection + Rebate)' after a Knock Out Event, so the knock-out-plus-rebate wording is what identifies them, and SN must stay before AC, whose 'Knock Out Event' pattern they also match.", "product_types": [{"code": "BTB", "verified": true, "patterns": ["Beat\\s*the\\s*Benchmark", "BENCHMARK\\s*UNDERLYING", "Benchmark\\s*Performance", "Name\\s*of\\s*the\\s*Benchmark"], "coupon_style": "benchmark"}, {"code": "SN", "verified": true, "patterns": ["Shark\\s*Note", "Shark\\s*Fin", "Capital\\s*Protection\\s*\\+\\s*Rebate", "Knock[-\\s]*Out\\s*Barrier[\\s\\S]{0,600}?\\bRebate\\b", "\\bRebate\\b[\\s\\S]{0,600}?Knock[-\\s]*Out\\s*Barrier"], "name": "Shark Note", "coupon_style": "shark"}, {"code": "AC", "verified": true, "patterns": ["Autocall", "Auto-Callable", "Automatic\\s*Early\\s*Redemption", "Express\\s*Certificate", "SSPA[^.]{0,40}\\b1260\\b", "Phoenix", "Knock[-\\s]*out\\s*(?:Determination|Event|Date)"]}, {"code": "BRC", "verified": true, "patterns": ["Barrier\\s*Reverse\\s*Convertible", "SSPA[^.]{0,40}\\b1230\\b"]}, {"code": "RC", "verified": true, "patterns": ["Reverse\\s*Convertible", "SSPA[^.]{0,40}\\b1220\\b"]}, {"code": "CPN", "verified": true, "patterns": ["Capital\\s*Protect(?:ion|ed)(?!\\s*:?\\s*No\\b)", "SSPA[^.]{0,40}\\b11[0-4]0\\b"], "coupon_style": "capital_protection"}, {"code": "DC", "verified": false, "patterns": ["Discount\\s*Certificate", "SSPA[^.]{0,40}\\b1200\\b"]}, {"code": "BC", "verified": false, "patterns": ["Bonus\\s*Certificate", "SSPA[^.]{0,40}\\b1320\\b"]}, {"code": "TRK", "verified": false, "patterns": ["Tracker\\s*Certificate", "SSPA[^.]{0,40}\\b1300\\b"]}, {"code": "CLN", "verified": false, "patterns": ["Credit[-\\s]*Linked", "SSPA[^.]{0,40}\\b14\\d0\\b"]}], "_issuer_call_comment": "A product the ISSUER may redeem early at its own discretion, with no trigger level -- 'Callable', not 'Autocallable'. The reference set holds three, and the desk named them three different ways: SG's 'Callable Reverse Convertible' became AC, JPM's 'Callable Barrier Reverse Convertible' became BRC, and Corner's 'Multi Reverse Convertible / Callable / LowStrike' became RC. The first and the last are the same structure (SSPA 1220, low strike, issuer call) under two different codes, so there is no convention to follow here. Merle therefore keeps the code the SSPA base payoff gives and asks, rather than guessing. Only checked when the product type resolved to one of 'applies_to' -- an autocallable sheet is AC whatever else it says, and the label 'Issuer Call: Not Applicable' must not count as evidence, which is why the bare label is not a pattern.", "issuer_call": {"patterns": ["\\bCallable\\b", "at\\s*the\\s*option\\s*of\\s*the\\s*Issuer", "Issuer\\s*has\\s*the\\s*(?:sole\\s*)?right[\\s\\S]{0,60}?(?:redeem|Redempt)"], "applies_to": ["RC", "BRC", "DC", "BC", "TRK"], "warning": "Issuer-callable, not autocallable: the desk has named these AC, BRC and RC. Please confirm the code"}, "_indices_comment": "Bloomberg index tickers; name patterns are used when the sheet gives no Bloomberg code.", "indices": [{"ticker": "SX5E", "patterns": ["EURO\\s*STOXX\\s*50"]}, {"ticker": "SX7E", "patterns": ["EURO\\s*STOXX\\s*Banks"]}, {"ticker": "SXXP", "patterns": ["STOXX\\s*Europe\\s*600"]}, {"ticker": "NKY", "patterns": ["NIKKEI\\s*225"]}, {"ticker": "TPX", "patterns": ["TOPIX"]}, {"ticker": "SPX", "patterns": ["S&P\\s*500"]}, {"ticker": "NDX", "patterns": ["NASDAQ[-\\s]*100"]}, {"ticker": "RTY", "patterns": ["Russell\\s*2000"]}, {"ticker": "INDU", "patterns": ["Dow\\s*Jones\\s*Industrial"]}, {"ticker": "SMI", "patterns": ["Swiss\\s*Market\\s*Index", "\\bSMI\\b"]}, {"ticker": "DAX", "patterns": ["\\bDAX\\b"]}, {"ticker": "CAC", "patterns": ["CAC\\s*40"]}, {"ticker": "UKX", "patterns": ["FTSE\\s*100"]}, {"ticker": "FTSEMIB", "patterns": ["FTSE\\s*MIB"]}, {"ticker": "IBEX", "patterns": ["IBEX\\s*35"]}, {"ticker": "HSCEI", "patterns": ["Hang\\s*Seng\\s*China\\s*Enterprises"]}, {"ticker": "HSI", "patterns": ["Hang\\s*Seng\\s*Index"]}, {"ticker": "AS51", "patterns": ["S&P/ASX\\s*200"]}, {"ticker": "KOSPI2", "patterns": ["KOSPI\\s*200"]}], "_exchange_codes_comment": "Bloomberg exchange suffixes stripped from equity tickers (e.g. 'AIR FP' -> 'AIR').", "exchange_codes": ["UN", "UW", "UQ", "UA", "UP", "UR", "UV", "US", "SW", "SE", "VX", "FP", "GY", "GR", "GF", "NA", "BB", "LN", "IM", "SM", "SQ", "JT", "JP", "AT", "AU", "HK", "CN", "CT", "KS", "DC", "FH", "NO", "SS", "ID", "PL", "AV", "TT", "SP", "CH", "C1", "C2"], "currencies": ["USD", "EUR", "CHF", "GBP", "JPY", "AUD", "CAD", "HKD", "SGD", "SEK", "NOK", "DKK", "CNH", "CNY", "NZD", "ZAR", "PLN", "CZK", "HUF", "MXN", "BRL", "TRY", "ILS", "AED"]};</script>
 <script>/**
  * @licstart The following is the entire license notice for the
  * JavaScript code in this page
@@ -279,94 +279,163 @@ const TSN = (() => {
   const buildInstructions = (label) => RULES.instructions_template.replace("{label}", () => label);
 
   // ------------------------------------------------------------------ step 3: confirmation email
-  // "18M" -> ["18-M", "18-Month"], "1Y" -> ["1-Y", "1-Year"]
-  function maturity(duration) {
-    const m = /^(\d+)([YM])$/.exec(duration || "");
-    if (!m) return [duration || "", duration || ""];
-    return [`${m[1]}-${m[2]}`, `${m[1]}-${m[2] === "Y" ? "Year" : "Month"}`];
+  // The table is the Advisory Workbench "Term sheet" card (G01 workbench, termsheet.js): orange
+  // title on a grey band, label / value rows on light grey rules, the underlyings in orange bold,
+  // the coupon (or the key term) in the orange cell. Keep the two in step.
+
+  // Pricer and term sheet names -> card names: "TAIWAN SEMICONDUCTOR MANUFACTURING CO LTD" -> "TAIWAN SEMICONDUCTOR".
+  const CARD_ALIASES = { "TAIWAN SEMICONDUCTOR MANUFACTURING": "TAIWAN SEMICONDUCTOR", "META PLATFORMS": "META",
+    "INTERNATIONAL BUSINESS MACHINES": "IBM", "MICHELIN CGDE": "MICHELIN", "PIRELLI C": "PIRELLI" };
+  const CARD_SUFFIX = /^(INC|INCORPORATED|CORP|CORPORATION|CO|COMPANY|LTD|LIMITED|PLC|SA|AG|NV|SE|SPA|AB|ASA|OYJ|HOLDINGS?|GROUP|THE|ADR|SPON|SPONSORED|SP|REG|REGISTERED|SHS|SHARES|CLASS|CL|AND|[A-C])$/;
+  function cardName(raw) {
+    const words = String(raw || "").toUpperCase().replace(/[-,./()]+/g, " ").replace(/\s+/g, " ").trim().split(" ");
+    while (words.length > 1 && CARD_SUFFIX.test(words[words.length - 1])) words.pop();
+    const s = words.join(" ");
+    return CARD_ALIASES[s] || s;
   }
 
-  function productTitle(values) {
-    const [short] = maturity(values.duration || "");
+  // 68.164895 -> "68.16%", 100 -> "100%"
+  const pctText = (x) => `${+(+x).toFixed(2)}%`;
+  const monthsOfDuration = (d) => { const m = /^(\d+)([YM])$/.exec(d || ""); return m ? +m[1] * (m[2] === "Y" ? 12 : 1) : null; };
+  const GROWTH = ["CPN", "SN", "SHARK NOTE"];
+  const LOW_STRIKE = ["AC", "RC", "BRC"];
+
+  // Card title: "6M Reverse Convertible with Low Strike", "18M 95% Protected Shark Note".
+  function cardTitle(values, ts) {
+    const type = (values.product_type || "").toUpperCase();
     const titles = RULES.email.product_titles;
-    return [short, titles[(values.product_type || "").toUpperCase()] || titles.default].filter(Boolean).join(" ");
+    const months = monthsOfDuration(values.duration);
+    let base = titles[type] || titles.default;
+    const protection = parseFloat(ts.protection.value);
+    if (type === "CPN" && protection) base = `${pctText(protection)} ${base}`;
+    else if ((type === "SN" || type === "SHARK NOTE") && protection) base = `${pctText(protection)} Protected ${base}`;
+    const strike = parseFloat(ts.strike.value);
+    if (LOW_STRIKE.includes(type) && strike && strike < 100) base += " with Low Strike";
+    return [months ? `${months}M` : "", base].filter(Boolean).join(" ");
   }
 
   // Everything the email needs, ready to be shown (and edited) in the page.
+  // rows: [{ label, value, kind }] in table order; kind "bold", "names" (one per line) or "coupon" (orange cell).
   function emailValues(ts) {
     const values = valuesOf(ts);
-    const [, long] = maturity(values.duration || "");
-    const issuer = values.issuer || "";
-    const size = ts.size.value || values.currency || "";
+    const type = (values.product_type || "").toUpperCase();
+    const months = monthsOfDuration(values.duration);
+    const pct = (f) => (f.value !== "" && !Number.isNaN(parseFloat(f.value)) ? pctText(parseFloat(f.value)) : "");
+    const names = (ts.underlying_names.value || (values.underlyings || "").replace(/-/g, "\n"))
+      .split("\n").map((n) => n.trim()).filter(Boolean).map(cardName);
+    const rows = [
+      { label: "Currency", value: values.currency || "", kind: "bold" },
+      { label: "Nominal", value: "" }, // the traded amount: left blank, the row is dropped if it stays blank
+      { label: "Maturity", value: months ? `${months}-Months` : "" },
+      { label: "Underlying", value: names.join("\n"), kind: "names" },
+    ];
+    if (GROWTH.includes(type)) {
+      rows.push({ label: "Capital Protection", value: pct(ts.protection) ? `${pct(ts.protection)} at maturity` : "" });
+      if (type === "CPN") rows.push({ label: "Strike", value: pct(ts.strike) || "100%" });
+      else {
+        rows.push({ label: "Knock-out Barrier", value: pct(ts.ko_barrier) },
+          { label: "Rebate", value: pct(ts.rebate) ? `${pct(ts.rebate)} if knocked out` : "" });
+      }
+      rows.push({ label: "Participation", value: pct(ts.participation) ? `${pct(ts.participation)} of the rise` : "", kind: "coupon" });
+    } else {
+      rows.push({ label: "Strike", value: pct(ts.strike) });
+      if (type === "AC") {
+        rows.push({ label: "Autocall Trigger", value: ts.autocall_trigger.value },
+          { label: "Autocall Frequency", value: ts.autocall_frequency.value || ts.frequency.value },
+          { label: "Non-Call period", value: ts.non_call.value });
+      } else rows.push({ label: "Coupon Frequency", value: ts.frequency.value });
+      const rate = /^([\d.]+)%$/.exec(values.coupon || "");
+      rows.push({ label: "Coupon", value: rate ? `${parseFloat(rate[1]).toFixed(2)} % p.a.` : values.coupon ? `${values.coupon} p.a.` : "", kind: "coupon" });
+    }
     return {
-      to: "", subject: "",
       greeting: RULES.email.greeting,
-      intro: RULES.email.intro.replace("{issuer}", () => issuer),
-      title: productTitle(values),
-      currency: issuer ? `${size} (${issuer} Issuer)` : size,
-      maturity: long,
-      underlyings: ts.underlying_names.value || (values.underlyings || "").replace(/-/g, "\n"),
-      strike: ts.strike.value,
-      frequency: ts.frequency.value,
-      coupon: values.coupon ? `${values.coupon} p.a.` : "",
+      intro: RULES.email.intro.replace("{issuer}", () => values.issuer || ""),
+      title: cardTitle(values, ts),
+      rows,
       footer: ["Strike Close", ts.settlement.value || "Physical Delivery", RULES.email.settlement_lag].filter(Boolean).join("\n"),
     };
   }
 
   const escapeHtml = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-  function renderHtml(values) {
-    const style = RULES.email.style;
-    const lines = (value) => String(value || "").split("\n").filter((l) => l.trim()).map(escapeHtml).join("<br>");
-    const body = RULES.email.rows.map(([key, label]) => {
-      const accent = label === "Underlying" ? ` color:${style.accent};` : "";
-      const highlight = /Coupon$/.test(label) ? ` background:${style.accent}; color:#ffffff;` : "";
-      return `<tr><td style="padding:8px 12px; border-bottom:1px solid ${style.border}; width:180px;">${escapeHtml(label)}</td>` +
-        `<td style="padding:8px 12px; border-bottom:1px solid ${style.border};${accent}${highlight}">${lines(values[key])}</td></tr>`;
-    }).join("\n");
-    return `<div style="font-family:${style.font}; font-size:14px; color:${style.text};">
-<p>${escapeHtml(values.greeting || "")}</p>
-<p>${escapeHtml(values.intro || "")}</p>
-<table style="border-collapse:collapse; width:100%; max-width:760px;">
-<tr><td colspan="2" style="background:${style.title_background}; color:${style.accent}; font-size:18px;
- font-weight:bold; padding:12px;">${escapeHtml(values.title || "")}</td></tr>
-${body}
-</table>
-<p>${lines(values.footer)}</p>
-</div>`;
+  // The card as an Outlook table, as the workbench writes it: every colour is set on every cell, as
+  // bgcolor and inline style (Outlook's Word engine ignores stylesheets), and on the text itself.
+  function cardHtml(title, rows) {
+    const MAIL = RULES.email.style;
+    const font = `font-family:${MAIL.font};font-size:11pt;`;
+    const rule = `border:none;border-bottom:1px solid ${MAIL.line};mso-border-bottom-alt:solid ${MAIL.line} .75pt;`;
+    const ink = (colour, html) => `<font color="${colour}" face="Segoe UI"><span style="${font}color:${colour};">${html}</span></font>`;
+    const td = (attrs, bg, style, html) => `<td${attrs} bgcolor="${bg}" style="${font}background:${bg};${style}">${html}</td>`;
+    const body = rows.filter((r) => String(r.value || "").trim()).map((r) => {
+      const lines = String(r.value).split("\n").map((l) => l.trim()).filter(Boolean);
+      let value = r.kind === "names" ? lines.map((n) => ink(MAIL.orange, `<b>${escapeHtml(n)}</b>`)).join("<br>")
+        : r.kind === "bold" || r.kind === "coupon" ? `<b>${lines.map(escapeHtml).join("<br>")}</b>` : lines.map(escapeHtml).join("<br>");
+      if (r.kind === "coupon") value = ink(MAIL.coupon_text, value);
+      const cell = `padding:6px 10px;${rule}vertical-align:middle;`;
+      return "<tr>" + td(' width="250"', MAIL.paper, `${cell}width:250px;color:${MAIL.text};`, escapeHtml(r.label)) +
+        td(' width="530"', r.kind === "coupon" ? MAIL.orange : MAIL.paper,
+          `${cell}width:530px;color:${r.kind === "coupon" ? MAIL.coupon_text : MAIL.text};${r.kind === "names" ? "line-height:2;" : ""}`, value) + "</tr>";
+    }).join("");
+    const inner = `<table cellpadding="0" cellspacing="0" border="0" width="780" bgcolor="${MAIL.paper}" style="border-collapse:collapse;width:780px;background:${MAIL.paper};mso-table-lspace:0;mso-table-rspace:0;">` +
+      "<tr>" + td(' colspan="2"', MAIL.band, `font-size:18pt;font-weight:bold;color:${MAIL.orange};padding:6px 10px;border:none;`,
+        ink(MAIL.orange, `<b><span style="font-family:${MAIL.font};font-size:18pt;">${escapeHtml(title)}</span></b>`)) + "</tr>" +
+      "<tr>" + td(' colspan="2"', MAIL.paper, "height:22px;font-size:1px;line-height:1px;border:none;", "&nbsp;") + "</tr>" + body + "</table>";
+    // the white margin around the card
+    return `<table cellpadding="0" cellspacing="0" border="0" width="800" bgcolor="${MAIL.paper}" style="border-collapse:collapse;width:800px;background:${MAIL.paper};mso-table-lspace:0;mso-table-rspace:0;">` +
+      `<tr><td bgcolor="${MAIL.paper}" style="background:${MAIL.paper};padding:10px;border:none;">${inner}</td></tr></table>`;
   }
 
-  const base64 = (bytes) => {
-    let binary = "";
-    const chunk = 0x8000;
-    for (let i = 0; i < bytes.length; i += chunk) binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
-    return btoa(binary);
-  };
-  const wrap76 = (s) => s.replace(/(.{76})/g, "$1\r\n");
+  function renderHtml(values) {
+    const MAIL = RULES.email.style;
+    const p = (text) => {
+      const html = String(text || "").split("\n").filter((l) => l.trim()).map(escapeHtml).join("<br>");
+      return html ? `<p style="font-family:${MAIL.font};font-size:11pt;color:${MAIL.text};margin:0 0 11pt;">${html}</p>` : "";
+    };
+    return p(values.greeting) + p(values.intro) + cardHtml(values.title, values.rows) + p(values.footer);
+  }
 
-  // An Outlook draft: X-Unsent makes Outlook open it as a new message, ready to send.
-  function buildEml(values, attachment) {
-    const boundary = "----tsn" + Date.now().toString(36);
-    const text = [values.greeting, values.intro, values.title,
-      ...RULES.email.rows.map(([key, label]) => `${label}: ${values[key] || ""}`), values.footer].filter(Boolean).join("\r\n");
-    const parts = [
-      `Subject: ${values.subject || ""}`,
-      values.to ? `To: ${values.to}` : null,
-      "X-Unsent: 1",
-      "MIME-Version: 1.0",
-      `Content-Type: multipart/mixed; boundary="${boundary}"`,
-      "", `--${boundary}`,
-      'Content-Type: text/html; charset="utf-8"',
-      "Content-Transfer-Encoding: base64", "",
-      wrap76(base64(new TextEncoder().encode(renderHtml(values)))),
-    ].filter((p) => p !== null);
-    if (attachment) {
-      parts.push(`--${boundary}`, "Content-Type: application/pdf",
-        `Content-Disposition: attachment; filename="${attachment.name.replace(/"/g, "")}"`,
-        "Content-Transfer-Encoding: base64", "", wrap76(base64(attachment.bytes)));
+  function renderText(values) {
+    const rows = values.rows.filter((r) => String(r.value || "").trim())
+      .map((r) => `${r.label}\t${String(r.value).split("\n").map((l) => l.trim()).filter(Boolean).join(", ")}`);
+    return [values.greeting, values.intro, "", values.title, ...rows, "", values.footer].join("\n").replace(/\n{3,}/g, "\n\n").trim();
+  }
+
+  // Rich copy, exact: a copy event hands the clipboard our HTML as written. The Clipboard API cleans
+  // the text colours out, and a selection copy re-serialises the styles, so both are only fallbacks.
+  function copyHtml(html, text) {
+    let done = false;
+    const onCopy = (e) => {
+      e.clipboardData.setData("text/html", html);
+      e.clipboardData.setData("text/plain", text);
+      e.preventDefault();
+      done = true;
+    };
+    document.addEventListener("copy", onCopy);
+    try { document.execCommand("copy"); } catch { done = false; }
+    document.removeEventListener("copy", onCopy);
+    if (done) return Promise.resolve();
+    if (navigator.clipboard && window.ClipboardItem) {
+      return navigator.clipboard.write([new ClipboardItem({ "text/html": new Blob([html], { type: "text/html" }),
+        "text/plain": new Blob([text], { type: "text/plain" }) })]).catch(() => selectionCopy(html));
     }
-    parts.push(`--${boundary}--`, "");
-    return new Blob([parts.join("\r\n")], { type: "message/rfc822" });
+    return selectionCopy(html);
+  }
+  function selectionCopy(html) {
+    const box = document.createElement("div");
+    box.contentEditable = "true";
+    box.style.cssText = "position:fixed;left:-9999px;top:0;";
+    box.innerHTML = html;
+    document.body.appendChild(box);
+    const range = document.createRange();
+    range.selectNodeContents(box);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    let ok = false;
+    try { ok = document.execCommand("copy"); } catch { ok = false; }
+    sel.removeAllRanges();
+    box.remove();
+    return ok ? Promise.resolve() : Promise.reject(new Error("copy blocked"));
   }
 
   // ------------------------------------------------------------------ dates
@@ -974,7 +1043,7 @@ ${body}
   }
 
   // ------------------------------------------------------------------ confirmation email details
-  const FREQUENCY_NAMES = { 12: "Monthly", 4: "Quarterly", 3: "Every 4 months", 2: "Semi-annual", 1: "Annual" };
+  const FREQUENCY_NAMES = { 12: "Monthly", 4: "Quarterly", 3: "Every 4 months", 2: "Semi-Annually", 1: "Annually" }; // the workbench card's words
   const TITLE_UNDERLYINGS = ["Worst\\s*Performing\\s*of\\s+(.{5,150})", "\\bon\\s+(.{5,150})", "linked\\s*to\\s+(.{5,150})"];
   const TITLE_END = "Product\\s*Type|Document\\s*Type|SSPA|Final\\s*Terms|Summary\\s*of\\s*Terms|This\\s+(?:document|Term)" +
     "|Autocallable|Multi\\s*Barrier|Capital\\s*Protection|\\(|\\bin\\s+[A-Z]{3}\\b|Note\\s*linked|\\d{1,3}[.,]\\d{2}\\s*%";
@@ -1105,6 +1174,87 @@ ${body}
     }
   }
 
+  // ------------------------------------------------------------------ term sheet card details
+  // The extra terms the Step 3 card shows: autocall trigger and frequency, and for protected
+  // products the protection, knock-out barrier, rebate and participation. Blank when not found:
+  // the row is then left out of the email.
+
+  // Morgan Stanley's underlying table starts each row with the name, cut where the cell wraps:
+  // "Honeywell Aerospace Inc. HONA UW US43849R1059 …" -> "Honeywell Aerospace Inc.". An ADR row
+  // starts "American Depositary Receipts of …", which says nothing: the ticker stands in.
+  function tableNames(text, tickers) {
+    const lines = text.split("\n"), names = [];
+    for (const t of tickers) {
+      const at = rx(`(?<![A-Za-z0-9])${esc(t)}(?:\\s+[A-Z]{2})?\\s+[A-Z]{2}[A-Z0-9]{9}\\d`);
+      const line = lines.find((l) => at.test(l));
+      if (!line) return null;
+      const name = line.slice(0, line.search(at)).replace(/^\s*\d+\s+/, "").trim();
+      if (/^American$/i.test(name)) { // an ADR: "Underlying Shares: Taiwan Semiconductor Manufacturing Co. Ltd."
+        const shares = /Underlying\s*Shares\s*:\s*([^:]+?)\s*(?:\d\s|[A-Z][a-z]+\s*:|$)/m.exec(text.slice(text.indexOf(line)).split("\n").slice(0, 25).join(" "));
+        names.push(shares ? shares[1] : t);
+      } else names.push(name || t);
+    }
+    return names;
+  }
+
+  // Autocall table, one numbered row per observation: "1 100% 100% 27 July 2026 3 August 2026"
+  // (trigger, redemption amount, observation date, payment date). The numbering starts at the first
+  // call: "4 100% …" after a three-month non-call period.
+  function autocallTable(flat) {
+    const head = /Autocall\s*Level|Autocall\s*Trigger|Early\s*Redemption\s*Level/i;
+    const rows = [];
+    for (const h of flat.matchAll(rx(head.source, "gi"))) {
+      const body = flat.slice(h.index, h.index + 3000);
+      rows.length = 0;
+      for (const m of body.matchAll(rx(`(?<![\\d.,%])(\\d{1,2})\\s+(\\d{2,3}(?:[.,]\\d{1,4})?)\\s*%\\s+\\d{2,3}(?:[.,]\\d{1,4})?\\s*%\\s+(${DATE_RE})`, "gi"))) {
+        if (rows.length ? +m[1] !== rows[0].n + rows.length : +m[1] > 60) break;
+        rows.push({ n: +m[1], level: num(m[2]), date: parseDate(m[3]), source: m[0] });
+      }
+      if (rows.length) return rows;
+    }
+    return null;
+  }
+
+  const CARD_FREQ = { 1: "Monthly", 2: "Bi-Monthly", 3: "Quarterly", 6: "Semi-Annually", 12: "Annually" };
+
+  function cardDetails(text, flat, ts) {
+    if (!ts.underlying_names.source) {
+      const names = tableNames(text, ts.underlyings.value.split(RULES.underlying_separator).filter(Boolean));
+      if (names && names.length) ts.underlying_names = field(names.join("\n"), "underlying table");
+    }
+    const pctAfter = (labels) => {
+      const m = rx(`(?:${labels})\\s*:?\\s*(\\d{1,3}(?:[.,]\\d{1,6})?)\\s*%`, "i").exec(flat);
+      return m ? field(String(num(m[1])), snippet(flat, m.index, m.index + m[0].length, 0)) : field();
+    };
+    ts.protection = pctAfter("Capital\\s*(?:Protection|Guarantee)(?:\\s*Level)?");
+    ts.ko_barrier = pctAfter("Knock[-\\s]*Out\\s*Barrier(?:\\s*Level)?");
+    ts.rebate = pctAfter("Rebate(?:\\s*Amount)?");
+    ts.participation = pctAfter("Participation(?:\\s*Rate)?");
+
+    const rows = autocallTable(flat);
+    if (rows) {
+      const first = rows[0].level, last = rows[rows.length - 1].level;
+      ts.autocall_trigger = field(first === last ? pctText(first) : `${pctText(first)} stepping down to ${pctText(last)}`, rows[0].source);
+      // Non-call period, as the workbench card writes it: "3 (1st call in 4 months)"
+      const strikeDate = /^(\d{2})(\d{2})(\d{2})$/.exec(ts.fixing_date.value);
+      if (strikeDate && rows[0].date) {
+        const start = makeDate(2000 + +strikeDate[1], +strikeDate[2], +strikeDate[3]);
+        const months = start && monthsBetween(start, rows[0].date);
+        if (months > 0) ts.non_call = field(`${rows[0].n > 1 ? rows[0].n - 1 : "None"} (1st call in ${months} month${months > 1 ? "s" : ""})`, rows[0].source);
+      }
+      const days = rows.map((r) => r.date).filter(Boolean).map(dayNumber);
+      const gaps = days.slice(1).map((d, i) => d - days[i]).sort((a, b) => a - b);
+      if (gaps.length) {
+        const median = gaps[Math.floor(gaps.length / 2)];
+        const period = PERIOD_MONTHS.reduce((best, p) => (Math.abs(p * 30.44 - median) < Math.abs(best * 30.44 - median) ? p : best));
+        if (CARD_FREQ[period]) ts.autocall_frequency = field(CARD_FREQ[period], `${rows.length} observations`);
+      }
+    } else {
+      const m = rx(`Autocall\\s*(?:Trigger\\s*)?(?:Level|Barrier|Trigger)\\s*:?\\s*(\\d{2,3}(?:[.,]\\d{1,4})?)\\s*%`, "i").exec(flat);
+      if (m) ts.autocall_trigger = field(pctText(num(m[1])), snippet(flat, m.index, m.index + m[0].length, 0));
+    }
+  }
+
   // ------------------------------------------------------------------ identifier
   // The code may be glued to the label that follows it ("XS3464686297ISIN:", "CH1601887461ISIN").
   const ISIN_RE = "(?<![A-Z0-9])([A-Z]{2}[A-Z0-9]{9}\\d)(?:(?![A-Z0-9])|(?=ISIN|Valor|Swiss|Common|Symbol|Security))";
@@ -1161,7 +1311,8 @@ ${body}
   // ------------------------------------------------------------------ entry point
   const FIELD_KEYS = ["fixing_date", "final_fixing_date", "currency", "duration", "issuer", "product_type", "coupon", "underlyings", "identifier"];
   // Used by the confirmation email (step 3), not by the file name.
-  const EMAIL_KEYS = ["underlying_names", "strike", "frequency", "settlement", "size"];
+  const EMAIL_KEYS = ["underlying_names", "strike", "frequency", "settlement", "size",
+    "protection", "ko_barrier", "rebate", "participation", "autocall_trigger", "autocall_frequency", "non_call"];
   const flag = (f, warning) => { f.warning = f.warning ? `${warning}; ${f.warning}` : warning; };
 
   function extractFields(text) {
@@ -1187,26 +1338,21 @@ ${body}
     extractUnderlyings(text, flat, ts, benchmark);
     extractIdentifier(flat, ts);
     emailDetails(text, flat, ts);
+    cardDetails(text, flat, ts);
     return ts;
   }
 
   const valuesOf = (ts) => Object.fromEntries(Object.entries(ts).map(([k, f]) => [k, f.value]));
 
-  return { pdfText, extractFields, buildName, buildLabel, buildInstructions, emailValues, renderHtml, buildEml,
-    EMAIL_ROWS: RULES.email.rows,
+  return { pdfText, extractFields, buildName, buildLabel, buildInstructions, emailValues, renderHtml, renderText, copyHtml,
     durationFromValues, valuesOf, FIELD_KEYS,
     _test: { parseDate, durationLabel, formatCoupon, isinIsValid } };
 })();
 </script>
 <script>
 "use strict";
-// Step 3 email fields: key, label, rows (1 = single line).
-const EMAIL_FIELDS = [
-  ["greeting", "Greeting", 1], ["intro", "Intro line", 2],
-  ["title", "Title bar", 1], ["currency", "Currency", 1], ["maturity", "Maturity", 1],
-  ["underlyings", "Underlying", 3], ["strike", "Strike", 1], ["frequency", "Frequency", 1],
-  ["coupon", "Guaranteed Coupon", 1], ["footer", "Footer lines", 3],
-];
+// Step 3 email: the text around the term sheet card (key, label, rows). The card's own rows come from TSN.emailValues.
+const EMAIL_TEXT = [["greeting", "Greeting", 1], ["intro", "Intro line", 2], ["title", "Card title", 1]];
 
 const LABELS = {
   fixing_date: ["Initial fixing date", "YYMMDD"],
@@ -1301,18 +1447,11 @@ function render(card, file, bytes, ts) {
     el("label", { className: "spaced", textContent: "Instructions" }), instructions,
     el("div", { className: "name-row" }, copyInstrBtn), step2Status));
 
-  // Step 3: confirmation email, filled from the term sheet and editable.
+  // Step 3: confirmation email, filled from the term sheet and editable. The table is the
+  // workbench's term sheet card; a row left blank is not in the email.
   const emailInputs = {};
+  let emailRows = [];
   const emailTable = el("tbody");
-  for (const [key, label, rows] of EMAIL_FIELDS) {
-    const input = rows > 1
-      ? el("textarea", { rows, className: "email-field", spellcheck: false })
-      : el("input", { className: "email-field", spellcheck: false });
-    emailInputs[key] = input;
-    emailTable.append(el("tr", {},
-      el("td", { className: "label" }, label),
-      el("td", {}, input)));
-  }
   const preview = el("div", { className: "preview" });
   const draftBtn = el("button", { className: "act", textContent: "Copy email" });
   const resetBtn = el("button", { className: "act ghost", textContent: "Reset from term sheet" });
@@ -1324,43 +1463,42 @@ function render(card, file, bytes, ts) {
     el("label", { className: "spaced", textContent: "Preview" }), preview));
 
   let emailTouched = false;
-  const emailFieldValues = () => Object.fromEntries(EMAIL_FIELDS.map(([k]) => [k, emailInputs[k].value]));
+  const emailFieldValues = () => ({
+    greeting: emailInputs.greeting.value, intro: emailInputs.intro.value, title: emailInputs.title.value,
+    rows: emailRows.map((r, i) => ({ ...r, value: emailInputs["row" + i].value })),
+    footer: emailInputs.footer.value,
+  });
   const refreshPreview = () => { preview.innerHTML = TSN.renderHtml(emailFieldValues()); };
+  const emailField = (key, label, rows, value, hint) => {
+    const input = rows > 1
+      ? el("textarea", { rows, className: "email-field", spellcheck: false, value })
+      : el("input", { className: "email-field", spellcheck: false, value, placeholder: hint || "" });
+    input.addEventListener("input", () => { emailTouched = true; refreshPreview(); });
+    emailInputs[key] = input;
+    emailTable.append(el("tr", {}, el("td", { className: "label" }, label), el("td", {}, input)));
+  };
   const resetEmail = () => {
     for (const [key, input] of Object.entries(inputs)) ts[key].value = input.value; // use the edited fields
     const values = TSN.emailValues(ts);
-    for (const [key] of EMAIL_FIELDS) emailInputs[key].value = values[key] || "";
+    emailTable.replaceChildren();
+    emailRows = values.rows;
+    for (const [key, label, rows] of EMAIL_TEXT) emailField(key, label, rows, values[key] || "");
+    emailRows.forEach((r, i) => emailField("row" + i, r.label, r.kind === "names" ? 3 : 1, r.value || "",
+      r.label === "Nominal" ? "traded amount (optional)" : "blank = row left out"));
+    emailField("footer", "Footer lines", 3, values.footer || "");
     emailTouched = false;
     refreshPreview();
   };
   resetEmail();
-  for (const input of Object.values(emailInputs)) {
-    input.addEventListener("input", () => { emailTouched = true; refreshPreview(); });
-  }
   resetBtn.onclick = () => { resetEmail(); setStatus(emailStatus, "Reset from the term sheet"); };
-  // Copy the email body as formatted HTML (paste into Outlook keeps the table) plus a plain-text fallback.
   draftBtn.onclick = async () => {
     const values = emailFieldValues();
-    const html = TSN.renderHtml(values);
-    const text = [values.greeting, values.intro, values.title,
-      ...TSN.EMAIL_ROWS.map(([key, label]) => `${label}: ${(values[key] || "").replace(/\n/g, ", ")}`), values.footer]
-      .filter(Boolean).join("\n");
     try {
-      await navigator.clipboard.write([new ClipboardItem({
-        "text/html": new Blob([html], { type: "text/html" }),
-        "text/plain": new Blob([text], { type: "text/plain" }),
-      })]);
+      await TSN.copyHtml(TSN.renderHtml(values), TSN.renderText(values));
+      setStatus(emailStatus, "Email copied: paste it into a new Outlook message (Ctrl+V)");
     } catch {
-      // Older browsers or file:// without clipboard access: copy the rendered preview instead.
-      const range = document.createRange();
-      range.selectNodeContents(preview);
-      const sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(range);
-      document.execCommand("copy");
-      sel.removeAllRanges();
+      setStatus(emailStatus, "This browser blocked the copy: select the preview and copy it by hand");
     }
-    setStatus(emailStatus, "Email copied — paste it into a new Outlook message");
   };
 
   let labelTouched = false;
