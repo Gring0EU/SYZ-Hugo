@@ -1,8 +1,8 @@
 """Look-through exposure of each underlying in the structured products portfolio.
 
-Each note's weight is split equally across the underlyings of its basket
-(equal-split view). The gross view assigns the full note weight to every
-underlying, which reflects worst-of risk: any single name can drive the note.
+Each underlying is assigned the full weight of every note it belongs to (no
+split across the basket): in a worst-of note any single name can drive the
+whole position, so its exposure is the sum of the notes it appears in.
 
 Original weights are on the old portfolio total (EUR 17,498,610); new weights
 on the new total (EUR 18,747,986), as in the export.
@@ -81,33 +81,29 @@ df["n"] = df["basket"].map(len)
 orig_total = (df["val"] / df["orig_w"] * 100).median()
 
 rows = df.explode("basket")
-agg = rows.assign(
-    orig_eq=rows["orig_w"] / rows["n"], new_eq=rows["new_w"] / rows["n"],
-    val_eq=rows["val"] / rows["n"],
-).groupby("basket").agg(
-    notes=("ISIN code", "count"), val_eq=("val_eq", "sum"),
-    orig_eq=("orig_eq", "sum"), new_eq=("new_eq", "sum"),
-    orig_gross=("orig_w", "sum"), new_gross=("new_w", "sum"),
+agg = rows.groupby("basket").agg(
+    notes=("ISIN code", "count"), val=("val", "sum"),
+    orig=("orig_w", "sum"), new=("new_w", "sum"),
     in_notes=("Description", lambda s: "; ".join(s)),
 )
 agg.insert(0, "Name", [NAMES.get(t, (t, "?"))[0] for t in agg.index])
 agg.insert(1, "Type", [NAMES.get(t, (t, "?"))[1] for t in agg.index])
-agg["chg_eq"] = agg["new_eq"] - agg["orig_eq"]
-agg["chg_rel"] = agg["chg_eq"] / agg["orig_eq"] * 100
-avg = agg["new_eq"].mean()
-agg["vs_avg"] = agg["new_eq"] - avg
-agg["position"] = pd.cut(agg["new_eq"] / avg, [0, 0.75, 1.25, float("inf")],
+agg["chg"] = agg["new"] - agg["orig"]
+agg["chg_rel"] = agg["chg"] / agg["orig"] * 100
+avg = agg["new"].mean()
+agg["vs_avg"] = agg["new"] - avg
+agg["position"] = pd.cut(agg["new"] / avg, [0, 0.75, 1.25, float("inf")],
                          labels=["Underweight", "Neutral", "Overweight"])
-agg = agg.sort_values("new_eq", ascending=False)
+agg = agg.sort_values("new", ascending=False)
 agg.index.name = "Ticker"
 
-out = agg[["Name", "Type", "notes", "val_eq", "orig_eq", "new_eq", "chg_eq",
-           "chg_rel", "vs_avg", "position", "orig_gross", "new_gross", "in_notes"]]
-out.columns = ["Name", "Type", "# notes", "Look-through EUR", "Original weight %",
+out = agg[["Name", "Type", "notes", "val", "orig", "new", "chg", "chg_rel",
+           "vs_avg", "position", "in_notes"]]
+out.columns = ["Name", "Type", "# notes", "Exposure EUR", "Original weight %",
                "New weight %", "Change (pp)", "Change (rel %)", "New vs average (pp)",
-               "Positioning", "Original gross %", "New gross %", "Held via"]
+               "Positioning", "Held via"]
 
-by_type = out.groupby("Type")[["Look-through EUR", "Original weight %", "New weight %"]].sum()
+by_type = out.groupby("Type")[["Exposure EUR", "Original weight %", "New weight %"]].sum()
 by_type["Change (pp)"] = by_type["New weight %"] - by_type["Original weight %"]
 
 notes = df.assign(basket=df["basket"].map("-".join))[
@@ -120,13 +116,13 @@ summary = pd.DataFrame({"Metric": [
     "Original portfolio total (EUR, implied)", "New portfolio total (EUR)",
     "Structured products valuation (EUR)", "SP sleeve - original weight %",
     "SP sleeve - new weight %", "Number of notes", "Distinct underlyings",
-    "Average new weight per underlying %", "Scaling factor new/original",
-    "Top 10 underlyings - new weight %",
+    "Average new exposure per underlying %", "Scaling factor new/original",
+    "Top 10 underlyings - new exposure % (gross)",
 ], "Value": [
     round(orig_total, 0), NEW_TOTAL, round(df["val"].sum(), 2),
     round(df["orig_w"].sum(), 2), round(df["new_w"].sum(), 2), len(df), len(agg),
     round(avg, 4), round(orig_total / NEW_TOTAL, 4),
-    round(agg["new_eq"].head(10).sum(), 2),
+    round(agg["new"].head(10).sum(), 2),
 ]})
 
 with pd.ExcelWriter(OUT, engine="openpyxl") as xw:
