@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Syz Data Lab · Worst-of BRC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#202945;--body:#36465C;--muted:#6C7489;--line:#E3E4E9;--tint:#F3F4F6;--orange:#FF6C0E;--orange-tint:#FFF0E7;--rust:#C2500A;
+--blueberry:#4B5F80;--amber:#FFA400;--mulberry:#AC5D85;--mint:#3BAF90;--mint-tint:#E7F5F1;--sky:#79D6FF;--red:#C62828;--red-tint:#FCEBEB;--green:#2E7D32}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:var(--body);font:14px/1.5 'Open Sans','Segoe UI',Arial,sans-serif}
+h1,h2,h3{font-family:'Nunito Sans','Open Sans','Segoe UI',Arial,sans-serif;color:var(--ink);margin:0}
+header{background:var(--ink);color:#fff;padding:14px 28px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+header img{height:34px}
+header h1{color:#fff;font-size:20px;font-weight:800}
+header h1 span{color:var(--orange)}
+header .meta{margin-left:auto;font-size:12px;color:#C9CEDB;text-align:right}
+.band{height:4px;background:var(--orange)}
+main{max-width:1240px;margin:0 auto;padding:22px 28px 40px}
+.lead{font-size:15px;max-width:900px;margin:0 0 18px}
+section{margin:30px 0 0}
+section>h2{font-size:21px;color:var(--amber);font-weight:800;margin-bottom:4px}
+section>.sub{color:var(--muted);font-size:13px;margin:0 0 14px}
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.kpi{border:1px solid var(--line);border-top:3px solid var(--orange);border-radius:4px;padding:12px 14px;background:#fff}
+.kpi b{display:block;font:800 26px/1.15 'Nunito Sans','Open Sans',Arial,sans-serif;color:var(--ink)}
+.kpi span{display:block;font-weight:600;color:var(--ink);font-size:13px}
+.kpi i{display:block;color:var(--muted);font-size:11.5px;margin-top:3px}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.card{border:1px solid var(--line);border-radius:4px;padding:14px 16px;background:#fff;min-width:0}
+.card h3{font-size:15px;margin-bottom:8px}
+.wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th{background:var(--ink);color:#fff;text-align:left;font-weight:600;padding:6px 8px;vertical-align:bottom}
+td{padding:5px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+tbody tr:nth-child(even) td{background:var(--tint)}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+td.w{white-space:normal;min-width:160px}
+.ts td{white-space:normal}
+.ts td:first-child{font-weight:600;color:var(--ink);width:42%}
+.muted{color:var(--muted)}
+.pos{color:var(--green)}.neg{color:var(--red)}.warn{color:var(--rust);font-weight:600}
+.tag{display:inline-block;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:700}
+.tag.ok{background:var(--mint-tint);color:var(--green)}.tag.alert{background:var(--orange-tint);color:var(--rust)}.tag.bad{background:var(--red-tint);color:var(--red)}
+.src{display:inline-block;padding:1px 7px;border-radius:3px;font-size:11px;font-weight:700;color:#fff}
+.s-yahoo{background:#6001D2}.s-ecb{background:#003299}.s-snb{background:#C62828}.s-tv{background:#131722}.s-calc{background:var(--orange)}
+.flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.flow div{background:var(--tint);border-left:3px solid var(--orange);padding:10px 12px;font-size:12.5px}
+.flow b{display:block;color:var(--ink);font-size:13px}
+svg{display:block;width:100%;height:auto;font-family:'Open Sans','Segoe UI',Arial,sans-serif}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;margin:4px 0 0}
+.legend i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:5px}
+.note{color:var(--muted);font-size:11.5px;font-style:italic;margin:6px 0 0}
+.heat td.n{font-weight:700}
+.tv{height:220px}
+.disclaimer{margin-top:34px;border-top:1px solid var(--line);padding-top:12px;color:var(--muted);font-size:11.5px}
+@media (max-width:1000px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2,.grid3,.flow{grid-template-columns:1fr}header .meta{margin-left:0;text-align:left}}
+@media (max-width:600px){main{padding:16px}header{padding:12px 16px}}
+@media print{header{-webkit-print-color-adjust:exact;print-color-adjust:exact}.live{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <img alt="Syz" src="data:image/png;base64,__LOGO__">
+  <h1>Data Lab · <span>Worst-of Barrier Reverse Convertible</span></h1>
+  <div class="meta" id="meta"></div>
+</header>
+<div class="band"></div>
+<main>
+<p class="lead">One product, five free data sources, one engine. Prices, dividends and option quotes from <b>Yahoo Finance</b>, exchange rates from the <b>ECB</b>, money-market rates from the <b>SNB</b>, live charts from <b>TradingView</b>: reconciled, turned into volatilities, correlations and quanto drifts, then into a 40,000-path Monte Carlo fair coupon and a 7-year backtest.</p>
+
+<div class="kpis" id="kpis"></div>
+
+<section>
+  <h2>1 · The product</h2>
+  <p class="sub">An illustrative 12-month quanto-CHF worst-of on three Core List names in three currencies: what the engine is asked to price.</p>
+  <div class="grid2">
+    <div class="card"><h3>Terms</h3><table class="ts"><tbody id="terms"></tbody></table></div>
+    <div class="card"><h3>Payoff at maturity</h3><div id="payoff"></div>
+      <div class="legend"><span><i style="background:var(--orange)"></i>Product, barrier not breached</span><span><i style="background:var(--red)"></i>Product, barrier breached</span><span><i style="background:#9AA0AE"></i>Direct investment in the worst</span></div>
+      <p class="note">x = final level of the worst underlying (% of initial), y = return including the coupons at the fair coupon.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>2 · Sources and pipeline</h2>
+  <p class="sub">Every number below comes from one of these feeds; no account, no API key.</p>
+  <div class="flow">
+    <div><b>1 · Collect</b>Yahoo history (7 years daily) and profiles, Yahoo option chain, ECB reference rates, SNB money-market cube</div>
+    <div><b>2 · Reconcile</b>ECB fixing vs Yahoo FX on the same days; aligned calendars across SIX, Euronext and Nasdaq</div>
+    <div><b>3 · Model</b>Realised and implied volatility, 5-year correlation, stock–FX correlation, quanto drift, discounting at SARON</div>
+    <div><b>4 · Price and test</b>Monte Carlo fair coupon, scenarios, sensitivities, rolling 1-year backtest; TradingView for the live view</div>
+  </div>
+  <div class="card wrap"><h3>Feeds used</h3><table><thead><tr><th>Source</th><th>Endpoint</th><th>What</th><th class="n">Points</th><th>As of</th></tr></thead><tbody id="sources"></tbody></table></div>
+  <div class="grid2" style="margin-top:18px">
+    <div class="card wrap"><h3>Reconciliation: ECB fixing vs Yahoo FX</h3><table><thead><tr><th>Pair</th><th class="n">Days</th><th class="n">Median gap</th><th class="n">Max gap</th><th class="n">Last ECB</th><th class="n">Last Yahoo</th><th>Status</th></tr></thead><tbody id="recon"></tbody></table>
+      <p class="note" id="recon-note"></p></div>
+    <div class="card"><h3>Money-market rates (SNB cube <code>zimoma</code>)</h3><div id="rates"></div>
+      <div class="legend"><span><i style="background:var(--orange)"></i>SARON (CHF)</span><span><i style="background:var(--blueberry)"></i>€STR (EUR)</span><span><i style="background:var(--mulberry)"></i>SOFR (USD)</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>3 · Underlyings</h2>
+  <p class="sub">Market data, fundamentals and the inputs the model takes from them.</p>
+  <div class="card wrap"><table><thead><tr><th>Name</th><th>Ccy</th><th class="n">Last</th><th class="n">Strike 100%</th><th class="n">Barrier 60%</th><th class="n">Vol 1y</th><th class="n">EWMA</th><th class="n">Pricing vol</th><th class="n">Dividend</th><th class="n">P/E</th><th class="n">Fwd P/E</th><th class="n">Mcap $bn</th><th class="n">Beta</th><th>Next results</th><th class="n">FX vol</th><th class="n">ρ stock–FX</th><th class="n">Quanto drift</th></tr></thead><tbody id="unders"></tbody></table>
+  <p class="note">Pricing vol: Microsoft's own 1-year at-the-money implied volatility; Nestlé and ASML take their 1-year realised volatility scaled by Microsoft's implied/realised ratio. Quanto drift = local rate − dividend − ρ(stock, FX) × σ(stock) × σ(FX).</p></div>
+  <div class="grid2" style="margin-top:18px">
+    <div class="card"><h3>Performance, 1 year, rebased to 100</h3><div id="perf"></div>
+      <div class="legend" id="perf-legend"></div></div>
+    <div class="card"><h3>Microsoft volatility smile, computed from Yahoo option quotes</h3><div id="smile"></div>
+      <p class="note" id="smile-note"></p></div>
+  </div>
+</section>
+
+<section>
+  <h2>4 · Correlation</h2>
+  <p class="sub">The worst-of lives on correlation: the lower it is, the more likely one name drags the basket down, and the higher the coupon.</p>
+  <div class="grid2">
+    <div class="card wrap"><h3>Pricing matrix, 5 years of weekly returns</h3><table class="heat"><thead id="corr-h"></thead><tbody id="corr"></tbody></table>
+      <p class="note">Weekly closes avoid the timing gap between Zurich, Amsterdam and New York closes.</p></div>
+    <div class="card wrap"><h3>The regime changed: correlation by period</h3><table><thead><tr><th>Period</th><th class="n">Weeks</th><th class="n">Nestlé–ASML</th><th class="n">Nestlé–MSFT</th><th class="n">ASML–MSFT</th></tr></thead><tbody id="corr-p"></tbody></table>
+      <p class="note">Since 2024 Nestlé has moved on its own story, against the tech names: the last two years alone would understate the joint risk, which is why the model uses five.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>5 · Monte Carlo pricing</h2>
+  <p class="sub" id="mc-sub"></p>
+  <div class="grid2">
+    <div class="card wrap"><h3>Scenarios</h3><table><thead><tr><th>Volatility</th><th>Barrier</th><th class="n">Coupon p.a.</th><th class="n">P(breach)</th><th class="n">Loss if breached</th><th class="n">Exp. redemption</th></tr></thead><tbody id="scen"></tbody></table>
+      <p class="note">Implied: Microsoft's at-the-money implied volatility, the same implied/realised ratio for the others. Skew: volatilities at the barrier level, from Microsoft's smile. American: barrier observed every day. Fair coupon: the coupon that makes the note worth par, before issuer margin and funding; a bank's offer sits below it.</p>
+      <h3 style="margin-top:14px">Sensitivities of the fair coupon</h3><table><thead><tr><th>Shift</th><th class="n">−</th><th class="n">Base</th><th class="n">+</th></tr></thead><tbody id="sens"></tbody></table></div>
+    <div class="card"><h3>Distribution of the worst final level, 40,000 paths</h3><div id="hist"></div>
+      <div class="legend"><span><i style="background:var(--blueberry)"></i>Above the barrier: 100% back</span><span><i style="background:var(--red)"></i>Below the barrier: delivery of the worst</span></div></div>
+  </div>
+  <div class="grid2" style="margin-top:18px">
+    <div class="card"><h3>Coupon against barrier level</h3><div id="barrier"></div>
+      <div class="legend"><span><i style="background:var(--orange)"></i>European barrier (observed at maturity)</span><span><i style="background:var(--blueberry)"></i>American barrier (observed every day)</span></div></div>
+    <div class="card wrap"><h3>Fair coupon p.a. by barrier</h3><table><thead><tr><th>Barrier</th><th class="n">European</th><th class="n">American</th><th class="n">Difference</th></tr></thead><tbody id="barrier-t"></tbody></table>
+      <p class="note">An American barrier can be hit on any day of the year, not only at maturity: the investor takes more risk and is paid for it.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>6 · Backtest: every 1-year window since 2019</h2>
+  <p class="sub" id="bt-sub"></p>
+  <div class="grid2">
+    <div class="card"><h3>Worst-of performance after 1 year, by start date</h3><div id="bt"></div>
+      <div class="legend"><span><i style="background:var(--blueberry)"></i>Worst of the three after 1 year</span><span><i style="background:#9AA0AE"></i>Strike 100%</span><span><i style="background:var(--red)"></i>Barrier 60%</span></div></div>
+    <div class="card wrap"><h3>What history says</h3><table class="ts"><tbody id="bt-t"></tbody></table>
+      <p class="note">History is one path of the world; the Monte Carlo is 40,000. Since 2019 the basket was never far enough down at a maturity date, which is what the European barrier rewards.</p></div>
+  </div>
+</section>
+
+<section class="live">
+  <h2>7 · Live view (TradingView)</h2>
+  <p class="sub">Loaded in your browser from TradingView: live, but display only; the engine above uses the stored data.</p>
+  <div class="tradingview-widget-container"><div class="tradingview-widget-container__widget"></div>
+  <script src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+  {"symbols":[{"proName":"SIX:NESN","title":"Nestlé"},{"proName":"EURONEXT:ASML","title":"ASML"},{"proName":"NASDAQ:MSFT","title":"Microsoft"},{"proName":"FX_IDC:EURCHF","title":"EUR/CHF"},{"proName":"FX_IDC:USDCHF","title":"USD/CHF"},{"proName":"FOREXCOM:SPXUSD","title":"S&P 500"}],"showSymbolLogo":true,"colorTheme":"light","isTransparent":true,"displayMode":"adaptive","locale":"en"}
+  </script></div>
+  <div class="grid3" style="margin-top:12px" id="tv"></div>
+</section>
+
+<div class="disclaimer">Illustrative analysis for internal discussion, not an offer or a price. Model: correlated geometric Brownian motion, daily steps, flat volatility per name, constant rates, dividends as a continuous yield; no skew dynamics, no issuer credit, no fees. Sources: Yahoo Finance (prices, profiles, options), European Central Bank (reference rates), Swiss National Bank (money-market rates), TradingView (live widgets). Generated <span id="gen"></span>.</div>
+</main>
+
+<script id="data" type="application/json">__DATA__</script>
+<script>
+(function () {
+  "use strict";
+  var D = JSON.parse(document.getElementById("data").textContent);
+  var C = { ink: "#202945", muted: "#6C7489", line: "#E3E4E9", orange: "#FF6C0E", blueberry: "#4B5F80", mulberry: "#AC5D85",
+            amber: "#FFA400", mint: "#3BAF90", red: "#C62828", grey: "#9AA0AE" };
+  var SERIES = [C.orange, C.blueberry, C.mulberry];
+  function $(id) { return document.getElementById(id); }
+  function pct(v, d) { return v == null ? "–" : (v * 100).toFixed(d == null ? 1 : d) + "%"; }
+  function sp(v, d) { return v == null ? "–" : (v >= 0 ? "+" : "") + (v * 100).toFixed(d == null ? 1 : d) + "%"; }
+  function num(v, d) { return v == null ? "–" : Number(v).toLocaleString("en-US", { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }); }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function fmtDate(s) { var d = new Date(s + "T00:00:00Z"); return d.getUTCDate() + " " + "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ")[d.getUTCMonth()] + " " + d.getUTCFullYear(); }
+  var P = D.product, U = D.unders, MC = D.mc;
+
+  // --- small SVG chart kit -------------------------------------------------------------------
+  function chart(host, o) {
+    var W = 640, H = o.h || 280, m = { l: 48, r: 16, t: 12, b: 30 };
+    var xs = [], ys = [];
+    o.series.forEach(function (s) { s.pts.forEach(function (p) { xs.push(p[0]); ys.push(p[1]); }); });
+    (o.hlines || []).forEach(function (h) { ys.push(h.y); });
+    (o.bars || []).forEach(function (b) { xs.push(b.x0, b.x1); ys.push(b.y); });
+    var x0 = o.xmin != null ? o.xmin : Math.min.apply(null, xs), x1 = o.xmax != null ? o.xmax : Math.max.apply(null, xs);
+    var y0 = o.ymin != null ? o.ymin : Math.min.apply(null, ys), y1 = o.ymax != null ? o.ymax : Math.max.apply(null, ys);
+    var pad = (y1 - y0) * 0.06 || 1; if (o.ymin == null) y0 -= pad; if (o.ymax == null) y1 += pad;
+    var X = function (v) { return m.l + (v - x0) / (x1 - x0) * (W - m.l - m.r); };
+    var Y = function (v) { return H - m.b - (v - y0) / (y1 - y0) * (H - m.t - m.b); };
+    var g = "";
+    var ticks = o.yticks || nice(y0, y1, 5);
+    ticks.forEach(function (t) {
+      g += '<line x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + Y(t) + '" y2="' + Y(t) + '" stroke="' + C.line + '"/>' +
+           '<text x="' + (m.l - 6) + '" y="' + (Y(t) + 4) + '" text-anchor="end" font-size="11" fill="' + C.muted + '">' + o.yfmt(t) + "</text>";
+    });
+    (o.xticks || []).forEach(function (t) {
+      g += '<text x="' + X(t[0]) + '" y="' + (H - 10) + '" text-anchor="middle" font-size="11" fill="' + C.muted + '">' + t[1] + "</text>";
+    });
+    (o.bars || []).forEach(function (b) {
+      g += '<rect x="' + X(b.x0) + '" y="' + Y(b.y) + '" width="' + Math.max(1, X(b.x1) - X(b.x0) - 1) + '" height="' + (Y(y0) - Y(b.y)) + '" fill="' + b.color + '"/>';
+    });
+    (o.hlines || []).forEach(function (h) {
+      g += '<line x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + Y(h.y) + '" y2="' + Y(h.y) + '" stroke="' + h.color + '" stroke-width="1.5" stroke-dasharray="6 4"/>' +
+           (h.label ? '<text x="' + (W - m.r - 4) + '" y="' + (Y(h.y) - 5) + '" text-anchor="end" font-size="11" font-weight="700" fill="' + h.color + '">' + h.label + "</text>" : "");
+    });
+    (o.vlines || []).forEach(function (v) {
+      g += '<line y1="' + m.t + '" y2="' + (H - m.b) + '" x1="' + X(v.x) + '" x2="' + X(v.x) + '" stroke="' + v.color + '" stroke-width="1.5" stroke-dasharray="6 4"/>' +
+           (v.label ? '<text x="' + (X(v.x) + 5) + '" y="' + (m.t + 12) + '" font-size="11" font-weight="700" fill="' + v.color + '">' + v.label + "</text>" : "");
+    });
+    o.series.forEach(function (s) {
+      if (s.dots) { s.pts.forEach(function (p) { g += '<circle cx="' + X(p[0]) + '" cy="' + Y(p[1]) + '" r="3" fill="' + s.color + '"/>'; }); return; }
+      var d = s.pts.map(function (p, i) { return (i ? "L" : "M") + X(p[0]).toFixed(1) + " " + Y(p[1]).toFixed(1); }).join("");
+      g += '<path d="' + d + '" fill="none" stroke="' + s.color + '" stroke-width="' + (s.w || 2) + '"' + (s.dash ? ' stroke-dasharray="' + s.dash + '"' : "") + "/>";
+    });
+    host.innerHTML = '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="' + esc(o.label || "chart") + '">' + g + "</svg>";
+  }
+  function nice(a, b, n) {
+    var step = Math.pow(10, Math.floor(Math.log10((b - a) / n))), e = (b - a) / n / step;
+    step *= e > 5 ? 10 : e > 2 ? 5 : e > 1 ? 2 : 1;
+    var out = []; for (var t = Math.ceil(a / step) * step; t <= b + 1e-9; t += step) out.push(+t.toFixed(10));
+    return out;
+  }
+  function dayNum(s) { return Date.parse(s + "T00:00:00Z") / 864e5; }
+  function dateTicks(first, last, n) {
+    var a = dayNum(first), b = dayNum(last), out = [];
+    for (var i = 0; i <= n; i++) {
+      var d = new Date((a + (b - a) * i / n) * 864e5);
+      out.push([a + (b - a) * i / n, "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ")[d.getUTCMonth()] + " " + String(d.getUTCFullYear()).slice(2)]);
+    }
+    return out;
+  }
+
+  // --- header and KPIs ------------------------------------------------------------------------
+  var base = MC.implied;
+  $("meta").innerHTML = "Data of " + fmtDate(D.today) + "<br>Yahoo · ECB · SNB · TradingView";
+  $("gen").textContent = fmtDate(D.today);
+  $("kpis").innerHTML = [
+    [pct(base.fair_coupon, 2), "Fair coupon p.a.", "Monte Carlo, implied vols, European barrier 60%"],
+    [pct(base.p_hit), "Chance of delivery", "Worst below 60% at maturity, model"],
+    [pct(base.exp_red), "Expected redemption", "Average of the 40,000 paths, before coupons"],
+    [pct(D.backtest.p_below_barrier, 1), "Historical delivery rate", D.backtest.windows + " rolling 1-year windows since 2019"],
+    [num(Object.values(D.sources.yahoo_points).reduce(function (a, b) { return a + b; }, 0) + D.sources.ecb_points * 2 + D.sources.option_quotes), "Data points", "Read from Yahoo, the ECB and the SNB for this page"]
+  ].map(function (k) { return '<div class="kpi"><b>' + k[0] + "</b><span>" + k[1] + "</span><i>" + k[2] + "</i></div>"; }).join("");
+
+  // --- 1 · product ------------------------------------------------------------------------------
+  $("terms").innerHTML = [
+    ["Type", "Worst-of Barrier Reverse Convertible, quanto CHF"],
+    ["Underlyings", U.map(function (u) { return u.name + " (" + u.sym + ", " + u.ccy + ")"; }).join(", ")],
+    ["Denomination", "CHF " + num(P.notional)],
+    ["Tenor", "12 months, coupon paid quarterly, guaranteed"],
+    ["Strike / Barrier", "100% / 60%, European (observed at final fixing)"],
+    ["At maturity", "100% back, unless the worst ends below 60%: then the worst's performance (physical delivery)"],
+    ["Fair coupon (model)", "<b>" + pct(base.fair_coupon, 2) + " p.a.</b>, " + pct(MC.skew.fair_coupon, 2) + " with barrier-level volatility"],
+    ["Discounting", "SARON " + D.rates.SARON.value.toFixed(3) + "% (SNB, " + D.rates.SARON.month + ")"]
+  ].map(function (r) { return "<tr><td>" + r[0] + "</td><td>" + r[1] + "</td></tr>"; }).join("");
+  (function () {
+    var c = base.fair_coupon, xs = [];
+    for (var x = 0.2; x <= 1.6001; x += 0.01) xs.push(+x.toFixed(2));
+    chart($("payoff"), { label: "payoff", h: 260, xmin: 0.2, xmax: 1.6, ymin: -0.8, ymax: 0.65,
+      series: [
+        { color: C.grey, dash: "5 4", pts: xs.map(function (x) { return [x, x - 1]; }) },
+        { color: C.red, w: 3, pts: xs.filter(function (x) { return x <= P.barrier; }).map(function (x) { return [x, x - 1 + c]; }) },
+        { color: C.orange, w: 3, pts: xs.filter(function (x) { return x >= P.barrier; }).map(function (x) { return [x, c]; }) }
+      ],
+      vlines: [{ x: P.barrier, color: C.red, label: "Barrier 60%" }, { x: 1, color: C.grey, label: "Strike" }],
+      xticks: [0.2, 0.4, 0.6, 0.8, 1, 1.2, 1.4, 1.6].map(function (x) { return [x, Math.round(x * 100) + "%"]; }),
+      yticks: [-0.8, -0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6], yfmt: function (v) { return Math.round(v * 100) + "%"; } });
+  })();
+
+  // --- 2 · sources --------------------------------------------------------------------------------
+  var yp = D.sources.yahoo_points;
+  $("sources").innerHTML = [
+    ['<span class="src s-yahoo">Yahoo</span>', "chart (yfinance)", "7y daily closes, NESN.SW, ASML.AS, MSFT", yp["NESN.SW"] + yp["ASML.AS"] + yp.MSFT, D.today],
+    ['<span class="src s-yahoo">Yahoo</span>', "quoteSummary", "Dividend, P/E, market cap, beta, results date", 3, D.today],
+    ['<span class="src s-yahoo">Yahoo</span>', "options", "MSFT chain, expiry " + D.iv.expiry, D.sources.option_quotes, D.today],
+    ['<span class="src s-yahoo">Yahoo</span>', "chart (yfinance)", "EURCHF=X, USDCHF=X, for the cross-check", yp["EURCHF=X"] + yp["USDCHF=X"], D.today],
+    ['<span class="src s-ecb">ECB</span>', "data-api.ecb.europa.eu · EXR", "Reference rates CHF, USD per EUR, daily", D.sources.ecb_points * 2, D.fx.EURCHF[0]],
+    ['<span class="src s-snb">SNB</span>', "data.snb.ch · zimoma", "SARON, €STR, SOFR, monthly", D.sources.snb_series + " series", D.rates.SARON.month],
+    ['<span class="src s-tv">TradingView</span>', "embed widgets", "Live tape and charts, in the browser", "live", "now"]
+  ].map(function (r) { return "<tr><td>" + r[0] + "</td><td><code>" + esc(r[1]) + '</code></td><td class="w">' + esc(r[2]) + '</td><td class="n">' + (typeof r[3] === "number" ? num(r[3]) : r[3]) + "</td><td>" + esc(r[4]) + "</td></tr>"; }).join("");
+  $("recon").innerHTML = ["EUR", "USD"].map(function (c) {
+    var r = D.recon[c], st = r.median_bp < 25 ? '<span class="tag ok">Consistent</span>' : '<span class="tag alert">Check</span>';
+    return "<tr><td>" + c + '/CHF</td><td class="n">' + r.days + '</td><td class="n">' + r.median_bp.toFixed(1) + ' bp</td><td class="n">' + r.max_bp.toFixed(1) +
+      ' bp</td><td class="n">' + r.last[1].toFixed(4) + '</td><td class="n">' + r.last[2].toFixed(4) + "</td><td>" + st + "</td></tr>";
+  }).join("");
+  $("recon-note").textContent = "The ECB fixes at 14:15 CET, Yahoo's daily close comes later: on a volatile day the two can be up to about 1% apart (largest: " +
+    fmtDate(D.recon.USD.max_day) + "). The median gap is the test of whether the feeds agree.";
+  (function () {
+    var series = [["SARON", C.orange], ["ESTR", C.blueberry], ["SOFR", C.mulberry]].map(function (s) {
+      return { color: s[1], pts: D.rate_hist[s[0]].map(function (p) { return [dayNum(p[0] + "-15"), p[1]]; }) };
+    });
+    var first = D.rate_hist.SARON[0][0] + "-15", last = D.rate_hist.SARON[D.rate_hist.SARON.length - 1][0] + "-15";
+    chart($("rates"), { label: "money-market rates", h: 190, series: series, xticks: dateTicks(first, last, 4), yfmt: function (v) { return v.toFixed(1) + "%"; } });
+  })();
+
+  // --- 3 · underlyings ------------------------------------------------------------------------------
+  var maturity = new Date(Date.parse(D.today) + 365 * 864e5).toISOString().slice(0, 10);
+  $("unders").innerHTML = U.map(function (u) {
+    if (u.earnings && u.earnings < D.today) u.earnings = null;      // Yahoo still shows the last one: the next is not announced
+    var soon = u.earnings && (Date.parse(u.earnings) - Date.parse(D.today)) / 864e5 <= 30;
+    return "<tr><td><b>" + esc(u.name) + "</b></td><td>" + u.ccy + '</td><td class="n">' + num(u.price, 2) + '</td><td class="n">' + num(u.strike, 2) +
+      '</td><td class="n neg">' + num(u.barrier, 2) + '</td><td class="n">' + pct(u.rv1y) + '</td><td class="n">' + pct(u.ewma) + '</td><td class="n"><b>' + pct(u.pricing_vol) +
+      '</b></td><td class="n">' + pct(u.div, 2) + '</td><td class="n">' + num(u.pe, 1) + '</td><td class="n">' + num(u.fpe, 1) + '</td><td class="n">' + num(u.mcap_bn) +
+      '</td><td class="n">' + num(u.beta, 2) + "</td><td>" + (u.earnings ? (soon ? '<span class="warn">' + fmtDate(u.earnings) + "</span>" : fmtDate(u.earnings)) : '<span class="muted">not announced</span>') +
+      '</td><td class="n">' + (u.ccy === "CHF" ? "–" : pct(u.fx_vol)) + '</td><td class="n">' + (u.ccy === "CHF" ? "–" : u.rho_fx.toFixed(2)) + '</td><td class="n">' + sp(u.drift, 2) + "</td></tr>";
+  }).join("");
+  (function () {
+    var syms = Object.keys(D.rebased), first = D.rebased[syms[0]][0][0], last = D.rebased[syms[0]][D.rebased[syms[0]].length - 1][0];
+    chart($("perf"), { label: "rebased performance", h: 270,
+      series: syms.map(function (s, i) { return { color: SERIES[i], pts: D.rebased[s].map(function (p) { return [dayNum(p[0]), p[1]]; }) }; }),
+      hlines: [{ y: 100, color: C.grey, label: "100" }], xticks: dateTicks(first, last, 4), yfmt: function (v) { return Math.round(v); } });
+    $("perf-legend").innerHTML = U.map(function (u, i) { return '<span><i style="background:' + SERIES[i] + '"></i>' + esc(u.name) + "</span>"; }).join("");
+    var sm = D.smile;
+    chart($("smile"), { label: "volatility smile", h: 270, xmin: 0.5, xmax: 1.3,
+      series: [{ color: C.mulberry, pts: sm.map(function (p) { return [p.m, p.iv]; }) }, { color: C.mulberry, dots: true, pts: sm.map(function (p) { return [p.m, p.iv]; }) }],
+      vlines: [{ x: 1, color: C.grey, label: "ATM " + pct(D.iv.atm) }, { x: 0.6, color: C.red, label: "Barrier " + pct(D.iv.at60) }],
+      xticks: [0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3].map(function (x) { return [x, Math.round(x * 100) + "%"]; }), yfmt: function (v) { return Math.round(v * 100) + "%"; } });
+    $("smile-note").textContent = D.iv.n + " out-of-the-money options, expiry " + fmtDate(D.iv.expiry) + ", implied volatility solved by Black-Scholes from bid/ask mids with SOFR and Microsoft's dividend yield. " +
+      "Volatility at the barrier is " + pct(D.iv.at60) + ", " + ((MC.skew_ratio - 1) * 100).toFixed(0) + "% above at-the-money: the skew a dealer prices in.";
+  })();
+
+  // --- 4 · correlation ----------------------------------------------------------------------------------
+  function heat(v) { var a = Math.max(0, Math.min(1, (v + 0.2) / 1.0)); return "rgba(255,108,14," + (0.08 + a * 0.5).toFixed(2) + ")"; }
+  $("corr-h").innerHTML = "<tr><th></th>" + U.map(function (u) { return '<th class="n">' + esc(u.name) + "</th>"; }).join("") + "</tr>";
+  $("corr").innerHTML = D.corr.map(function (row, i) {
+    return "<tr><td><b>" + esc(U[i].name) + "</b></td>" + row.map(function (v, j) {
+      return '<td class="n" style="background:' + (i === j ? "#F3F4F6" : heat(v)) + '">' + v.toFixed(2) + "</td>";
+    }).join("") + "</tr>";
+  }).join("");
+  $("corr-p").innerHTML = D.corr_periods.map(function (p) {
+    return "<tr" + (p.used ? ' style="font-weight:700"' : "") + "><td>" + fmtDate(p.from) + " – " + fmtDate(p.to) + (p.used ? " (used)" : "") + '</td><td class="n">' + p.weeks + "</td>" +
+      p.pairs.map(function (v) { return '<td class="n" style="background:' + heat(v) + '">' + v.toFixed(2) + "</td>"; }).join("") + "</tr>";
+  }).join("");
+
+  // --- 5 · Monte Carlo ------------------------------------------------------------------------------------
+  $("mc-sub").textContent = num(MC.paths) + " paths (antithetic), " + MC.steps + " daily steps, correlated in local currency; each name drifts at its local rate minus dividend minus the quanto term, cash flows discounted at SARON.";
+  $("scen").innerHTML = [
+    ["Realised 1y", "European", MC.realised], ["Implied", "European", MC.implied],
+    ["Skew ×" + MC.skew_ratio.toFixed(2), "European", MC.skew], ["Implied", "American", MC.american]
+  ].map(function (r, i) {
+    var s = r[2];
+    return "<tr" + (i === 1 ? ' style="font-weight:700"' : "") + "><td>" + r[0] + "</td><td>" + r[1] + '</td><td class="n">' + pct(s.fair_coupon, 2) + '</td><td class="n">' + pct(s.p_hit) +
+      '</td><td class="n">' + pct(s.cond_loss) + '</td><td class="n">' + pct(s.exp_red) + "</td></tr>";
+  }).join("");
+  var cs = D.corr_shift, vs = D.vol_shift;
+  $("sens").innerHTML = "<tr><td>Correlation ±0.1</td><td class=n>" + cs[1].coupon.toFixed(2) + "%</td><td class=n>" + cs[2].coupon.toFixed(2) + "%</td><td class=n>" + cs[3].coupon.toFixed(2) + "%</td></tr>" +
+    "<tr><td>Correlation ±0.2</td><td class=n>" + cs[0].coupon.toFixed(2) + "%</td><td class=n>" + cs[2].coupon.toFixed(2) + "%</td><td class=n>" + cs[4].coupon.toFixed(2) + "%</td></tr>" +
+    "<tr><td>Volatility ±5 points</td><td class=n>" + vs[0].coupon.toFixed(2) + "%</td><td class=n>" + vs[1].coupon.toFixed(2) + "%</td><td class=n>" + vs[2].coupon.toFixed(2) + "%</td></tr>" +
+    "<tr><td>Barrier ±5%</td><td class=n>" + D.grid.european[1].toFixed(2) + "%</td><td class=n>" + D.grid.european[2].toFixed(2) + "%</td><td class=n>" + D.grid.european[3].toFixed(2) + "%</td></tr>";
+  (function () {
+    var e = MC.hist.edges, c = MC.hist.counts, tot = c.reduce(function (a, b) { return a + b; }, 0);
+    chart($("hist"), { label: "distribution", h: 270, xmin: e[0], xmax: e[e.length - 1], ymin: 0, series: [],
+      bars: c.map(function (n, i) { return { x0: e[i], x1: e[i + 1], y: n / tot, color: e[i + 1] <= P.barrier + 1e-9 ? C.red : C.blueberry }; }),
+      vlines: [{ x: P.barrier, color: C.red, label: "Barrier" }, { x: 1, color: C.grey, label: "Strike" }],
+      xticks: [0.2, 0.4, 0.6, 0.8, 1, 1.2, 1.4, 1.6, 1.8].map(function (x) { return [x, Math.round(x * 100) + "%"]; }), yfmt: function (v) { return (v * 100).toFixed(0) + "%"; } });
+    chart($("barrier"), { label: "coupon against barrier", h: 230, xmin: 0.48, xmax: 0.72, ymin: 0,
+      series: [{ color: C.orange, w: 3, pts: D.grid.barriers.map(function (b, i) { return [b, D.grid.european[i]]; }) },
+               { color: C.orange, dots: true, pts: D.grid.barriers.map(function (b, i) { return [b, D.grid.european[i]]; }) },
+               { color: C.blueberry, w: 3, pts: D.grid.barriers.map(function (b, i) { return [b, D.grid.american[i]]; }) },
+               { color: C.blueberry, dots: true, pts: D.grid.barriers.map(function (b, i) { return [b, D.grid.american[i]]; }) }],
+      xticks: D.grid.barriers.map(function (b) { return [b, Math.round(b * 100) + "%"]; }), yfmt: function (v) { return v.toFixed(0) + "%"; } });
+    $("barrier-t").innerHTML = D.grid.barriers.map(function (b, i) {
+      return "<tr" + (b === P.barrier ? ' style="font-weight:700"' : "") + "><td>" + Math.round(b * 100) + '%</td><td class="n">' + D.grid.european[i].toFixed(2) + '%</td><td class="n">' +
+        D.grid.american[i].toFixed(2) + '%</td><td class="n">+' + (D.grid.american[i] - D.grid.european[i]).toFixed(2) + "%</td></tr>";
+    }).join("");
+  })();
+
+  // --- 6 · backtest ------------------------------------------------------------------------------------------
+  var B = D.backtest;
+  $("bt-sub").textContent = num(B.windows) + " windows, one per trading day from " + fmtDate(B.first) + " to " + fmtDate(B.last) + ": the product struck that day, its worst performance one year later.";
+  chart($("bt"), { label: "backtest", h: 270, series: [{ color: C.blueberry, pts: B.series.map(function (p) { return [dayNum(p[0]), p[1]]; }) }],
+    hlines: [{ y: 1, color: C.grey, label: "Strike" }, { y: P.barrier, color: C.red, label: "Barrier" }],
+    xticks: dateTicks(B.first, B.last, 5), yfmt: function (v) { return Math.round(v * 100) + "%"; } });
+  $("bt-t").innerHTML = [
+    ["Windows tested", num(B.windows)],
+    ["Worst ended below the strike", pct(B.p_below_strike) + " <small>(coupon still paid, capital back above the barrier)</small>"],
+    ["Worst ended below the barrier: delivery", '<b class="neg">' + pct(B.p_below_barrier, 2) + "</b>"],
+    ["Worst touched 60% at some point in the year", pct(B.p_touch_barrier) + " <small>(would have mattered with an American barrier)</small>"],
+    ["Median worst performance", pct(B.median)],
+    ["Worst window", fmtDate(B.worst_window.start) + " → " + fmtDate(B.worst_window.end) + ": " + pct(B.worst)]
+  ].map(function (r) { return "<tr><td>" + r[0] + "</td><td>" + r[1] + "</td></tr>"; }).join("");
+
+  // --- 7 · TradingView mini charts --------------------------------------------------------------------------------
+  [["SIX:NESN", "Nestlé"], ["EURONEXT:ASML", "ASML"], ["NASDAQ:MSFT", "Microsoft"]].forEach(function (t) {
+    var box = document.createElement("div"); box.className = "card tv";
+    box.innerHTML = '<div class="tradingview-widget-container" style="height:100%"><div class="tradingview-widget-container__widget"></div></div>';
+    var s = document.createElement("script"); s.async = true; s.src = "https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js";
+    s.text = JSON.stringify({ symbol: t[0], width: "100%", height: "100%", locale: "en", dateRange: "12M", colorTheme: "light", isTransparent: true, autosize: true, trendLineColor: C.orange, underLineColor: "rgba(255,108,14,0.12)" });
+    box.firstChild.appendChild(s); $("tv").appendChild(box);
+  });
+})();
+</script>
+</body>
+</html>

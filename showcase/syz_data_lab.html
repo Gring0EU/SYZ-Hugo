@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Syz Data Lab · Worst-of BRC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#202945;--body:#36465C;--muted:#6C7489;--line:#E3E4E9;--tint:#F3F4F6;--orange:#FF6C0E;--orange-tint:#FFF0E7;--rust:#C2500A;
+--blueberry:#4B5F80;--amber:#FFA400;--mulberry:#AC5D85;--mint:#3BAF90;--mint-tint:#E7F5F1;--sky:#79D6FF;--red:#C62828;--red-tint:#FCEBEB;--green:#2E7D32}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:var(--body);font:14px/1.5 'Open Sans','Segoe UI',Arial,sans-serif}
+h1,h2,h3{font-family:'Nunito Sans','Open Sans','Segoe UI',Arial,sans-serif;color:var(--ink);margin:0}
+header{background:var(--ink);color:#fff;padding:14px 28px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+header img{height:34px}
+header h1{color:#fff;font-size:20px;font-weight:800}
+header h1 span{color:var(--orange)}
+header .meta{margin-left:auto;font-size:12px;color:#C9CEDB;text-align:right}
+.band{height:4px;background:var(--orange)}
+main{max-width:1240px;margin:0 auto;padding:22px 28px 40px}
+.lead{font-size:15px;max-width:900px;margin:0 0 18px}
+section{margin:30px 0 0}
+section>h2{font-size:21px;color:var(--amber);font-weight:800;margin-bottom:4px}
+section>.sub{color:var(--muted);font-size:13px;margin:0 0 14px}
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.kpi{border:1px solid var(--line);border-top:3px solid var(--orange);border-radius:4px;padding:12px 14px;background:#fff}
+.kpi b{display:block;font:800 26px/1.15 'Nunito Sans','Open Sans',Arial,sans-serif;color:var(--ink)}
+.kpi span{display:block;font-weight:600;color:var(--ink);font-size:13px}
+.kpi i{display:block;color:var(--muted);font-size:11.5px;margin-top:3px}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.card{border:1px solid var(--line);border-radius:4px;padding:14px 16px;background:#fff;min-width:0}
+.card h3{font-size:15px;margin-bottom:8px}
+.wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th{background:var(--ink);color:#fff;text-align:left;font-weight:600;padding:6px 8px;vertical-align:bottom}
+td{padding:5px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+tbody tr:nth-child(even) td{background:var(--tint)}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+td.w{white-space:normal;min-width:160px}
+.ts td{white-space:normal}
+.ts td:first-child{font-weight:600;color:var(--ink);width:42%}
+.muted{color:var(--muted)}
+.pos{color:var(--green)}.neg{color:var(--red)}.warn{color:var(--rust);font-weight:600}
+.tag{display:inline-block;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:700}
+.tag.ok{background:var(--mint-tint);color:var(--green)}.tag.alert{background:var(--orange-tint);color:var(--rust)}.tag.bad{background:var(--red-tint);color:var(--red)}
+.src{display:inline-block;padding:1px 7px;border-radius:3px;font-size:11px;font-weight:700;color:#fff}
+.s-yahoo{background:#6001D2}.s-ecb{background:#003299}.s-snb{background:#C62828}.s-tv{background:#131722}.s-calc{background:var(--orange)}
+.flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.flow div{background:var(--tint);border-left:3px solid var(--orange);padding:10px 12px;font-size:12.5px}
+.flow b{display:block;color:var(--ink);font-size:13px}
+svg{display:block;width:100%;height:auto;font-family:'Open Sans','Segoe UI',Arial,sans-serif}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;margin:4px 0 0}
+.legend i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:5px}
+.note{color:var(--muted);font-size:11.5px;font-style:italic;margin:6px 0 0}
+.heat td.n{font-weight:700}
+.tv{height:220px}
+.disclaimer{margin-top:34px;border-top:1px solid var(--line);padding-top:12px;color:var(--muted);font-size:11.5px}
+@media (max-width:1000px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2,.grid3,.flow{grid-template-columns:1fr}header .meta{margin-left:0;text-align:left}}
+@media (max-width:600px){main{padding:16px}header{padding:12px 16px}}
+@media print{header{-webkit-print-color-adjust:exact;print-color-adjust:exact}.live{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <img alt="Syz" src="data:image/png;base64,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">
+  <h1>Data Lab · <span>Worst-of Barrier Reverse Convertible</span></h1>
+  <div class="meta" id="meta"></div>
+</header>
+<div class="band"></div>
+<main>
+<p class="lead">One product, five free data sources, one engine. Prices, dividends and option quotes from <b>Yahoo Finance</b>, exchange rates from the <b>ECB</b>, money-market rates from the <b>SNB</b>, live charts from <b>TradingView</b>: reconciled, turned into volatilities, correlations and quanto drifts, then into a 40,000-path Monte Carlo fair coupon and a 7-year backtest.</p>
+
+<div class="kpis" id="kpis"></div>
+
+<section>
+  <h2>1 · The product</h2>
+  <p class="sub">An illustrative 12-month quanto-CHF worst-of on three Core List names in three currencies: what the engine is asked to price.</p>
+  <div class="grid2">
+    <div class="card"><h3>Terms</h3><table class="ts"><tbody id="terms"></tbody></table></div>
+    <div class="card"><h3>Payoff at maturity</h3><div id="payoff"></div>
+      <div class="legend"><span><i style="background:var(--orange)"></i>Product, barrier not breached</span><span><i style="background:var(--red)"></i>Product, barrier breached</span><span><i style="background:#9AA0AE"></i>Direct investment in the worst</span></div>
+      <p class="note">x = final level of the worst underlying (% of initial), y = return including the coupons at the fair coupon.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>2 · Sources and pipeline</h2>
+  <p class="sub">Every number below comes from one of these feeds; no account, no API key.</p>
+  <div class="flow">
+    <div><b>1 · Collect</b>Yahoo history (7 years daily) and profiles, Yahoo option chain, ECB reference rates, SNB money-market cube</div>
+    <div><b>2 · Reconcile</b>ECB fixing vs Yahoo FX on the same days; aligned calendars across SIX, Euronext and Nasdaq</div>
+    <div><b>3 · Model</b>Realised and implied volatility, 5-year correlation, stock–FX correlation, quanto drift, discounting at SARON</div>
+    <div><b>4 · Price and test</b>Monte Carlo fair coupon, scenarios, sensitivities, rolling 1-year backtest; TradingView for the live view</div>
+  </div>
+  <div class="card wrap"><h3>Feeds used</h3><table><thead><tr><th>Source</th><th>Endpoint</th><th>What</th><th class="n">Points</th><th>As of</th></tr></thead><tbody id="sources"></tbody></table></div>
+  <div class="grid2" style="margin-top:18px">
+    <div class="card wrap"><h3>Reconciliation: ECB fixing vs Yahoo FX</h3><table><thead><tr><th>Pair</th><th class="n">Days</th><th class="n">Median gap</th><th class="n">Max gap</th><th class="n">Last ECB</th><th class="n">Last Yahoo</th><th>Status</th></tr></thead><tbody id="recon"></tbody></table>
+      <p class="note" id="recon-note"></p></div>
+    <div class="card"><h3>Money-market rates (SNB cube <code>zimoma</code>)</h3><div id="rates"></div>
+      <div class="legend"><span><i style="background:var(--orange)"></i>SARON (CHF)</span><span><i style="background:var(--blueberry)"></i>€STR (EUR)</span><span><i style="background:var(--mulberry)"></i>SOFR (USD)</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>3 · Underlyings</h2>
+  <p class="sub">Market data, fundamentals and the inputs the model takes from them.</p>
+  <div class="card wrap"><table><thead><tr><th>Name</th><th>Ccy</th><th class="n">Last</th><th class="n">Strike 100%</th><th class="n">Barrier 60%</th><th class="n">Vol 1y</th><th class="n">EWMA</th><th class="n">Pricing vol</th><th class="n">Dividend</th><th class="n">P/E</th><th class="n">Fwd P/E</th><th class="n">Mcap $bn</th><th class="n">Beta</th><th>Next results</th><th class="n">FX vol</th><th class="n">ρ stock–FX</th><th class="n">Quanto drift</th></tr></thead><tbody id="unders"></tbody></table>
+  <p class="note">Pricing vol: Microsoft's own 1-year at-the-money implied volatility; Nestlé and ASML take their 1-year realised volatility scaled by Microsoft's implied/realised ratio. Quanto drift = local rate − dividend − ρ(stock, FX) × σ(stock) × σ(FX).</p></div>
+  <div class="grid2" style="margin-top:18px">
+    <div class="card"><h3>Performance, 1 year, rebased to 100</h3><div id="perf"></div>
+      <div class="legend" id="perf-legend"></div></div>
+    <div class="card"><h3>Microsoft volatility smile, computed from Yahoo option quotes</h3><div id="smile"></div>
+      <p class="note" id="smile-note"></p></div>
+  </div>
+</section>
+
+<section>
+  <h2>4 · Correlation</h2>
+  <p class="sub">The worst-of lives on correlation: the lower it is, the more likely one name drags the basket down, and the higher the coupon.</p>
+  <div class="grid2">
+    <div class="card wrap"><h3>Pricing matrix, 5 years of weekly returns</h3><table class="heat"><thead id="corr-h"></thead><tbody id="corr"></tbody></table>
+      <p class="note">Weekly closes avoid the timing gap between Zurich, Amsterdam and New York closes.</p></div>
+    <div class="card wrap"><h3>The regime changed: correlation by period</h3><table><thead><tr><th>Period</th><th class="n">Weeks</th><th class="n">Nestlé–ASML</th><th class="n">Nestlé–MSFT</th><th class="n">ASML–MSFT</th></tr></thead><tbody id="corr-p"></tbody></table>
+      <p class="note">Since 2024 Nestlé has moved on its own story, against the tech names: the last two years alone would understate the joint risk, which is why the model uses five.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>5 · Monte Carlo pricing</h2>
+  <p class="sub" id="mc-sub"></p>
+  <div class="grid2">
+    <div class="card wrap"><h3>Scenarios</h3><table><thead><tr><th>Volatility</th><th>Barrier</th><th class="n">Coupon p.a.</th><th class="n">P(breach)</th><th class="n">Loss if breached</th><th class="n">Exp. redemption</th></tr></thead><tbody id="scen"></tbody></table>
+      <p class="note">Implied: Microsoft's at-the-money implied volatility, the same implied/realised ratio for the others. Skew: volatilities at the barrier level, from Microsoft's smile. American: barrier observed every day. Fair coupon: the coupon that makes the note worth par, before issuer margin and funding; a bank's offer sits below it.</p>
+      <h3 style="margin-top:14px">Sensitivities of the fair coupon</h3><table><thead><tr><th>Shift</th><th class="n">−</th><th class="n">Base</th><th class="n">+</th></tr></thead><tbody id="sens"></tbody></table></div>
+    <div class="card"><h3>Distribution of the worst final level, 40,000 paths</h3><div id="hist"></div>
+      <div class="legend"><span><i style="background:var(--blueberry)"></i>Above the barrier: 100% back</span><span><i style="background:var(--red)"></i>Below the barrier: delivery of the worst</span></div></div>
+  </div>
+  <div class="grid2" style="margin-top:18px">
+    <div class="card"><h3>Coupon against barrier level</h3><div id="barrier"></div>
+      <div class="legend"><span><i style="background:var(--orange)"></i>European barrier (observed at maturity)</span><span><i style="background:var(--blueberry)"></i>American barrier (observed every day)</span></div></div>
+    <div class="card wrap"><h3>Fair coupon p.a. by barrier</h3><table><thead><tr><th>Barrier</th><th class="n">European</th><th class="n">American</th><th class="n">Difference</th></tr></thead><tbody id="barrier-t"></tbody></table>
+      <p class="note">An American barrier can be hit on any day of the year, not only at maturity: the investor takes more risk and is paid for it.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>6 · Backtest: every 1-year window since 2019</h2>
+  <p class="sub" id="bt-sub"></p>
+  <div class="grid2">
+    <div class="card"><h3>Worst-of performance after 1 year, by start date</h3><div id="bt"></div>
+      <div class="legend"><span><i style="background:var(--blueberry)"></i>Worst of the three after 1 year</span><span><i style="background:#9AA0AE"></i>Strike 100%</span><span><i style="background:var(--red)"></i>Barrier 60%</span></div></div>
+    <div class="card wrap"><h3>What history says</h3><table class="ts"><tbody id="bt-t"></tbody></table>
+      <p class="note">History is one path of the world; the Monte Carlo is 40,000. Since 2019 the basket was never far enough down at a maturity date, which is what the European barrier rewards.</p></div>
+  </div>
+</section>
+
+<section class="live">
+  <h2>7 · Live view (TradingView)</h2>
+  <p class="sub">Loaded in your browser from TradingView: live, but display only; the engine above uses the stored data.</p>
+  <div class="tradingview-widget-container"><div class="tradingview-widget-container__widget"></div>
+  <script src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+  {"symbols":[{"proName":"SIX:NESN","title":"Nestlé"},{"proName":"EURONEXT:ASML","title":"ASML"},{"proName":"NASDAQ:MSFT","title":"Microsoft"},{"proName":"FX_IDC:EURCHF","title":"EUR/CHF"},{"proName":"FX_IDC:USDCHF","title":"USD/CHF"},{"proName":"FOREXCOM:SPXUSD","title":"S&P 500"}],"showSymbolLogo":true,"colorTheme":"light","isTransparent":true,"displayMode":"adaptive","locale":"en"}
+  </script></div>
+  <div class="grid3" style="margin-top:12px" id="tv"></div>
+</section>
+
+<div class="disclaimer">Illustrative analysis for internal discussion, not an offer or a price. Model: correlated geometric Brownian motion, daily steps, flat volatility per name, constant rates, dividends as a continuous yield; no skew dynamics, no issuer credit, no fees. Sources: Yahoo Finance (prices, profiles, options), European Central Bank (reference rates), Swiss National Bank (money-market rates), TradingView (live widgets). Generated <span id="gen"></span>.</div>
+</main>
+
+<script id="data" type="application/json">{"today":"2026-10-27","product":{"notional":1000.0,"tenor":1.0,"barrier":0.6,"strike":1.0,"freq":4,"ccy":"CHF"},"rates":{"SARON":{"month":"2026-09","value":-0.067988},"ESTR":{"month":"2026-09","value":2.439},"SOFR":{"month":"2026-08","value":3.68},"EG3M":{"month":"2026-09","value":-0.047},"EURIBOR":{"month":"2026-09","value":2.617},"SONIA":{"month":"2026-09","value":3.7321},"TONA":{"month":"2026-09","value":1.226}},"rate_hist":{"SARON":[["2023-10",1.704967],["2023-11",1.701526],["2023-12",1.695237],["2024-01",1.698236],["2024-02",1.697838],["2024-03",1.464207],["2024-04",1.444518],["2024-05",1.450122],["2024-06",1.215794],["2024-07",1.21096],["2024-08",1.217226],["2024-09",0.957401],["2024-10",0.949059],["2024-11",0.942743],["2024-12",0.451195],["2025-01",0.430306],["2025-02",0.428856],["2025-03",0.206315],["2025-04",0.197924],["2025-05",0.207065],["2025-06",-0.031727],["2025-07",-0.0327],["2025-08",-0.06214],["2025-09",-0.045082],["2025-10",-0.049317],["2025-11",-0.053351],["2025-12",-0.079228],["2026-01",-0.074428],["2026-02",-0.076166],["2026-03",-0.066425],["2026-04",-0.046989],["2026-05",-0.055974],["2026-06",-0.043903],["2026-07",-0.04909],["2026-08",-0.060456],["2026-09",-0.067988]],"ESTR":[["2023-10",3.882],["2023-11",3.891],["2023-12",3.882],["2024-01",3.894],["2024-02",3.887],["2024-03",3.899],["2024-04",3.889],["2024-05",3.892],["2024-06",3.656],["2024-07",3.653],["2024-08",3.654],["2024-09",3.41],["2024-10",3.155],["2024-11",3.163],["2024-12",2.905],["2025-01",2.912],["2025-02",2.658],["2025-03",2.415],["2025-04",2.156],["2025-05",2.161],["2025-06",1.921],["2025-07",1.919],["2025-08",1.92],["2025-09",1.916],["2025-10",1.921],["2025-11",1.925],["2025-12",1.921],["2026-01",1.926],["2026-02",1.93],["2026-03",1.929],["2026-04",1.93],["2026-05",1.93],["2026-06",2.182],["2026-07",2.184],["2026-08",2.185],["2026-09",2.439]],"SOFR":[["2023-09",5.31],["2023-10",5.35],["2023-11",5.33],["2023-12",5.38],["2024-01",5.32],["2024-02",5.32],["2024-03",5.34],["2024-04",5.34],["2024-05",5.34],["2024-06",5.33],["2024-07",5.38],["2024-08",5.32],["2024-09",4.96],["2024-10",4.9],["2024-11",4.59],["2024-12",4.49],["2025-01",4.38],["2025-02",4.39],["2025-03",4.41],["2025-04",4.41],["2025-05",4.35],["2025-06",4.45],["2025-07",4.39],["2025-08",4.34],["2025-09",4.24],["2025-10",4.22],["2025-11",4.12],["2025-12",3.87],["2026-01",3.68],["2026-02",3.68],["2026-03",3.68],["2026-04",3.66],["2026-05",3.63],["2026-06",3.68],["2026-07",3.66],["2026-08",3.68]]},"fx":{"EURCHF":["2026-10-26",0.9243],"USDCHF":["2026-10-26",0.8261530210940293],"points":528,"first":"2024-10-01"},"recon":{"EUR":{"max_day":"2026-03-02","days":250,"median_bp":9.7,"max_bp":75.1,"last":["2026-10-26",0.9243,0.9241]},"USD":{"max_day":"2026-03-02","days":250,"median_bp":17.4,"max_bp":128.2,"last":["2026-10-26",0.82615,0.8238]}},"corr":[[1.0,0.154,0.058],[0.154,1.0,0.319],[0.058,0.319,1.0]],"corr_2y":[[1.0,-0.01,-0.097],[-0.01,1.0,-0.016],[-0.097,-0.016,1.0]],"corr_periods":[{"from":"2019-10-28","to":"2020-12-31","weeks":61,"pairs":[0.49,0.15,0.55]},{"from":"2021-01-01","to":"2022-12-31","weeks":103,"pairs":[0.39,0.41,0.6]},{"from":"2023-01-01","to":"2024-06-30","weeks":77,"pairs":[0.09,0.08,0.45]},{"from":"2024-07-01","to":"2026-10-27","weeks":121,"pairs":[0.05,-0.07,0.09]},{"from":"2021-10-28","to":"2026-10-27","weeks":261,"pairs":[0.15,0.06,0.32],"used":true}],"weeks":105,"weeks_5y":261,"unders":[{"sym":"NESN.SW","name":"Nestl\u00e9","ccy":"CHF","price":83.73,"date":"2026-10-26","strike":83.73,"barrier":50.238,"rv1y":0.21212499965314768,"rv2y":0.21633227590842757,"ewma":0.1826192896668546,"pricing_vol":0.20695745530027065,"div":0.037023764,"pe":28.816608,"fpe":17.40952,"mcap_bn":214.214475776,"beta":0.499,"sector":"Consumer Defensive","hi52":87.09,"lo52":70.29,"earnings":"2026-02-19","rho_fx":0.0,"fx_vol":0.0,"r":-0.0006798800000000001,"drift":-0.037703644},{"sym":"ASML.AS","name":"ASML","ccy":"EUR","price":1430.0,"date":"2026-10-26","strike":1430.0,"barrier":858.0,"rv1y":0.4271613302293461,"rv2y":0.33446275202043496,"ewma":0.38439588232097266,"pricing_vol":0.41675531904064395,"div":0.005244755,"pe":41.61235,"fpe":26.025703,"mcap_bn":561.01404672,"beta":1.302,"sector":"Technology","hi52":1741.0,"lo52":822.2,"earnings":"2026-10-14","rho_fx":0.05268584750819061,"fx_vol":0.04437531371831753,"r":0.024390000000000002,"drift":0.018170891480221156},{"sym":"MSFT","name":"Microsoft","ccy":"USD","price":532.6,"date":"2026-10-26","strike":532.6,"barrier":319.56,"rv1y":0.3268114020887735,"rv2y":0.296535827820828,"ewma":0.23510357993702527,"pricing_vol":0.31884999999999997,"div":0.0069398107,"pe":29.671307,"fpe":22.482325,"mcap_bn":3954.845417472,"beta":1.099,"sector":"Technology","hi52":553.72,"lo52":349.2,"earnings":"2026-10-28","rho_fx":-0.19254337082604284,"fx_vol":0.07965009351471587,"r":0.0368,"drift":0.034750103985302816}],"smile":[{"m":0.5069,"iv":0.4111,"type":"put"},{"m":0.5163,"iv":0.4043,"type":"put"},{"m":0.5257,"iv":0.3976,"type":"put"},{"m":0.5351,"iv":0.3917,"type":"put"},{"m":0.5445,"iv":0.385,"type":"put"},{"m":0.5539,"iv":0.3862,"type":"put"},{"m":0.5633,"iv":0.3832,"type":"put"},{"m":0.5727,"iv":0.3802,"type":"put"},{"m":0.5821,"iv":0.3774,"type":"put"},{"m":0.5914,"iv":0.3749,"type":"put"},{"m":0.6008,"iv":0.3727,"type":"put"},{"m":0.6102,"iv":0.3702,"type":"put"},{"m":0.6196,"iv":0.3681,"type":"put"},{"m":0.629,"iv":0.3652,"type":"put"},{"m":0.6384,"iv":0.363,"type":"put"},{"m":0.6478,"iv":0.3604,"type":"put"},{"m":0.6572,"iv":0.3586,"type":"put"},{"m":0.6665,"iv":0.3565,"type":"put"},{"m":0.6759,"iv":0.3546,"type":"put"},{"m":0.6853,"iv":0.3524,"type":"put"},{"m":0.6947,"iv":0.3507,"type":"put"},{"m":0.7041,"iv":0.3487,"type":"put"},{"m":0.7135,"iv":0.3474,"type":"put"},{"m":0.7229,"iv":0.3454,"type":"put"},{"m":0.7323,"iv":0.3436,"type":"put"},{"m":0.7416,"iv":0.3422,"type":"put"},{"m":0.751,"iv":0.3404,"type":"put"},{"m":0.7604,"iv":0.3392,"type":"put"},{"m":0.7698,"iv":0.3376,"type":"put"},{"m":0.7792,"iv":0.3371,"type":"put"},{"m":0.7886,"iv":0.3356,"type":"put"},{"m":0.798,"iv":0.3337,"type":"put"},{"m":0.8074,"iv":0.3354,"type":"put"},{"m":0.8167,"iv":0.3327,"type":"put"},{"m":0.8261,"iv":0.3298,"type":"put"},{"m":0.8355,"iv":0.3302,"type":"put"},{"m":0.8449,"iv":0.3301,"type":"put"},{"m":0.8543,"iv":0.3296,"type":"put"},{"m":0.8637,"iv":0.3287,"type":"put"},{"m":0.8731,"iv":0.3275,"type":"put"},{"m":0.8825,"iv":0.326,"type":"put"},{"m":0.8919,"iv":0.3241,"type":"put"},{"m":0.9012,"iv":0.3234,"type":"put"},{"m":0.9106,"iv":0.3224,"type":"put"},{"m":0.92,"iv":0.3225,"type":"put"},{"m":0.9294,"iv":0.3222,"type":"put"},{"m":0.9388,"iv":0.3215,"type":"put"},{"m":0.9482,"iv":0.3206,"type":"put"},{"m":0.9576,"iv":0.3193,"type":"put"},{"m":0.967,"iv":0.3204,"type":"put"},{"m":0.9763,"iv":0.3185,"type":"put"},{"m":0.9857,"iv":0.319,"type":"put"},{"m":0.9951,"iv":0.3191,"type":"put"},{"m":1.0045,"iv":0.3186,"type":"call"},{"m":1.0139,"iv":0.3172,"type":"call"},{"m":1.0233,"iv":0.3182,"type":"call"},{"m":1.0327,"iv":0.3165,"type":"call"},{"m":1.0421,"iv":0.3166,"type":"call"},{"m":1.0514,"iv":0.3142,"type":"call"},{"m":1.0608,"iv":0.3139,"type":"call"},{"m":1.0702,"iv":0.3134,"type":"call"},{"m":1.0796,"iv":0.3127,"type":"call"},{"m":1.089,"iv":0.3116,"type":"call"},{"m":1.0984,"iv":0.3115,"type":"call"},{"m":1.1078,"iv":0.311,"type":"call"},{"m":1.1172,"iv":0.3106,"type":"call"},{"m":1.1265,"iv":0.3098,"type":"call"},{"m":1.1359,"iv":0.3099,"type":"call"},{"m":1.1453,"iv":0.3098,"type":"call"},{"m":1.1547,"iv":0.3095,"type":"call"},{"m":1.1641,"iv":0.3089,"type":"call"},{"m":1.1735,"iv":0.3081,"type":"call"},{"m":1.1829,"iv":0.3071,"type":"call"},{"m":1.1923,"iv":0.3071,"type":"call"},{"m":1.2017,"iv":0.3069,"type":"call"},{"m":1.211,"iv":0.305,"type":"call"},{"m":1.2204,"iv":0.3057,"type":"call"},{"m":1.2298,"iv":0.3062,"type":"call"},{"m":1.2392,"iv":0.3037,"type":"call"},{"m":1.2486,"iv":0.3037,"type":"call"},{"m":1.258,"iv":0.3036,"type":"call"},{"m":1.2674,"iv":0.3032,"type":"call"},{"m":1.2768,"iv":0.3026,"type":"call"}],"iv":{"expiry":"2027-09-17","atm":0.31884999999999997,"at60":0.3738,"ratio":0.9756391544545592,"spot":532.5999755859375,"n":83},"mc":{"paths":40000,"steps":252,"implied":{"fair_coupon":0.09626956146329572,"p_hit":0.1943,"p_loss":0.1943,"exp_red":0.9030753291423799,"cond_loss":0.49884030292136006,"pv_red":0.9036895207617978,"annuity":1.0004250333572164},"american":{"fair_coupon":0.1370087954345879,"p_hit":0.32715,"p_loss":0.325725,"exp_red":0.8623464797831253,"cond_loss":0.4226065552747713,"pv_red":0.8629329712571203,"annuity":1.0004250333572164},"realised":{"fair_coupon":0.10321428941365267,"p_hit":0.206875,"p_loss":0.206875,"exp_red":0.896132371434083,"cond_loss":0.5020791713156105,"pv_red":0.8967418410704051,"annuity":1.0004250333572164},"skew":{"fair_coupon":0.14738589228529705,"p_hit":0.284925,"p_loss":0.284925,"exp_red":0.8519720281005837,"cond_loss":0.5195331118694966,"pv_red":0.8525514637940986,"annuity":1.0004250333572164},"skew_ratio":1.1723380900109772,"hist":{"edges":[0.2,0.24,0.28,0.32,0.36,0.4,0.44,0.48,0.52,0.56,0.6,0.64,0.68,0.72,0.76,0.8,0.84,0.88,0.92,0.96,1.0,1.04,1.08,1.12,1.16,1.2,1.24,1.28,1.32,1.36,1.4,1.44,1.48,1.52,1.56,1.6,1.64,1.68,1.72,1.76,1.8],"counts":[24,58,146,256,442,679,1004,1290,1768,2105,2586,2884,3172,3301,3263,3242,2866,2428,2097,1647,1296,1036,785,530,350,243,185,112,71,51,28,27,10,6,3,4,2,3,0,0]}},"grid":{"barriers":[0.5,0.55,0.6,0.65,0.7],"european":[4.55,6.89,9.63,12.73,15.74],"american":[7.03,10.26,13.7,17.07,20.07]},"corr_shift":[{"shift":-0.2,"coupon":10.0},{"shift":-0.1,"coupon":9.8},{"shift":0.0,"coupon":9.63},{"shift":0.1,"coupon":9.37},{"shift":0.2,"coupon":9.13}],"vol_shift":[{"shift":-0.05,"coupon":6.03},{"shift":0.0,"coupon":9.63},{"shift":0.05,"coupon":14.01}],"backtest":{"windows":1469,"first":"2019-10-28","last":"2025-10-24","p_below_strike":0.7528931245745405,"p_below_barrier":0.002722940776038121,"p_touch_barrier":0.0782312925170068,"worst":0.5866,"worst_window":{"start":"2021-09-23","end":"2022-09-23","worst":0.5866,"path_min":null},"median":0.9026,"series":[["2019-10-28",1.0138],["2019-10-31",0.9789],["2019-11-05",1.0451],["2019-11-08",1.0129],["2019-11-13",1.0136],["2019-11-18",1.0115],["2019-11-21",1.0045],["2019-11-26",0.9802],["2019-12-02",0.9795],["2019-12-05",0.9655],["2019-12-10",0.9714],["2019-12-13",0.9685],["2019-12-18",0.9765],["2019-12-23",0.9552],["2020-01-03",0.9825],["2020-01-08",0.9867],["2020-01-13",0.9693],["2020-01-16",0.9617],["2020-01-22",0.9226],["2020-01-27",0.9577],["2020-01-30",0.9287],["2020-02-04",0.9451],["2020-02-07",0.911],["2020-02-12",0.9404],["2020-02-18",0.9313],["2020-02-21",0.9009],["2020-02-26",0.9188],["2020-03-02",0.9725],["2020-03-05",0.9345],["2020-03-10",1.0386],["2020-03-13",1.1151],["2020-03-18",1.0784],["2020-03-23",1.1359],["2020-03-26",1.0551],["2020-03-31",1.0592],["2020-04-03",1.0383],["2020-04-08",1.039],["2020-04-15",1.0445],["2020-04-20",0.9779],["2020-04-23",1.0472],["2020-04-28",1.0411],["2020-05-04",1.0817],["2020-05-07",1.0515],["2020-05-12",1.0211],["2020-05-15",1.0553],["2020-05-20",1.0526],["2020-05-27",1.0916],["2020-06-02",1.0836],["2020-06-05",1.0996],["2020-06-10",1.0806],["2020-06-15",1.1111],["2020-06-18",1.0811],["2020-06-23",1.086],["2020-06-26",1.1055],["2020-07-01",1.0979],["2020-07-07",1.1068],["2020-07-10",1.0806],["2020-07-15",1.0547],["2020-07-20",1.0717],["2020-07-23",1.039],["2020-07-28",1.0315],["2020-07-31",1.0625],["2020-08-05",1.0484],["2020-08-10",1.0551],["2020-08-13",1.0501],["2020-08-18",1.0657],["2020-08-21",1.0565],["2020-08-26",1.0452],["2020-08-31",1.0661],["2020-09-03",1.0538],["2020-09-09",1.0436],["2020-09-14",1.0443],["2020-09-17",1.0455],["2020-09-22",1.0511],["2020-09-25",1.0159],["2020-09-30",1.0307],["2020-10-05",1.0215],["2020-10-08",1.0388],["2020-10-13",1.0339],["2020-10-16",1.0662],["2020-10-21",1.0971],["2020-10-26",1.1],["2020-10-29",1.1719],["2020-11-03",1.1499],["2020-11-06",1.1474],["2020-11-11",1.1603],["2020-11-16",1.1761],["2020-11-19",1.179],["2020-11-24",1.1939],["2020-11-30",1.1662],["2020-12-03",1.1965],["2020-12-08",1.2456],["2020-12-11",1.2381],["2020-12-16",1.2639],["2020-12-21",1.2654],["2020-12-28",1.2429],["2021-01-04",1.2397],["2021-01-07",1.2188],["2021-01-12",1.2136],["2021-01-15",1.2131],["2021-01-21",1.2061],["2021-01-26",1.1413],["2021-01-29",1.1903],["2021-02-03",1.1683],["2021-02-08",1.1867],["2021-02-11",1.1845],["2021-02-17",1.1696],["2021-02-22",1.167],["2021-02-25",1.2318],["2021-03-02",1.2277],["2021-03-05",1.1494],["2021-03-10",1.1287],["2021-03-15",1.1532],["2021-03-18",1.1911],["2021-03-23",1.1357],["2021-03-26",1.1552],["2021-03-31",1.1411],["2021-04-07",1.081],["2021-04-12",1.0686],["2021-04-15",1.0598],["2021-04-20",1.1088],["2021-04-23",0.9884],["2021-04-28",0.998],["2021-05-03",1.0065],["2021-05-06",0.9898],["2021-05-11",0.9988],["2021-05-17",1.0189],["2021-05-20",0.9539],["2021-05-26",0.9989],["2021-06-01",0.9624],["2021-06-04",0.9534],["2021-06-09",0.9259],["2021-06-14",0.8156],["2021-06-17",0.7617],["2021-06-22",0.8083],["2021-06-25",0.8318],["2021-06-30",0.7868],["2021-07-06",0.7267],["2021-07-09",0.7512],["2021-07-14",0.7273],["2021-07-19",0.8398],["2021-07-22",0.8417],["2021-07-27",0.849],["2021-07-30",0.8649],["2021-08-04",0.8599],["2021-08-09",0.7905],["2021-08-12",0.8265],["2021-08-17",0.8183],["2021-08-20",0.7814],["2021-08-25",0.7731],["2021-08-30",0.6911],["2021-09-02",0.6704],["2021-09-08",0.6645],["2021-09-13",0.6523],["2021-09-16",0.6216],["2021-09-21",0.6447],["2021-09-24",0.6048],["2021-09-29",0.6668],["2021-10-04",0.7666],["2021-10-07",0.6865],["2021-10-12",0.661],["2021-10-15",0.5923],["2021-10-20",0.6883],["2021-10-25",0.7235],["2021-10-28",0.6879],["2021-11-02",0.6607],["2021-11-05",0.6469],["2021-11-10",0.7345],["2021-11-15",0.72],["2021-11-18",0.7068],["2021-11-23",0.7332],["2021-11-29",0.7139],["2021-12-02",0.774],["2021-12-07",0.7296],["2021-12-10",0.7372],["2021-12-15",0.7441],["2021-12-20",0.7558],["2021-12-23",0.7133],["2021-12-29",0.7048],["2022-01-04",0.6963],["2022-01-07",0.7232],["2022-01-12",0.7494],["2022-01-18",0.7792],["2022-01-21",0.8194],["2022-01-26",0.8358],["2022-01-31",0.7969],["2022-02-03",0.8576],["2022-02-08",0.8758],["2022-02-11",0.9196],["2022-02-16",0.8753],["2022-02-22",0.8741],["2022-02-25",0.8414],["2022-03-02",0.8365],["2022-03-07",0.9112],["2022-03-10",0.8704],["2022-03-15",0.9244],["2022-03-18",0.9004],["2022-03-23",0.924],["2022-03-28",0.8858],["2022-03-31",0.9273],["2022-04-05",0.9131],["2022-04-08",0.911],["2022-04-13",0.9018],["2022-04-20",0.942],["2022-04-25",0.9178],["2022-04-28",0.9099],["2022-05-03",0.9267],["2022-05-06",0.9434],["2022-05-11",0.9458],["2022-05-16",0.9282],["2022-05-19",1.0039],["2022-05-24",0.978],["2022-05-31",0.9222],["2022-06-03",0.9467],["2022-06-09",0.9694],["2022-06-14",0.9807],["2022-06-17",1.0071],["2022-06-23",1.0028],["2022-06-28",0.9669],["2022-07-01",0.9564],["2022-07-07",0.915],["2022-07-12",0.9054],["2022-07-15",0.909],["2022-07-20",0.9188],["2022-07-25",0.8949],["2022-07-28",0.9176],["2022-08-03",0.9028],["2022-08-08",0.9008],["2022-08-11",0.9036],["2022-08-16",0.9045],["2022-08-19",0.8909],["2022-08-24",0.909],["2022-08-29",0.9264],["2022-09-01",0.9336],["2022-09-07",0.946],["2022-09-12",0.9399],["2022-09-15",0.9695],["2022-09-20",1.0038],["2022-09-23",1.0006],["2022-09-28",0.973],["2022-10-03",0.9641],["2022-10-06",0.9432],["2022-10-11",0.9945],["2022-10-14",0.9731],["2022-10-19",0.9281],["2022-10-24",0.9152],["2022-10-27",0.9083],["2022-11-01",0.9165],["2022-11-04",0.9191],["2022-11-09",0.9156],["2022-11-14",0.9197],["2022-11-17",0.9009],["2022-11-22",0.8933],["2022-11-28",0.8758],["2022-12-01",0.8701],["2022-12-06",0.8908],["2022-12-09",0.9064],["2022-12-14",0.88],["2022-12-19",0.8948],["2022-12-22",0.9002],["2022-12-28",0.8954],["2023-01-03",0.9117],["2023-01-06",0.8892],["2023-01-11",0.8557],["2023-01-17",0.8567],["2023-01-20",0.8701],["2023-01-25",0.8536],["2023-01-30",0.8907],["2023-02-02",0.8976],["2023-02-07",0.8963],["2023-02-10",0.8842],["2023-02-15",0.8863],["2023-02-21",0.9042],["2023-02-24",0.8705],["2023-03-01",0.8689],["2023-03-06",0.8755],["2023-03-09",0.8878],["2023-03-14",0.891],["2023-03-17",0.866],["2023-03-22",0.8659],["2023-03-27",0.8716],["2023-03-30",0.8562],["2023-04-04",0.8467],["2023-04-11",0.824],["2023-04-14",0.8187],["2023-04-19",0.8157],["2023-04-24",0.8221],["2023-04-27",0.8153],["2023-05-03",0.7907],["2023-05-08",0.7919],["2023-05-11",0.8264],["2023-05-16",0.8347],["2023-05-22",0.8437],["2023-05-25",0.8304],["2023-05-31",0.8725],["2023-06-05",0.8972],["2023-06-08",0.9161],["2023-06-13",0.8903],["2023-06-16",0.8801],["2023-06-22",0.8661],["2023-06-27",0.861],["2023-06-30",0.8539],["2023-07-06",0.8725],["2023-07-11",0.8879],["2023-07-14",0.8854],["2023-07-19",0.8996],["2023-07-24",0.9029],["2023-07-27",0.8141],["2023-08-02",0.8332],["2023-08-07",0.8386],["2023-08-10",0.8473],["2023-08-15",0.867],["2023-08-18",0.8683],["2023-08-23",0.8541],["2023-08-28",0.8416],["2023-08-31",0.8555],["2023-09-06",0.8491],["2023-09-11",0.8322],["2023-09-14",0.8346],["2023-09-19",0.8116],["2023-09-22",0.7753],["2023-09-27",0.8179],["2023-10-02",0.8264],["2023-10-05",0.8136],["2023-10-10",0.8128],["2023-10-13",0.818],["2023-10-18",0.841],["2023-10-23",0.8753],["2023-10-26",0.855],["2023-10-31",0.8405],["2023-11-03",0.8198],["2023-11-08",0.8021],["2023-11-13",0.7887],["2023-11-16",0.786],["2023-11-21",0.7671],["2023-11-27",0.7567],["2023-11-30",0.7698],["2023-12-05",0.7665],["2023-12-08",0.7607],["2023-12-13",0.7609],["2023-12-18",0.7669],["2023-12-21",0.7628],["2023-12-28",0.7689],["2024-01-04",0.7563],["2024-01-09",0.7626],["2024-01-12",0.7596],["2024-01-18",0.7602],["2024-01-23",0.7735],["2024-01-26",0.7875],["2024-01-31",0.7983],["2024-02-05",0.7741],["2024-02-08",0.7881],["2024-02-13",0.8172],["2024-02-16",0.8189],["2024-02-22",0.8099],["2024-02-27",0.8127],["2024-03-01",0.7721],["2024-03-06",0.7345],["2024-03-11",0.7145],["2024-03-14",0.7443],["2024-03-19",0.774],["2024-03-22",0.7445],["2024-03-27",0.7177],["2024-04-03",0.6394],["2024-04-08",0.628],["2024-04-11",0.635],["2024-04-16",0.6284],["2024-04-19",0.6834],["2024-04-24",0.7088],["2024-04-29",0.6901],["2024-05-03",0.7259],["2024-05-08",0.7462],["2024-05-14",0.8167],["2024-05-17",0.7766],["2024-05-23",0.7332],["2024-05-29",0.736],["2024-06-03",0.7417],["2024-06-06",0.6972],["2024-06-11",0.7196],["2024-06-14",0.7031],["2024-06-20",0.6577],["2024-06-25",0.7309],["2024-06-28",0.7028],["2024-07-03",0.6869],["2024-07-09",0.6918],["2024-07-12",0.6858],["2024-07-17",0.7466],["2024-07-22",0.7083],["2024-07-25",0.7565],["2024-07-30",0.7788],["2024-08-05",0.8004],["2024-08-08",0.7767],["2024-08-13",0.8114],["2024-08-16",0.7672],["2024-08-21",0.7524],["2024-08-26",0.8163],["2024-08-29",0.7735],["2024-09-04",0.8466],["2024-09-09",0.8347],["2024-09-12",0.8305],["2024-09-17",0.827],["2024-09-20",0.8734],["2024-09-25",0.8416],["2024-09-30",0.8601],["2024-10-03",0.8835],["2024-10-08",0.8994],["2024-10-11",0.8964],["2024-10-16",0.992],["2024-10-21",0.9561],["2024-10-24",0.9445],["2024-10-29",0.9447],["2024-11-01",0.9393],["2024-11-06",0.9941],["2024-11-11",1.0283],["2024-11-14",1.0199],["2024-11-19",1.036],["2024-11-22",1.0597],["2024-11-27",1.0454],["2024-12-03",1.0251],["2024-12-06",1.0339],["2024-12-11",1.0414],["2024-12-16",1.0535],["2024-12-19",1.0619],["2024-12-27",1.058],["2025-01-06",1.0289],["2025-01-10",1.0128],["2025-01-15",1.0388],["2025-01-21",0.9765],["2025-01-24",0.9621],["2025-01-29",0.9387],["2025-02-03",0.9771],["2025-02-06",0.9647],["2025-02-11",0.9828],["2025-02-14",0.9581],["2025-02-20",0.9546],["2025-02-25",0.9313],["2025-02-28",0.9551],["2025-03-05",0.9094],["2025-03-10",0.8794],["2025-03-13",0.9062],["2025-03-18",0.8615],["2025-03-21",0.8164],["2025-03-26",0.8568],["2025-03-31",0.8778],["2025-04-03",0.863],["2025-04-08",0.9235],["2025-04-11",0.9189],["2025-04-16",0.9071],["2025-04-23",0.9152],["2025-04-28",0.9273],["2025-05-02",0.8924],["2025-05-07",0.879],["2025-05-12",0.8969],["2025-05-15",0.9016],["2025-05-20",0.8941],["2025-05-23",0.8967],["2025-05-30",0.8879],["2025-06-04",0.8801],["2025-06-10",0.8438],["2025-06-13",0.8417],["2025-06-18",0.79],["2025-06-24",0.7457],["2025-06-27",0.7432],["2025-07-02",0.7951],["2025-07-08",0.7719],["2025-07-11",0.7768],["2025-07-16",0.7933],["2025-07-21",0.7798],["2025-07-24",0.7471],["2025-07-29",0.7619],["2025-08-04",0.92],["2025-08-07",0.96],["2025-08-12",0.9304],["2025-08-15",0.9234],["2025-08-20",0.9514],["2025-08-25",0.9751],["2025-08-28",1.0076],["2025-09-03",1.0094],["2025-09-08",0.9915],["2025-09-11",0.9893],["2025-09-16",0.9632],["2025-09-19",0.9685],["2025-09-24",0.976],["2025-09-29",0.989],["2025-10-02",1.002],["2025-10-07",1.011],["2025-10-10",1.0102],["2025-10-15",1.0507],["2025-10-20",0.99],["2025-10-23",1.0076]]},"rebased":{"NESN.SW":[["2025-10-27",100.0],["2025-10-29",98.21],["2025-10-31",96.22],["2025-11-04",98.75],["2025-11-06",98.74],["2025-11-10",99.4],["2025-11-12",102.19],["2025-11-14",100.51],["2025-11-18",99.2],["2025-11-20",99.16],["2025-11-24",100.8],["2025-11-26",99.6],["2025-12-01",100.2],["2025-12-03",98.27],["2025-12-05",98.65],["2025-12-09",97.56],["2025-12-11",97.52],["2025-12-15",98.81],["2025-12-17",99.32],["2025-12-19",98.61],["2025-12-23",97.41],["2025-12-30",98.55],["2026-01-06",95.32],["2026-01-08",93.07],["2026-01-12",93.85],["2026-01-14",95.81],["2026-01-16",94.17],["2026-01-21",91.34],["2026-01-23",90.7],["2026-01-27",91.18],["2026-01-29",91.96],["2026-02-02",94.51],["2026-02-04",97.73],["2026-02-06",98.74],["2026-02-10",98.77],["2026-02-12",99.3],["2026-02-17",98.9],["2026-02-19",101.91],["2026-02-23",101.88],["2026-02-25",103.75],["2026-02-27",105.11],["2026-03-03",101.69],["2026-03-05",100.3],["2026-03-09",100.19],["2026-03-11",99.54],["2026-03-13",101.21],["2026-03-17",101.18],["2026-03-19",95.91],["2026-03-23",93.68],["2026-03-25",96.1],["2026-03-27",95.58],["2026-03-31",98.15],["2026-04-02",98.09],["2026-04-08",98.56],["2026-04-10",99.0],["2026-04-14",99.41],["2026-04-16",98.55],["2026-04-20",96.12],["2026-04-22",94.54],["2026-04-24",101.59],["2026-04-28",100.68],["2026-04-30",98.94],["2026-05-05",97.08],["2026-05-07",96.97],["2026-05-11",95.24],["2026-05-13",96.22],["2026-05-18",97.92],["2026-05-20",98.42],["2026-05-22",98.6],["2026-05-27",101.46],["2026-05-29",99.42],["2026-06-02",97.32],["2026-06-04",95.97],["2026-06-08",95.88],["2026-06-10",99.79],["2026-06-12",99.89],["2026-06-16",99.6],["2026-06-18",98.82],["2026-06-23",100.4],["2026-06-25",104.52],["2026-06-29",105.51],["2026-07-01",103.73],["2026-07-06",104.73],["2026-07-08",105.27],["2026-07-10",104.08],["2026-07-14",104.98],["2026-07-16",105.76],["2026-07-20",107.3],["2026-07-22",107.85],["2026-07-24",100.96],["2026-07-28",103.13],["2026-07-30",103.1],["2026-08-03",101.09],["2026-08-05",101.81],["2026-08-07",101.64],["2026-08-11",100.34],["2026-08-13",101.46],["2026-08-17",98.51],["2026-08-19",99.3],["2026-08-21",99.72],["2026-08-25",99.9],["2026-08-27",98.27],["2026-08-31",98.65],["2026-09-02",98.41],["2026-09-04",98.01],["2026-09-09",97.28],["2026-09-11",97.05],["2026-09-15",97.48],["2026-09-17",98.04],["2026-09-21",96.5],["2026-09-23",96.5],["2026-09-25",96.58],["2026-09-29",95.44],["2026-10-01",93.4],["2026-10-05",93.22],["2026-10-07",94.57],["2026-10-09",95.17],["2026-10-13",96.75],["2026-10-15",101.46],["2026-10-19",103.32],["2026-10-21",104.47],["2026-10-23",104.76],["2026-10-26",104.79]],"ASML.AS":[["2025-10-27",100.0],["2025-10-29",101.24],["2025-10-31",101.1],["2025-11-04",101.09],["2025-11-06",98.59],["2025-11-10",97.64],["2025-11-12",98.21],["2025-11-14",96.26],["2025-11-18",95.32],["2025-11-20",97.98],["2025-11-24",94.57],["2025-11-26",100.13],["2025-12-01",102.05],["2025-12-03",106.09],["2025-12-05",104.79],["2025-12-09",104.93],["2025-12-11",103.61],["2025-12-15",102.52],["2025-12-17",96.24],["2025-12-19",99.28],["2025-12-23",99.46],["2025-12-30",101.13],["2026-01-06",116.84],["2026-01-08",111.55],["2026-01-12",119.63],["2026-01-14",119.39],["2026-01-16",128.53],["2026-01-21",127.17],["2026-01-23",129.74],["2026-01-27",134.08],["2026-01-29",131.26],["2026-02-02",134.88],["2026-02-04",125.6],["2026-02-06",131.46],["2026-02-10",131.37],["2026-02-12",129.92],["2026-02-17",132.06],["2026-02-19",136.35],["2026-02-23",137.56],["2026-02-25",141.88],["2026-02-27",135.82],["2026-03-03",127.94],["2026-03-05",130.6],["2026-03-09",126.37],["2026-03-11",132.01],["2026-03-13",129.9],["2026-03-17",131.46],["2026-03-19",128.69],["2026-03-23",129.44],["2026-03-25",133.42],["2026-03-27",126.24],["2026-03-31",123.25],["2026-04-02",127.85],["2026-04-08",133.53],["2026-04-10",139.85],["2026-04-14",141.42],["2026-04-16",134.63],["2026-04-20",137.1],["2026-04-22",137.63],["2026-04-24",137.61],["2026-04-28",129.04],["2026-04-30",134.61],["2026-05-05",135.34],["2026-05-07",143.16],["2026-05-11",143.77],["2026-05-13",146.13],["2026-05-18",139.24],["2026-05-20",146.79],["2026-05-22",155.16],["2026-05-27",151.57],["2026-05-29",152.49],["2026-06-02",160.97],["2026-06-04",164.96],["2026-06-08",166.79],["2026-06-10",165.97],["2026-06-12",179.45],["2026-06-16",175.22],["2026-06-18",184.56],["2026-06-23",171.88],["2026-06-25",175.53],["2026-06-29",177.51],["2026-07-01",180.77],["2026-07-06",179.32],["2026-07-08",168.37],["2026-07-10",172.78],["2026-07-14",171.32],["2026-07-16",176.02],["2026-07-20",167.47],["2026-07-22",175.05],["2026-07-24",172.12],["2026-07-28",152.89],["2026-07-30",158.57],["2026-08-03",156.33],["2026-08-05",161.41],["2026-08-07",165.07],["2026-08-11",171.13],["2026-08-13",177.23],["2026-08-17",178.53],["2026-08-19",166.02],["2026-08-21",165.84],["2026-08-25",165.29],["2026-08-27",163.68],["2026-08-31",159.87],["2026-09-02",159.21],["2026-09-04",161.59],["2026-09-09",164.92],["2026-09-11",162.8],["2026-09-15",151.83],["2026-09-17",156.15],["2026-09-21",163.13],["2026-09-23",166.92],["2026-09-25",167.67],["2026-09-29",176.32],["2026-10-01",175.86],["2026-10-05",182.38],["2026-10-07",177.32],["2026-10-09",176.37],["2026-10-13",166.24],["2026-10-15",161.24],["2026-10-19",164.74],["2026-10-21",164.5],["2026-10-23",154.96],["2026-10-26",157.47]],"MSFT":[["2025-10-27",100.0],["2025-10-29",101.89],["2025-10-31",97.42],["2025-11-04",96.77],["2025-11-06",93.52],["2025-11-10",95.2],["2025-11-12",96.17],["2025-11-14",95.99],["2025-11-18",92.9],["2025-11-20",90.01],["2025-11-24",89.18],["2025-11-26",91.34],["2025-12-01",91.58],["2025-12-03",89.88],["2025-12-05",90.9],["2025-12-09",92.57],["2025-12-11",90.96],["2025-12-15",89.33],["2025-12-17",89.58],["2025-12-19",91.42],["2025-12-23",91.6],["2025-12-30",91.71],["2026-01-06",90.03],["2026-01-08",89.95],["2026-01-12",89.78],["2026-01-14",86.43],["2026-01-16",86.52],["2026-01-21",83.55],["2026-01-23",87.66],["2026-01-27",90.42],["2026-01-29",81.56],["2026-02-02",79.65],["2026-02-04",77.93],["2026-02-06",75.47],["2026-02-10",77.75],["2026-02-12",75.6],["2026-02-17",74.67],["2026-02-19",74.97],["2026-02-23",72.33],["2026-02-25",75.37],["2026-02-27",73.89],["2026-03-03",76.0],["2026-03-05",77.27],["2026-03-09",77.03],["2026-03-11",76.17],["2026-03-13",74.42],["2026-03-17",75.14],["2026-03-19",73.19],["2026-03-23",72.06],["2026-03-25",69.81],["2026-03-27",67.12],["2026-03-31",69.64],["2026-04-02",70.26],["2026-04-08",70.43],["2026-04-10",69.78],["2026-04-14",73.96],["2026-04-16",79.07],["2026-04-20",78.66],["2026-04-22",81.45],["2026-04-24",79.89],["2026-04-28",80.76],["2026-04-30",76.72],["2026-05-05",77.4],["2026-05-07",79.16],["2026-05-11",77.64],["2026-05-13",76.24],["2026-05-18",79.68],["2026-05-20",79.22],["2026-05-22",78.75],["2026-05-27",77.64],["2026-05-29",84.71],["2026-06-02",83.03],["2026-06-04",80.53],["2026-06-08",77.46],["2026-06-10",74.76],["2026-06-12",73.51],["2026-06-16",74.1],["2026-06-18",71.38],["2026-06-23",70.35],["2026-06-25",66.38],["2026-06-29",69.34],["2026-07-01",72.3],["2026-07-06",72.76],["2026-07-08",72.12],["2026-07-10",72.45],["2026-07-14",72.42],["2026-07-16",75.46],["2026-07-20",75.69],["2026-07-22",73.44],["2026-07-24",71.81],["2026-07-28",74.0],["2026-07-30",84.87],["2026-08-03",91.75],["2026-08-05",91.71],["2026-08-07",94.07],["2026-08-11",94.79],["2026-08-13",93.48],["2026-08-17",90.37],["2026-08-19",91.12],["2026-08-21",90.92],["2026-08-25",92.51],["2026-08-27",95.02],["2026-08-31",95.44],["2026-09-02",93.47],["2026-09-04",94.01],["2026-09-09",92.5],["2026-09-11",93.25],["2026-09-15",93.53],["2026-09-17",93.65],["2026-09-21",94.37],["2026-09-23",94.18],["2026-09-25",97.11],["2026-09-29",95.76],["2026-10-01",96.48],["2026-10-05",98.81],["2026-10-07",99.67],["2026-10-09",100.67],["2026-10-13",102.24],["2026-10-15",101.49],["2026-10-19",100.38],["2026-10-21",100.27],["2026-10-23",98.68],["2026-10-26",100.2]]},"sources":{"yahoo_points":{"NESN.SW":1760,"ASML.AS":1793,"MSFT":1758,"EURCHF=X":1822,"USDCHF=X":1822},"ecb_points":528,"snb_series":13,"option_quotes":210}}</script>
+<script>
+(function () {
+  "use strict";
+  var D = JSON.parse(document.getElementById("data").textContent);
+  var C = { ink: "#202945", muted: "#6C7489", line: "#E3E4E9", orange: "#FF6C0E", blueberry: "#4B5F80", mulberry: "#AC5D85",
+            amber: "#FFA400", mint: "#3BAF90", red: "#C62828", grey: "#9AA0AE" };
+  var SERIES = [C.orange, C.blueberry, C.mulberry];
+  function $(id) { return document.getElementById(id); }
+  function pct(v, d) { return v == null ? "–" : (v * 100).toFixed(d == null ? 1 : d) + "%"; }
+  function sp(v, d) { return v == null ? "–" : (v >= 0 ? "+" : "") + (v * 100).toFixed(d == null ? 1 : d) + "%"; }
+  function num(v, d) { return v == null ? "–" : Number(v).toLocaleString("en-US", { minimumFractionDigits: d || 0, maximumFractionDigits: d || 0 }); }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function fmtDate(s) { var d = new Date(s + "T00:00:00Z"); return d.getUTCDate() + " " + "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ")[d.getUTCMonth()] + " " + d.getUTCFullYear(); }
+  var P = D.product, U = D.unders, MC = D.mc;
+
+  // --- small SVG chart kit -------------------------------------------------------------------
+  function chart(host, o) {
+    var W = 640, H = o.h || 280, m = { l: 48, r: 16, t: 12, b: 30 };
+    var xs = [], ys = [];
+    o.series.forEach(function (s) { s.pts.forEach(function (p) { xs.push(p[0]); ys.push(p[1]); }); });
+    (o.hlines || []).forEach(function (h) { ys.push(h.y); });
+    (o.bars || []).forEach(function (b) { xs.push(b.x0, b.x1); ys.push(b.y); });
+    var x0 = o.xmin != null ? o.xmin : Math.min.apply(null, xs), x1 = o.xmax != null ? o.xmax : Math.max.apply(null, xs);
+    var y0 = o.ymin != null ? o.ymin : Math.min.apply(null, ys), y1 = o.ymax != null ? o.ymax : Math.max.apply(null, ys);
+    var pad = (y1 - y0) * 0.06 || 1; if (o.ymin == null) y0 -= pad; if (o.ymax == null) y1 += pad;
+    var X = function (v) { return m.l + (v - x0) / (x1 - x0) * (W - m.l - m.r); };
+    var Y = function (v) { return H - m.b - (v - y0) / (y1 - y0) * (H - m.t - m.b); };
+    var g = "";
+    var ticks = o.yticks || nice(y0, y1, 5);
+    ticks.forEach(function (t) {
+      g += '<line x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + Y(t) + '" y2="' + Y(t) + '" stroke="' + C.line + '"/>' +
+           '<text x="' + (m.l - 6) + '" y="' + (Y(t) + 4) + '" text-anchor="end" font-size="11" fill="' + C.muted + '">' + o.yfmt(t) + "</text>";
+    });
+    (o.xticks || []).forEach(function (t) {
+      g += '<text x="' + X(t[0]) + '" y="' + (H - 10) + '" text-anchor="middle" font-size="11" fill="' + C.muted + '">' + t[1] + "</text>";
+    });
+    (o.bars || []).forEach(function (b) {
+      g += '<rect x="' + X(b.x0) + '" y="' + Y(b.y) + '" width="' + Math.max(1, X(b.x1) - X(b.x0) - 1) + '" height="' + (Y(y0) - Y(b.y)) + '" fill="' + b.color + '"/>';
+    });
+    (o.hlines || []).forEach(function (h) {
+      g += '<line x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + Y(h.y) + '" y2="' + Y(h.y) + '" stroke="' + h.color + '" stroke-width="1.5" stroke-dasharray="6 4"/>' +
+           (h.label ? '<text x="' + (W - m.r - 4) + '" y="' + (Y(h.y) - 5) + '" text-anchor="end" font-size="11" font-weight="700" fill="' + h.color + '">' + h.label + "</text>" : "");
+    });
+    (o.vlines || []).forEach(function (v) {
+      g += '<line y1="' + m.t + '" y2="' + (H - m.b) + '" x1="' + X(v.x) + '" x2="' + X(v.x) + '" stroke="' + v.color + '" stroke-width="1.5" stroke-dasharray="6 4"/>' +
+           (v.label ? '<text x="' + (X(v.x) + 5) + '" y="' + (m.t + 12) + '" font-size="11" font-weight="700" fill="' + v.color + '">' + v.label + "</text>" : "");
+    });
+    o.series.forEach(function (s) {
+      if (s.dots) { s.pts.forEach(function (p) { g += '<circle cx="' + X(p[0]) + '" cy="' + Y(p[1]) + '" r="3" fill="' + s.color + '"/>'; }); return; }
+      var d = s.pts.map(function (p, i) { return (i ? "L" : "M") + X(p[0]).toFixed(1) + " " + Y(p[1]).toFixed(1); }).join("");
+      g += '<path d="' + d + '" fill="none" stroke="' + s.color + '" stroke-width="' + (s.w || 2) + '"' + (s.dash ? ' stroke-dasharray="' + s.dash + '"' : "") + "/>";
+    });
+    host.innerHTML = '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="' + esc(o.label || "chart") + '">' + g + "</svg>";
+  }
+  function nice(a, b, n) {
+    var step = Math.pow(10, Math.floor(Math.log10((b - a) / n))), e = (b - a) / n / step;
+    step *= e > 5 ? 10 : e > 2 ? 5 : e > 1 ? 2 : 1;
+    var out = []; for (var t = Math.ceil(a / step) * step; t <= b + 1e-9; t += step) out.push(+t.toFixed(10));
+    return out;
+  }
+  function dayNum(s) { return Date.parse(s + "T00:00:00Z") / 864e5; }
+  function dateTicks(first, last, n) {
+    var a = dayNum(first), b = dayNum(last), out = [];
+    for (var i = 0; i <= n; i++) {
+      var d = new Date((a + (b - a) * i / n) * 864e5);
+      out.push([a + (b - a) * i / n, "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ")[d.getUTCMonth()] + " " + String(d.getUTCFullYear()).slice(2)]);
+    }
+    return out;
+  }
+
+  // --- header and KPIs ------------------------------------------------------------------------
+  var base = MC.implied;
+  $("meta").innerHTML = "Data of " + fmtDate(D.today) + "<br>Yahoo · ECB · SNB · TradingView";
+  $("gen").textContent = fmtDate(D.today);
+  $("kpis").innerHTML = [
+    [pct(base.fair_coupon, 2), "Fair coupon p.a.", "Monte Carlo, implied vols, European barrier 60%"],
+    [pct(base.p_hit), "Chance of delivery", "Worst below 60% at maturity, model"],
+    [pct(base.exp_red), "Expected redemption", "Average of the 40,000 paths, before coupons"],
+    [pct(D.backtest.p_below_barrier, 1), "Historical delivery rate", D.backtest.windows + " rolling 1-year windows since 2019"],
+    [num(Object.values(D.sources.yahoo_points).reduce(function (a, b) { return a + b; }, 0) + D.sources.ecb_points * 2 + D.sources.option_quotes), "Data points", "Read from Yahoo, the ECB and the SNB for this page"]
+  ].map(function (k) { return '<div class="kpi"><b>' + k[0] + "</b><span>" + k[1] + "</span><i>" + k[2] + "</i></div>"; }).join("");
+
+  // --- 1 · product ------------------------------------------------------------------------------
+  $("terms").innerHTML = [
+    ["Type", "Worst-of Barrier Reverse Convertible, quanto CHF"],
+    ["Underlyings", U.map(function (u) { return u.name + " (" + u.sym + ", " + u.ccy + ")"; }).join(", ")],
+    ["Denomination", "CHF " + num(P.notional)],
+    ["Tenor", "12 months, coupon paid quarterly, guaranteed"],
+    ["Strike / Barrier", "100% / 60%, European (observed at final fixing)"],
+    ["At maturity", "100% back, unless the worst ends below 60%: then the worst's performance (physical delivery)"],
+    ["Fair coupon (model)", "<b>" + pct(base.fair_coupon, 2) + " p.a.</b>, " + pct(MC.skew.fair_coupon, 2) + " with barrier-level volatility"],
+    ["Discounting", "SARON " + D.rates.SARON.value.toFixed(3) + "% (SNB, " + D.rates.SARON.month + ")"]
+  ].map(function (r) { return "<tr><td>" + r[0] + "</td><td>" + r[1] + "</td></tr>"; }).join("");
+  (function () {
+    var c = base.fair_coupon, xs = [];
+    for (var x = 0.2; x <= 1.6001; x += 0.01) xs.push(+x.toFixed(2));
+    chart($("payoff"), { label: "payoff", h: 260, xmin: 0.2, xmax: 1.6, ymin: -0.8, ymax: 0.65,
+      series: [
+        { color: C.grey, dash: "5 4", pts: xs.map(function (x) { return [x, x - 1]; }) },
+        { color: C.red, w: 3, pts: xs.filter(function (x) { return x <= P.barrier; }).map(function (x) { return [x, x - 1 + c]; }) },
+        { color: C.orange, w: 3, pts: xs.filter(function (x) { return x >= P.barrier; }).map(function (x) { return [x, c]; }) }
+      ],
+      vlines: [{ x: P.barrier, color: C.red, label: "Barrier 60%" }, { x: 1, color: C.grey, label: "Strike" }],
+      xticks: [0.2, 0.4, 0.6, 0.8, 1, 1.2, 1.4, 1.6].map(function (x) { return [x, Math.round(x * 100) + "%"]; }),
+      yticks: [-0.8, -0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6], yfmt: function (v) { return Math.round(v * 100) + "%"; } });
+  })();
+
+  // --- 2 · sources --------------------------------------------------------------------------------
+  var yp = D.sources.yahoo_points;
+  $("sources").innerHTML = [
+    ['<span class="src s-yahoo">Yahoo</span>', "chart (yfinance)", "7y daily closes, NESN.SW, ASML.AS, MSFT", yp["NESN.SW"] + yp["ASML.AS"] + yp.MSFT, D.today],
+    ['<span class="src s-yahoo">Yahoo</span>', "quoteSummary", "Dividend, P/E, market cap, beta, results date", 3, D.today],
+    ['<span class="src s-yahoo">Yahoo</span>', "options", "MSFT chain, expiry " + D.iv.expiry, D.sources.option_quotes, D.today],
+    ['<span class="src s-yahoo">Yahoo</span>', "chart (yfinance)", "EURCHF=X, USDCHF=X, for the cross-check", yp["EURCHF=X"] + yp["USDCHF=X"], D.today],
+    ['<span class="src s-ecb">ECB</span>', "data-api.ecb.europa.eu · EXR", "Reference rates CHF, USD per EUR, daily", D.sources.ecb_points * 2, D.fx.EURCHF[0]],
+    ['<span class="src s-snb">SNB</span>', "data.snb.ch · zimoma", "SARON, €STR, SOFR, monthly", D.sources.snb_series + " series", D.rates.SARON.month],
+    ['<span class="src s-tv">TradingView</span>', "embed widgets", "Live tape and charts, in the browser", "live", "now"]
+  ].map(function (r) { return "<tr><td>" + r[0] + "</td><td><code>" + esc(r[1]) + '</code></td><td class="w">' + esc(r[2]) + '</td><td class="n">' + (typeof r[3] === "number" ? num(r[3]) : r[3]) + "</td><td>" + esc(r[4]) + "</td></tr>"; }).join("");
+  $("recon").innerHTML = ["EUR", "USD"].map(function (c) {
+    var r = D.recon[c], st = r.median_bp < 25 ? '<span class="tag ok">Consistent</span>' : '<span class="tag alert">Check</span>';
+    return "<tr><td>" + c + '/CHF</td><td class="n">' + r.days + '</td><td class="n">' + r.median_bp.toFixed(1) + ' bp</td><td class="n">' + r.max_bp.toFixed(1) +
+      ' bp</td><td class="n">' + r.last[1].toFixed(4) + '</td><td class="n">' + r.last[2].toFixed(4) + "</td><td>" + st + "</td></tr>";
+  }).join("");
+  $("recon-note").textContent = "The ECB fixes at 14:15 CET, Yahoo's daily close comes later: on a volatile day the two can be up to about 1% apart (largest: " +
+    fmtDate(D.recon.USD.max_day) + "). The median gap is the test of whether the feeds agree.";
+  (function () {
+    var series = [["SARON", C.orange], ["ESTR", C.blueberry], ["SOFR", C.mulberry]].map(function (s) {
+      return { color: s[1], pts: D.rate_hist[s[0]].map(function (p) { return [dayNum(p[0] + "-15"), p[1]]; }) };
+    });
+    var first = D.rate_hist.SARON[0][0] + "-15", last = D.rate_hist.SARON[D.rate_hist.SARON.length - 1][0] + "-15";
+    chart($("rates"), { label: "money-market rates", h: 190, series: series, xticks: dateTicks(first, last, 4), yfmt: function (v) { return v.toFixed(1) + "%"; } });
+  })();
+
+  // --- 3 · underlyings ------------------------------------------------------------------------------
+  var maturity = new Date(Date.parse(D.today) + 365 * 864e5).toISOString().slice(0, 10);
+  $("unders").innerHTML = U.map(function (u) {
+    if (u.earnings && u.earnings < D.today) u.earnings = null;      // Yahoo still shows the last one: the next is not announced
+    var soon = u.earnings && (Date.parse(u.earnings) - Date.parse(D.today)) / 864e5 <= 30;
+    return "<tr><td><b>" + esc(u.name) + "</b></td><td>" + u.ccy + '</td><td class="n">' + num(u.price, 2) + '</td><td class="n">' + num(u.strike, 2) +
+      '</td><td class="n neg">' + num(u.barrier, 2) + '</td><td class="n">' + pct(u.rv1y) + '</td><td class="n">' + pct(u.ewma) + '</td><td class="n"><b>' + pct(u.pricing_vol) +
+      '</b></td><td class="n">' + pct(u.div, 2) + '</td><td class="n">' + num(u.pe, 1) + '</td><td class="n">' + num(u.fpe, 1) + '</td><td class="n">' + num(u.mcap_bn) +
+      '</td><td class="n">' + num(u.beta, 2) + "</td><td>" + (u.earnings ? (soon ? '<span class="warn">' + fmtDate(u.earnings) + "</span>" : fmtDate(u.earnings)) : '<span class="muted">not announced</span>') +
+      '</td><td class="n">' + (u.ccy === "CHF" ? "–" : pct(u.fx_vol)) + '</td><td class="n">' + (u.ccy === "CHF" ? "–" : u.rho_fx.toFixed(2)) + '</td><td class="n">' + sp(u.drift, 2) + "</td></tr>";
+  }).join("");
+  (function () {
+    var syms = Object.keys(D.rebased), first = D.rebased[syms[0]][0][0], last = D.rebased[syms[0]][D.rebased[syms[0]].length - 1][0];
+    chart($("perf"), { label: "rebased performance", h: 270,
+      series: syms.map(function (s, i) { return { color: SERIES[i], pts: D.rebased[s].map(function (p) { return [dayNum(p[0]), p[1]]; }) }; }),
+      hlines: [{ y: 100, color: C.grey, label: "100" }], xticks: dateTicks(first, last, 4), yfmt: function (v) { return Math.round(v); } });
+    $("perf-legend").innerHTML = U.map(function (u, i) { return '<span><i style="background:' + SERIES[i] + '"></i>' + esc(u.name) + "</span>"; }).join("");
+    var sm = D.smile;
+    chart($("smile"), { label: "volatility smile", h: 270, xmin: 0.5, xmax: 1.3,
+      series: [{ color: C.mulberry, pts: sm.map(function (p) { return [p.m, p.iv]; }) }, { color: C.mulberry, dots: true, pts: sm.map(function (p) { return [p.m, p.iv]; }) }],
+      vlines: [{ x: 1, color: C.grey, label: "ATM " + pct(D.iv.atm) }, { x: 0.6, color: C.red, label: "Barrier " + pct(D.iv.at60) }],
+      xticks: [0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3].map(function (x) { return [x, Math.round(x * 100) + "%"]; }), yfmt: function (v) { return Math.round(v * 100) + "%"; } });
+    $("smile-note").textContent = D.iv.n + " out-of-the-money options, expiry " + fmtDate(D.iv.expiry) + ", implied volatility solved by Black-Scholes from bid/ask mids with SOFR and Microsoft's dividend yield. " +
+      "Volatility at the barrier is " + pct(D.iv.at60) + ", " + ((MC.skew_ratio - 1) * 100).toFixed(0) + "% above at-the-money: the skew a dealer prices in.";
+  })();
+
+  // --- 4 · correlation ----------------------------------------------------------------------------------
+  function heat(v) { var a = Math.max(0, Math.min(1, (v + 0.2) / 1.0)); return "rgba(255,108,14," + (0.08 + a * 0.5).toFixed(2) + ")"; }
+  $("corr-h").innerHTML = "<tr><th></th>" + U.map(function (u) { return '<th class="n">' + esc(u.name) + "</th>"; }).join("") + "</tr>";
+  $("corr").innerHTML = D.corr.map(function (row, i) {
+    return "<tr><td><b>" + esc(U[i].name) + "</b></td>" + row.map(function (v, j) {
+      return '<td class="n" style="background:' + (i === j ? "#F3F4F6" : heat(v)) + '">' + v.toFixed(2) + "</td>";
+    }).join("") + "</tr>";
+  }).join("");
+  $("corr-p").innerHTML = D.corr_periods.map(function (p) {
+    return "<tr" + (p.used ? ' style="font-weight:700"' : "") + "><td>" + fmtDate(p.from) + " – " + fmtDate(p.to) + (p.used ? " (used)" : "") + '</td><td class="n">' + p.weeks + "</td>" +
+      p.pairs.map(function (v) { return '<td class="n" style="background:' + heat(v) + '">' + v.toFixed(2) + "</td>"; }).join("") + "</tr>";
+  }).join("");
+
+  // --- 5 · Monte Carlo ------------------------------------------------------------------------------------
+  $("mc-sub").textContent = num(MC.paths) + " paths (antithetic), " + MC.steps + " daily steps, correlated in local currency; each name drifts at its local rate minus dividend minus the quanto term, cash flows discounted at SARON.";
+  $("scen").innerHTML = [
+    ["Realised 1y", "European", MC.realised], ["Implied", "European", MC.implied],
+    ["Skew ×" + MC.skew_ratio.toFixed(2), "European", MC.skew], ["Implied", "American", MC.american]
+  ].map(function (r, i) {
+    var s = r[2];
+    return "<tr" + (i === 1 ? ' style="font-weight:700"' : "") + "><td>" + r[0] + "</td><td>" + r[1] + '</td><td class="n">' + pct(s.fair_coupon, 2) + '</td><td class="n">' + pct(s.p_hit) +
+      '</td><td class="n">' + pct(s.cond_loss) + '</td><td class="n">' + pct(s.exp_red) + "</td></tr>";
+  }).join("");
+  var cs = D.corr_shift, vs = D.vol_shift;
+  $("sens").innerHTML = "<tr><td>Correlation ±0.1</td><td class=n>" + cs[1].coupon.toFixed(2) + "%</td><td class=n>" + cs[2].coupon.toFixed(2) + "%</td><td class=n>" + cs[3].coupon.toFixed(2) + "%</td></tr>" +
+    "<tr><td>Correlation ±0.2</td><td class=n>" + cs[0].coupon.toFixed(2) + "%</td><td class=n>" + cs[2].coupon.toFixed(2) + "%</td><td class=n>" + cs[4].coupon.toFixed(2) + "%</td></tr>" +
+    "<tr><td>Volatility ±5 points</td><td class=n>" + vs[0].coupon.toFixed(2) + "%</td><td class=n>" + vs[1].coupon.toFixed(2) + "%</td><td class=n>" + vs[2].coupon.toFixed(2) + "%</td></tr>" +
+    "<tr><td>Barrier ±5%</td><td class=n>" + D.grid.european[1].toFixed(2) + "%</td><td class=n>" + D.grid.european[2].toFixed(2) + "%</td><td class=n>" + D.grid.european[3].toFixed(2) + "%</td></tr>";
+  (function () {
+    var e = MC.hist.edges, c = MC.hist.counts, tot = c.reduce(function (a, b) { return a + b; }, 0);
+    chart($("hist"), { label: "distribution", h: 270, xmin: e[0], xmax: e[e.length - 1], ymin: 0, series: [],
+      bars: c.map(function (n, i) { return { x0: e[i], x1: e[i + 1], y: n / tot, color: e[i + 1] <= P.barrier + 1e-9 ? C.red : C.blueberry }; }),
+      vlines: [{ x: P.barrier, color: C.red, label: "Barrier" }, { x: 1, color: C.grey, label: "Strike" }],
+      xticks: [0.2, 0.4, 0.6, 0.8, 1, 1.2, 1.4, 1.6, 1.8].map(function (x) { return [x, Math.round(x * 100) + "%"]; }), yfmt: function (v) { return (v * 100).toFixed(0) + "%"; } });
+    chart($("barrier"), { label: "coupon against barrier", h: 230, xmin: 0.48, xmax: 0.72, ymin: 0,
+      series: [{ color: C.orange, w: 3, pts: D.grid.barriers.map(function (b, i) { return [b, D.grid.european[i]]; }) },
+               { color: C.orange, dots: true, pts: D.grid.barriers.map(function (b, i) { return [b, D.grid.european[i]]; }) },
+               { color: C.blueberry, w: 3, pts: D.grid.barriers.map(function (b, i) { return [b, D.grid.american[i]]; }) },
+               { color: C.blueberry, dots: true, pts: D.grid.barriers.map(function (b, i) { return [b, D.grid.american[i]]; }) }],
+      xticks: D.grid.barriers.map(function (b) { return [b, Math.round(b * 100) + "%"]; }), yfmt: function (v) { return v.toFixed(0) + "%"; } });
+    $("barrier-t").innerHTML = D.grid.barriers.map(function (b, i) {
+      return "<tr" + (b === P.barrier ? ' style="font-weight:700"' : "") + "><td>" + Math.round(b * 100) + '%</td><td class="n">' + D.grid.european[i].toFixed(2) + '%</td><td class="n">' +
+        D.grid.american[i].toFixed(2) + '%</td><td class="n">+' + (D.grid.american[i] - D.grid.european[i]).toFixed(2) + "%</td></tr>";
+    }).join("");
+  })();
+
+  // --- 6 · backtest ------------------------------------------------------------------------------------------
+  var B = D.backtest;
+  $("bt-sub").textContent = num(B.windows) + " windows, one per trading day from " + fmtDate(B.first) + " to " + fmtDate(B.last) + ": the product struck that day, its worst performance one year later.";
+  chart($("bt"), { label: "backtest", h: 270, series: [{ color: C.blueberry, pts: B.series.map(function (p) { return [dayNum(p[0]), p[1]]; }) }],
+    hlines: [{ y: 1, color: C.grey, label: "Strike" }, { y: P.barrier, color: C.red, label: "Barrier" }],
+    xticks: dateTicks(B.first, B.last, 5), yfmt: function (v) { return Math.round(v * 100) + "%"; } });
+  $("bt-t").innerHTML = [
+    ["Windows tested", num(B.windows)],
+    ["Worst ended below the strike", pct(B.p_below_strike) + " <small>(coupon still paid, capital back above the barrier)</small>"],
+    ["Worst ended below the barrier: delivery", '<b class="neg">' + pct(B.p_below_barrier, 2) + "</b>"],
+    ["Worst touched 60% at some point in the year", pct(B.p_touch_barrier) + " <small>(would have mattered with an American barrier)</small>"],
+    ["Median worst performance", pct(B.median)],
+    ["Worst window", fmtDate(B.worst_window.start) + " → " + fmtDate(B.worst_window.end) + ": " + pct(B.worst)]
+  ].map(function (r) { return "<tr><td>" + r[0] + "</td><td>" + r[1] + "</td></tr>"; }).join("");
+
+  // --- 7 · TradingView mini charts --------------------------------------------------------------------------------
+  [["SIX:NESN", "Nestlé"], ["EURONEXT:ASML", "ASML"], ["NASDAQ:MSFT", "Microsoft"]].forEach(function (t) {
+    var box = document.createElement("div"); box.className = "card tv";
+    box.innerHTML = '<div class="tradingview-widget-container" style="height:100%"><div class="tradingview-widget-container__widget"></div></div>';
+    var s = document.createElement("script"); s.async = true; s.src = "https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js";
+    s.text = JSON.stringify({ symbol: t[0], width: "100%", height: "100%", locale: "en", dateRange: "12M", colorTheme: "light", isTransparent: true, autosize: true, trendLineColor: C.orange, underLineColor: "rgba(255,108,14,0.12)" });
+    box.firstChild.appendChild(s); $("tv").appendChild(box);
+  });
+})();
+</script>
+</body>
+</html>
