@@ -12,6 +12,14 @@ own: one HTML file, opened in the browser, nothing to install.
 | **Fact sheet** | A client-ready product proposal from the Term sheet's quote, with charts from the market-data snapshot in the page. Print to PDF or save as HTML. |
 | **Lifecycle events** | Drop the LYNQS product page of a product that ended: autocalled, expired above the strike (event email + rollover), or expired below it (delivery email). Copy the emails into Outlook. |
 
+How Lifecycle events decides between case 2 (100% back) and case 3 (delivery) at the final fixing:
+**delivery only when the worst underlying ends below its strike AND, on a barrier product, the
+barrier was hit**. A price below the barrier counts as a hit (European or American); the page's
+"Barrier Hit" flag covers an American barrier touched during the life. What the page states
+("Cash Redemption", or shares to deliver) wins, and the prices cross-check it: any mismatch, or a
+case the page and prices cannot settle, is flagged before the email is sent. The rule lives in
+`event_fix.py`, applied by the build.
+
 Every visit starts clean: no sample basket, no coupon, and the last session's
 quote and fact sheet settings are not brought back. The date of the market
 data is shown top right.

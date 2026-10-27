@@ -24,6 +24,9 @@ import os
 import re
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import event_fix  # noqa: E402
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "T01_life_syzcle.html")
 LOGO = os.path.join(HERE, "syz_logo.png")   # the orange Syz signature, transparent, 96 px high
@@ -276,6 +279,7 @@ TAIWAN SEMICONDUCTOR MANUFACTURING CO LTD</textarea>""",
     termsheet = script(src, "Term sheet: the LYNQS pricer's parameters")
     factsheet = script(src, "Fact sheet: a client-ready product proposal")
     event = script(src, "SP Event: the client communication when a structured product ends")
+    event = event_fix.apply(event, cut)   # the case from the barrier as well as the strike
 
     # term sheet: no basket lab here; the name matching stays, it feeds the Fact sheet's market data
     termsheet = cut(termsheet, """  // The pricer's names to Yahoo symbols in one call (/products/match: Bloomberg ticker, Core List name,
