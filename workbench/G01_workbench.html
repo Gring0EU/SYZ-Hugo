@@ -226,6 +226,8 @@ table.parts th { font-weight: 700; cursor: default; position: static; border-bot
 table.parts td.muted { font-size: 12px; }
 .swap { display: flex; gap: 12px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line-soft); }
 .swap span { flex: 1; }
+.change-name input { flex: 1; min-width: 220px; padding: 5px 8px; font: inherit; border: 1px solid var(--line); border-radius: 4px; }
+.change-name .muted { flex: 0 0 auto; }
 .flags-list { display: flex; flex-wrap: wrap; gap: 4px; }
 .top-picks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
 @media (max-width: 1000px) { .top-picks { grid-template-columns: 1fr; } }
@@ -2489,8 +2491,24 @@ TAIWAN SEMICONDUCTOR MANUFACTURING CO LTD</textarea></label>
              ideas: scr.ideas([], {}), idea_themes: scr.ideaThemes() };
   }
 
+  // One basket, scored like an idea, from any names in the page's market data (Change a name).
+  function rebuild(theme, symbols, settings) {
+    var scr = new Screener(UV.load(), settingsFrom(settings)), u = scr.universe;
+    scr.loadQuotes(symbols);
+    scr.loadHistory(symbols);
+    var group = symbols.map(function (y) {
+      var q = scr.market[y] || {};
+      // a name outside the Core List: shaped like a Core List row from its quote
+      var c = u.coreForYahoo(y) || { ticker: y, yahoo: y, base: y, name: q.name || y, market_cap_usd_bn: q.mcap_usd_bn };
+      return [c, scr.mcap(c), q];
+    });
+    var idea = scr.idea(theme, group);
+    idea.names.forEach(function (n) { delete n.core; });
+    return idea;
+  }
+
   SP.engine = { OBJECTIVES: OBJECTIVES, DEFAULTS: DEFAULTS, PROFILES: PROFILES, THEME_SETS: THEME_SETS,
-                settingsFrom: settingsFrom, Screener: Screener, analyse: analyse, find: find, quality: quality };
+                settingsFrom: settingsFrom, Screener: Screener, analyse: analyse, find: find, quality: quality, rebuild: rebuild };
 })();
 
 </script>
@@ -3642,9 +3660,57 @@ TAIWAN SEMICONDUCTOR MANUFACTURING CO LTD</textarea></label>
   function shortName(n) { return String(n.name || n.ticker).replace(/,? (Inc\.?|Corporation|Corp\.?|plc|PLC|S\.?A\.?|SE|AG|N\.?V\.?|Ltd\.?|Limited|Holdings?|Group|Co\.,? Ltd\.?|Company|Incorporated|Class [A-C])\b.*$/, ""); }
   function names(i) { return i.names.map(shortName).join(" · "); }
 
-  // state per table host: open rows and compare picks, keyed by basket label
+  // state per table host: open rows, compare picks (keyed by basket label), the name being changed
   var states = {};
-  function state(id) { return states[id] = states[id] || { open: {}, picked: [] }; }
+  function state(id) { return states[id] = states[id] || { open: {}, picked: [], changing: null }; }
+
+  // Every name in the page's market data, for the Change box: "TICKER · Name (CCY)".
+  function stockList() {
+    var box = document.getElementById("any-stock");
+    if (box) return box;
+    var quotes = SP.data.raw().quotes;
+    box = document.createElement("datalist");
+    box.id = "any-stock";
+    box.innerHTML = Object.keys(quotes).sort(function (a, b) {
+      return (quotes[b].mcap_usd_bn || 0) - (quotes[a].mcap_usd_bn || 0);
+    }).map(function (s) {
+      var q = quotes[s];
+      return '<option value="' + esc(s + " · " + (q.name || s) + (q.currency ? " (" + q.currency + ")" : "")) + '">';
+    }).join("");
+    document.body.appendChild(box);
+    return box;
+  }
+  // What was typed or picked, to a symbol: the ticker before " · ", a Yahoo symbol, or the largest name holding every word.
+  function resolveStock(text) {
+    var quotes = SP.data.raw().quotes, t = String(text || "").split(" · ")[0].trim();
+    if (!t) return null;
+    var up = t.toUpperCase();
+    if (quotes[t]) return t;
+    for (var s in quotes) if (s.toUpperCase() === up) return s;
+    var c = SP.universe.load().coreForCode(up);
+    if (c && quotes[c.yahoo]) return c.yahoo;
+    var hit = SP.universe.bestByWords(t, Object.keys(quotes), function (s) { return quotes[s].name || s; },
+                                      function (s) { return quotes[s].mcap_usd_bn; });
+    return hit || null;
+  }
+  function changeName(idea, k, symbol, opts, st) {
+    var syms = idea.names.map(function (n) { return n.yahoo; });
+    if (syms.indexOf(symbol) >= 0) { W.banner(symbol + " is already in this basket."); return false; }
+    var out = shortName(idea.names[k]), before = (idea.quality || {}).total;
+    syms[k] = symbol;
+    var fresh = SP.engine.rebuild(idea.theme, syms, opts.settings);
+    var keep = { rank: idea.rank, fit_accounts: idea.fit_accounts || [], theme_accounts: idea.theme_accounts || [],
+                 based_on: idea.based_on, swaps: [], changed: true };
+    var old = idea.basket;
+    Object.keys(idea).forEach(function (key) { delete idea[key]; });
+    Object.assign(idea, fresh, keep);
+    delete st.open[old]; st.open[idea.basket] = true;
+    st.picked = st.picked.map(function (x) { return x === old ? idea.basket : x; });
+    var after = (idea.quality || {}).total;
+    W.banner("Replaced " + out + " with " + shortName(fresh.names[k]) + " in " + idea.theme +
+             (isNum(before) && isNum(after) ? ": quality " + Math.round(before) + " → " + Math.round(after) : "") + ".", true);
+    return true;
+  }
 
   /* host: table container; rows: the ideas to show; opts: {objective, objectives, profile,
      multi, compareHost, onLab(idea), onChange()} */
@@ -3688,7 +3754,7 @@ TAIWAN SEMICONDUCTOR MANUFACTURING CO LTD</textarea></label>
     W.table(host, cols, rows, {
       empty: "No basket passes the current filters.",
       rowAttr: function (i) { return 'data-basket="' + esc(i.basket) + '" class="clickable"'; },
-      after: function (i, span) { return st.open[i.basket] ? '<tr class="detail"><td colspan="' + span + '">' + detail(i, opts) + "</td></tr>" : ""; },
+      after: function (i, span) { return st.open[i.basket] ? '<tr class="detail"><td colspan="' + span + '">' + detail(i, opts, st) + "</td></tr>" : ""; },
       bind: function (box) {
         var find = function (b) { return rows.filter(function (i) { return i.basket === b; })[0]; };
         $all("tr[data-basket]", box).forEach(function (tr) {
@@ -3713,6 +3779,37 @@ TAIWAN SEMICONDUCTOR MANUFACTURING CO LTD</textarea></label>
             compare(rows, opts, st);
           });
         });
+        $all("[data-change]", box).forEach(function (b) {
+          b.addEventListener("click", function () {
+            var parts = b.dataset.change.split("|");
+            st.changing = { basket: parts[0], k: +parts[1] };
+            stockList();
+            render(host, rows, opts);
+            var input = host.querySelector("[data-change-input]");
+            if (input) input.focus();
+          });
+        });
+        $all("[data-change-cancel]", box).forEach(function (b) {
+          b.addEventListener("click", function () { st.changing = null; render(host, rows, opts); });
+        });
+        $all("[data-change-input]", box).forEach(function (input) {
+          var use = function () {
+            var ch = st.changing, idea = ch && find(ch.basket);
+            if (!idea) return;
+            var symbol = resolveStock(input.value);
+            if (!symbol) {
+              W.banner('"' + input.value + '" is not in this page\'s market data (the Core List, about 2,300 names). Pick a name from the list.');
+              return;
+            }
+            if (!changeName(idea, ch.k, symbol, opts, st)) return;
+            st.changing = null;
+            render(host, rows, opts);
+            if (opts.onChange) opts.onChange();
+          };
+          input.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); use(); } });
+          var btn = input.parentNode.querySelector("[data-change-use]");
+          if (btn) btn.addEventListener("click", use);
+        });
         $all("[data-swap]", box).forEach(function (b) {
           b.addEventListener("click", function () {
             var parts = b.dataset.swap.split("|"), idea = find(parts[0]), sw = idea.swaps[+parts[1]];
@@ -3732,7 +3829,7 @@ TAIWAN SEMICONDUCTOR MANUFACTURING CO LTD</textarea></label>
     compare(rows, opts, st);
   }
 
-  function detail(i, opts) {
+  function detail(i, opts, st) {
     var q = i.quality || {}, w = WEIGHTS[opts.profile] || WEIGHTS.balanced;
     var parts = '<table class="parts"><tbody>' + PARTS.map(function (p) {
       return "<tr><th>" + esc(p.label) + ' <small class="muted">(' + Math.round(w[p.key] * 100) + "% of the score)</small></th><td>" +
@@ -3740,13 +3837,20 @@ TAIWAN SEMICONDUCTOR MANUFACTURING CO LTD</textarea></label>
     }).join("") + '</tbody></table><p class="hint">Quality ' + (isNum(q.total) ? "<b>" + Math.round(q.total) + "/100</b>" : "–") +
       " with the <b>" + esc(opts.profile || "balanced") + "</b> profile. Realised data, not a price.</p>";
     var table = "<table><thead><tr><th>Name</th><th>Yahoo</th><th>List</th><th class=num>Mcap $bn</th><th class=num>Traded $m/day</th>" +
-      "<th class=num>Vol</th><th class=num>vs 52w high</th><th class=num>vs 200-day</th><th class=num>Brokers</th><th class=num>Upside</th><th class=num>Results</th></tr></thead><tbody>" +
-      i.names.map(function (n) {
+      "<th class=num>Vol</th><th class=num>vs 52w high</th><th class=num>vs 200-day</th><th class=num>Brokers</th><th class=num>Upside</th><th class=num>Results</th><th></th></tr></thead><tbody>" +
+      i.names.map(function (n, k) {
         return "<tr><td>" + esc(n.name) + "</td><td>" + esc(n.yahoo) + "</td><td>" + esc(n.list || "") + "</td><td class=num>" + num(n.mcap_usd_bn) +
           "</td><td class=num>" + num(n.adv_musd) + "</td><td class=num>" + pct(n.vol_1y, 0) + "</td><td class=num>" + signed(n.from_high_52w) +
           "</td><td class=num>" + signed(n.vs_ma200) + "</td><td class=num>" + W.brokers(n.broker_score, n.n_ratings) +
-          "</td><td class=num>" + signed(n.upside) + "</td><td class=num>" + (isNum(n.earnings_in_days) ? "in " + n.earnings_in_days + "d" : "–") + "</td></tr>";
+          "</td><td class=num>" + signed(n.upside) + "</td><td class=num>" + (isNum(n.earnings_in_days) ? "in " + n.earnings_in_days + "d" : "–") +
+          '</td><td><button type="button" class="btn-link" data-change="' + esc(i.basket) + "|" + k + '" title="Replace this name with any stock">Change</button></td></tr>';
       }).join("") + "</tbody></table>";
+    var ch = st && st.changing;
+    if (ch && ch.basket === i.basket && i.names[ch.k]) {
+      table += '<div class="swap change-name"><span class="muted">Replace <b>' + esc(shortName(i.names[ch.k])) + "</b> with</span>" +
+        '<input type="text" list="any-stock" data-change-input placeholder="Type a name or a ticker: Nestle, NESN.SW, ASML…" autocomplete="off">' +
+        '<button type="button" class="btn" data-change-use>Use</button><button type="button" class="btn-link" data-change-cancel>Cancel</button></div>';
+    }
     var pairs = '<table><thead><tr><th>Pair</th><th class=num>Correlation</th></tr></thead><tbody>' + Object.keys(i.pairs).map(function (p) {
       return "<tr><td>" + esc(p) + "</td><td class=num>" + corr(i.pairs[p]) + "</td></tr>";
     }).join("") + "</tbody></table>";
@@ -3758,7 +3862,8 @@ TAIWAN SEMICONDUCTOR MANUFACTURING CO LTD</textarea></label>
         '<button type="button" class="btn-link" data-swap="' + key + '" data-action="lab">Lab</button></div>';
     }).join("") : "";
     var flags = i.flags.length ? "<h3>To check</h3><div class=flags-list>" + i.flags.map(function (f) { return tag(f, "warn"); }).join("") + "</div>" : "";
-    return '<div class="detail-grid"><div><h3>Why this score</h3>' + parts + swaps + flags + "<h3>Names</h3>" + table +
+    var names_h = "<h3>Names" + (i.changed ? ' <small class="muted">(changed by hand, scores recalculated)</small>' : "") + "</h3>";
+    return '<div class="detail-grid"><div><h3>Why this score</h3>' + parts + swaps + flags + names_h + table +
       "</div><div><h3>Correlation</h3>" + pairs + "</div></div>";
   }
 
@@ -4267,7 +4372,7 @@ TAIWAN SEMICONDUCTOR MANUFACTURING CO LTD</textarea></label>
       (multi ? "Ideas several accounts can take come first. " : "") +
       "Names already held are excluded. Click a row to see why it scores as it does and which swaps improve it.";
     W.ideas.render($("#ideas"), rows, {
-      objective: r.settings.objective, profile: r.settings.profile, multi: multi, compareHost: $("#ideas-compare"),
+      objective: r.settings.objective, profile: r.settings.profile, settings: r.settings, multi: multi, compareHost: $("#ideas-compare"),
       onLab: function (i) {
         W.openLab(i.names.map(function (n) { return n.yahoo; }), "Idea #" + i.rank + " — " + i.theme,
                   "New " + i.theme + " basket for " + (i.theme_accounts.join(", ") || i.fit_accounts.join(", ") || "the portfolio") + ".");
@@ -4562,7 +4667,7 @@ TAIWAN SEMICONDUCTOR MANUFACTURING CO LTD</textarea></label>
       b.addEventListener("click", function () { openIdea(ideas[+b.dataset.top], "Find a basket"); });
     });
     W.ideas.render($("#xf-table"), ideas, {
-      objective: s.objective, profile: s.profile, multi: false, compareHost: $("#xf-compare"),
+      objective: s.objective, profile: s.profile, settings: s, multi: false, compareHost: $("#xf-compare"),
       onLab: function (i) { openIdea(i, "Find a basket"); },
       onChange: renderFind       // after a swap: the cards follow the table
     });
