@@ -1,0 +1,70 @@
+# Refreshes the Yahoo Finance data inside the workbench and Life Syzcle, with nobody touching it,
+# and publishes the refreshed pages on the `live` branch (one commit, replaced every run, so the
+# repository does not grow). The pages' code, lists and themes come from `main`; the market data
+# carries on from the last `live` copy, so the weekly fundamentals survive the daily runs.
+#
+# GitHub runs schedules in UTC and only from the default branch; a run can start a few minutes late.
+name: Refresh market data
+
+on:
+  schedule:
+    - cron: "30 5 * * 1-5"   # 06:30 Zurich in winter, 07:30 in summer: Asia closed, before Europe opens
+    - cron: "45 20 * * 1-5"  # 21:45 Zurich in winter, 22:45 in summer: after the US close
+    - cron: "0 4 * * 6"      # Saturday: prices and fundamentals (P/E, yield, ADV, earnings dates)
+  workflow_dispatch:
+    inputs:
+      fundamentals:
+        description: "Also refresh P/E, dividend yield, ADV and earnings dates (about 20 minutes)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-market-data
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install yfinance
+
+      - name: Last published data
+        run: |
+          mkdir -p seed
+          if git fetch --depth 1 origin live; then git archive FETCH_HEAD | tar -x -C seed; fi
+
+      - name: Refresh
+        env:
+          FUNDAMENTALS: ${{ github.event.schedule == '0 4 * * 6' || inputs.fundamentals }}
+        run: |
+          python3 market-data/refresh_market_data.py --seed seed $([ "$FUNDAMENTALS" = true ] && echo --fundamentals)
+
+      - name: Publish on the live branch
+        run: |
+          pages="workbench/G01_workbench.html termsheet-studio/T01_life_syzcle.html"
+          asof=$(date -u +"%Y-%m-%d %H:%M UTC")
+          rm -rf out && mkdir out
+          for p in $pages; do mkdir -p "out/$(dirname "$p")" && cp "$p" "out/$p"; done
+          cat > out/index.html <<EOF
+          <!doctype html><meta charset="utf-8"><title>Syz pages</title>
+          <h1>Syz pages</h1><p>Market data refreshed ${asof}.</p>
+          <ul><li><a href="workbench/G01_workbench.html">Advisory Workbench</a></li>
+          <li><a href="termsheet-studio/T01_life_syzcle.html">Life Syzcle</a></li></ul>
+          EOF
+          cd out
+          git init -q -b live
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Market data refreshed ${asof} (from main ${GITHUB_SHA::7})"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" live

@@ -43,17 +43,14 @@ the code, the build stops and names what it could not find.
 ## Refreshing the market data (Yahoo Finance)
 
 The Fact sheet's charts and figures come from Yahoo Finance data stored in the
-page (quotes and daily closes for the ~2,300 Core List symbols). To bring it
-to today:
+page (quotes and daily closes for the ~2,300 Core List symbols). A scheduled
+GitHub job refreshes it every weekday, see the repository README. To refresh a
+copy by hand:
 
 ```
 pip install yfinance
-python3 termsheet-studio/refresh_market_data.py
+python3 market-data/refresh_market_data.py termsheet-studio/T01_life_syzcle.html
 ```
 
-It downloads 13 months of daily bars for every symbol (about 3 minutes),
-re-takes the last 10 stored days, appends the new closes, recomputes the
-price-based quote fields (price, 52-week range, 1-year change, distance to the
-200-day average), and rewrites the page in place. During market hours the
-last point is the live price, not a close. Rebuilding from a workbench file
-brings back that file's data, so refresh again after a rebuild.
+Rebuilding from a workbench file brings back that file's data, so refresh
+again after a rebuild.
