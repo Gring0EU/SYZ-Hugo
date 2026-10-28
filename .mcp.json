@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "syz-market-data": {
+      "command": "python3",
+      "args": ["market-data/mcp_server.py"]
+    }
+  }
+}
