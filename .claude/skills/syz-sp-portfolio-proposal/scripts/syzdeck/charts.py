@@ -98,16 +98,26 @@ def distance_chart(cards, w=700) -> str:
     t = x0
     while t <= x1 + 1e-4:
         s.append(f'<line x1="{X(t):.1f}" x2="{X(t):.1f}" y1="{T-6}" y2="{h}" stroke="{INK}" stroke-opacity=".08" stroke-width=".7"/>'
-                 f'<text x="{X(t):.1f}" y="{T-9}" class="ax" text-anchor="middle">{t*100:.0f}%</text>')
+                 f'<text x="{X(t):.1f}" y="{T-9}" class="ax" text-anchor="{"end" if t >= x1 - 1e-4 else "middle"}">{t*100:.0f}%</text>')
         t = round(t + 0.1, 2)
     for i, c in enumerate(cards):
         y = T + rh * i + rh / 2
-        names = " / ".join(l.short for l in c.legs) or " / ".join(u.name for u in c.product.underlyings)
-        lab = f"{c.product.number}  {names}"
-        if len(lab) > 44:
-            lab = lab[:43].rstrip() + "…"
+        # each underlying's name in the colour of its dot, separators in grey
+        parts = [(l.short, LEGS[j % len(LEGS)]) for j, l in enumerate(c.legs)] or \
+                [(u.name, INK) for u in c.product.underlyings]
+        room, spans = 44 - len(str(c.product.number)) - 2, []
+        for k, (name, col) in enumerate(parts):
+            if k:
+                if room <= 3:
+                    break
+                spans.append(f'<tspan fill="{GREY}"> / </tspan>'); room -= 3
+            if len(name) > room:
+                name = name[:max(room - 1, 1)].rstrip() + "…"
+            spans.append(f'<tspan fill="{col}" font-weight="700">{escape(name)}</tspan>'); room -= len(name)
+            if room <= 0:
+                break
         prot = c.protection_today or c.product.protection or 1
-        s.append(f'<text x="0" y="{y+3:.1f}" class="dl">{escape(lab)}</text>')
+        s.append(f'<text x="0" y="{y+3:.1f}" class="dl"><tspan fill="{INK}">{c.product.number}  </tspan>{"".join(spans)}</text>')
         s.append(f'<rect x="{X(x0):.1f}" y="{y-6:.1f}" width="{X(prot)-X(x0):.1f}" height="12" fill="{SHADE}"/>')
         if c.legs:
             lo = min(l.low for l in c.legs)
