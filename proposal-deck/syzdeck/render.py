@@ -107,7 +107,7 @@ table.pt{{margin-top:5mm}}
 .fam .row .nn{{width:6mm;font-weight:700;padding-left:3.3mm;box-sizing:content-box}}
 .fam .row .th{{width:59mm;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:2mm}}
 /* cards */
-.card{{position:relative;height:82.5mm;border-bottom:.5pt solid #E4E5EA;margin-bottom:2.6mm;padding-left:4.3mm}}
+.card{{position:relative;height:81.5mm;border-bottom:.5pt solid #E4E5EA;margin-bottom:2.6mm;padding-left:4.3mm}}
 .card .bar{{position:absolute;left:0;top:0;bottom:2.5mm;width:.9mm}}
 .card .num{{position:absolute;left:3.4mm;top:2.6mm;width:6.4mm;height:6.4mm;border-radius:50%;color:#fff;font-weight:700;font-size:7.6pt;display:flex;align-items:center;justify-content:center}}
 .card .hd{{margin-left:9.4mm;padding-top:.6mm;width:118mm}}
@@ -269,7 +269,7 @@ def build(products, cards, pf, story, asof: dt.date, auto: list[int]) -> str:
         body = "".join(_card(c, col(c.product.number), theme(c.product.number), thesis(c.product.number)) for c in chunk)
         last = i + 3 >= len(cards)
         tail = f'<p class="cnote">Charts: one year, rebased to 100 at today\'s close; shaded area below the protection level. {level_note}</p>' if last else ""
-        pages.append(f'''<div class="page"><div class="in">{_head(f"THE BASKETS · PRODUCTS {nums}", logo)}<div style="margin-top:5.6mm">{body}</div>{tail}
+        pages.append(f'''<div class="page"><div class="in">{_head(f"THE BASKETS · PRODUCTS {nums}", logo)}<div style="margin-top:8.8mm">{body}</div>{tail}
 </div>{_foot(story, date_long, pg)}</div>''')
 
     # income, stress, issuers
