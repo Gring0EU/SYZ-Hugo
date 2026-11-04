@@ -60,11 +60,11 @@ h2{{font-size:11.5pt;margin:0;font-weight:700}}
 /* cover */
 .cover img.photo{{position:absolute;left:0;top:0;width:210mm;height:151.5mm;object-fit:cover}}
 .cover .band{{position:absolute;left:0;top:151.5mm;width:210mm;height:1.7mm;background:{ORANGE}}}
-.cover .clogo{{position:absolute;left:18.3mm;top:167mm;height:24mm}}
-.cover .ck{{position:absolute;left:18.3mm;top:208mm;font-size:7.6pt;font-weight:700;color:#5D6380;letter-spacing:.02em}}
-.cover h1{{position:absolute;left:18.3mm;top:215mm;width:132mm;font-size:24pt;line-height:1.18;color:{ORANGE};margin:0}}
-.cover .cs{{position:absolute;left:18.3mm;top:243mm;font-size:10.6pt}}
-.cover .cf{{position:absolute;left:18.3mm;right:14mm;top:272mm;border-top:.5pt solid #DADCE3;padding-top:3mm;display:flex;justify-content:space-between;font-size:7.4pt;font-weight:700}}
+.cover .clogo{{position:absolute;left:14mm;top:167mm;height:24mm}}
+.cover .ck{{position:absolute;left:14mm;top:208mm;font-size:7.6pt;font-weight:700;color:#5D6380;letter-spacing:.02em}}
+.cover h1{{position:absolute;left:14mm;top:215mm;width:132mm;font-size:24pt;line-height:1.18;color:{ORANGE};margin:0}}
+.cover .cs{{position:absolute;left:14mm;top:243mm;font-size:10.6pt}}
+.cover .cf{{position:absolute;left:14mm;right:14mm;top:272mm;border-top:.5pt solid #DADCE3;padding-top:3mm;display:flex;justify-content:space-between;font-size:7.4pt;font-weight:700}}
 .cover .cf span:last-child{{color:{GREY};font-size:6.8pt}}
 /* summary */
 .obj{{font-size:9.6pt;line-height:1.48;margin:7mm 0 4mm}}
@@ -72,20 +72,25 @@ h2{{font-size:11.5pt;margin:0;font-weight:700}}
 .kpi b{{font-size:15pt;display:block;line-height:1.1}}
 .kpi span{{font-size:6.6pt;color:{GREY};display:block;max-width:50mm}}
 .rule{{border-top:1.4pt solid {INK};margin:6.5mm 0 3mm}}
-.bars .r{{display:flex;align-items:center;height:9.15mm}}
-.bars .l{{width:56.6mm;font-size:7.6pt}}
+.bars .r,.ib .r{{display:grid;align-items:center}}
+.bars .r{{grid-template-columns:56mm 1fr 44mm;height:9.15mm}}
+.bars .l{{font-size:7.6pt}}
 .bars .b{{height:5.6mm}}
-.bars .t{{font-size:7.4pt;margin-left:1.8mm;white-space:nowrap}}
+.bars .t,.ib .t{{white-space:nowrap;padding-left:2.5mm;overflow:hidden;text-overflow:ellipsis}}
+.bars .t{{font-size:7.4pt}}
 /* table */
-table.pt{{width:100%;border-collapse:collapse;margin-top:5mm;font-size:7.4pt}}
-.pt th{{text-align:left;font-weight:700;font-size:7.1pt;padding:0 1.2mm 1.4mm;white-space:nowrap;border-bottom:.8pt solid {INK};vertical-align:bottom;line-height:1.15}}
-.pt td{{padding:1.6mm 1.2mm 1.5mm;border-bottom:.5pt solid #E4E5EA;vertical-align:top;white-space:nowrap}}
+table.pt,table.sx{{width:100%;border-collapse:collapse;table-layout:fixed;font-size:7.4pt}}
+table.pt{{margin-top:5mm}}
+.pt th,.sx th{{text-align:left;font-weight:700;font-size:7pt;padding:0 1.5mm 1.4mm;white-space:nowrap;border-bottom:.8pt solid {INK};vertical-align:bottom;line-height:1.2}}
+.pt th:first-child,.pt td:first-child,.sx th:first-child,.sx td:first-child{{padding-left:0}}
+.pt th:last-child,.pt td:last-child,.sx th:last-child,.sx td:last-child{{padding-right:0}}
+.pt td,.sx td{{padding:1.6mm 1.5mm;border-bottom:.5pt solid #E4E5EA;vertical-align:top;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
 .pt td.bk{{white-space:normal}}
-.pt .r{{text-align:right}}
-.pt td.n{{font-weight:700;width:6mm}}
+.pt .r,.sx .r{{text-align:right}}
+.pt td.n{{font-weight:700}}
 .pt .bk b{{display:block;font-size:7.5pt}}
-.pt .bk span{{font-size:6.2pt;color:{GREY};display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:56mm}}
-.pt .bk b{{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:56mm}}
+.pt .bk span{{font-size:6.2pt;color:{GREY};display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
+.pt .bk b{{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
 .pt .cp{{color:{ORANGE}}}
 .note{{font-size:7pt;color:{GREY};line-height:1.45;margin-top:5mm;border-top:.5pt solid #E4E5EA;padding-top:4mm}}
 .lead{{font-size:7.4pt;color:{GREY};margin:2.5mm 0 1mm;line-height:1.4}}
@@ -98,8 +103,8 @@ table.pt{{width:100%;border-collapse:collapse;margin-top:5mm;font-size:7.4pt}}
 .fam .fh{{display:flex;justify-content:space-between;align-items:center;margin-top:4.6mm;margin-bottom:1.4mm}}
 .fam .fh b{{font-size:9.8pt;border-left:1.1mm solid;padding-left:2.2mm;line-height:1.1}}
 .fam .fh span{{font-size:7pt;font-weight:700}}
-.fam .row{{display:flex;font-size:7.5pt;margin:.9mm 0 .9mm 3.3mm}}
-.fam .row .nn{{width:6mm;font-weight:700}}
+.fam .row{{display:flex;font-size:7.5pt;margin:.9mm 0}}
+.fam .row .nn{{width:6mm;font-weight:700;padding-left:3.3mm;box-sizing:content-box}}
 .fam .row .th{{width:59mm;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:2mm}}
 /* cards */
 .card{{position:relative;height:82.5mm;border-bottom:.5pt solid #E4E5EA;margin-bottom:2.6mm;padding-left:4.3mm}}
@@ -129,18 +134,15 @@ table.pt{{width:100%;border-collapse:collapse;margin-top:5mm;font-size:7.4pt}}
 .lg{{font-size:6.7px;fill:{INK};font-family:'Nunito Sans'}}
 .dl{{font-size:8.4px;fill:{INK};font-family:'Nunito Sans'}}
 /* income */
-.ib .r{{display:flex;align-items:center;height:4.75mm;font-size:7.4pt}}
-.ib .l{{width:64.6mm;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
+.ib .r{{grid-template-columns:62mm 1fr 50mm;height:4.75mm;font-size:7.4pt}}
+.ib .l{{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:2mm}}
 .ib .b{{height:3.5mm}}
-.ib .t{{margin-left:1.6mm;white-space:nowrap;font-size:7pt}}
-table.sx{{width:100%;border-collapse:collapse;font-size:7.3pt;margin-top:2.4mm}}
-.sx th{{text-align:right;font-weight:700;font-size:6.9pt;padding:0 1.4mm 1.2mm;border-bottom:.8pt solid {INK};vertical-align:bottom;line-height:1.15}}
-.sx th:first-child,.sx th:last-child,.sx td:first-child,.sx td:last-child{{text-align:left}}
-.sx td{{text-align:right;padding:1.1mm 1.4mm;border-bottom:.5pt solid #E4E5EA}}
+.ib .t{{font-size:7pt}}
+table.sx{{margin-top:2.4mm}}
 h2.s{{margin-top:6mm}}
 /* important information */
 .ii h1{{font-size:21pt;border-left:1.3mm solid {ORANGE};padding-left:3.5mm;margin-top:24mm;line-height:1.15}}
-.ii p{{font-size:8.2pt;line-height:1.6;margin:0 0 3.2mm 5mm}}
+.ii p{{font-size:8.2pt;line-height:1.6;margin:0 0 3.2mm}}
 .ii .txt{{margin-top:11mm}}
 """
 
@@ -184,7 +186,7 @@ def build(products, cards, pf, story, asof: dt.date, auto: list[int]) -> str:
     pages.append(f'''<div class="page cover"><img class="photo" src="data:image/jpeg;base64,{photo}"><div class="band"></div>
 <img class="clogo" src="data:image/png;base64,{logo}"><div class="ck">{escape(story.get("kicker", ""))}</div>
 <h1>{escape(story["title"])}</h1><div class="cs">{escape(story["subtitle"])}</div>
-<div class="cf"><span>{date_long}</span><span>PRIVATE &amp; CONFIDENTIAL · INTERNAL USE</span></div></div>''')
+<div class="cf"><span>{date_long}</span><span>PRIVATE &amp; CONFIDENTIAL</span></div></div>''')
 
     # 2 executive summary
     pg += 1
@@ -200,8 +202,8 @@ def build(products, cards, pf, story, asof: dt.date, auto: list[int]) -> str:
     if pf["cash"]:
         fams.append(("Cash", pf["cash"], CASH, []))
     mx = max(w for _, w, _, _ in fams) or 1
-    bars = "".join(f'<div class="r"><div class="l">{escape(f)}</div><div class="b" style="width:{86.6 * w / mx:.1f}mm;background:{c}"></div>'
-                   f'<div class="t">{pct(w)}{"  products " + ", ".join(map(str, nums)) if nums else ""}</div></div>'
+    bars = "".join(f'<div class="r"><div class="l">{escape(f)}</div><div><div class="b" style="width:{100 * w / mx:.1f}%;background:{c}"></div></div>'
+                   f'<div class="t">{pct(w)}{"&nbsp; products " + ", ".join(map(str, nums)) if nums else ""}</div></div>'
                    for f, w, c, nums in fams)
     pages.append(f'''<div class="page"><div class="in">{_head("EXECUTIVE SUMMARY", logo)}
 <h1>The portfolio at a glance</h1><div class="sub">{n} thematic structured products &nbsp;·&nbsp; prices as of {asof.isoformat()}</div>
@@ -231,7 +233,7 @@ def build(products, cards, pf, story, asof: dt.date, auto: list[int]) -> str:
     title_n = WORDS.get(n, str(n))
     pages.append(f'''<div class="page"><div class="in">{_head("THE PORTFOLIO", logo)}
 <h1>{title_n} products at a glance</h1>
-<table class="pt"><tr><th>#</th><th>Basket</th><th class="r">Coupon</th><th>Protection</th><th class="r">Tenor</th><th class="r">Weight</th>
+<table class="pt"><colgroup><col style="width:6mm"><col style="width:47mm"><col style="width:12mm"><col style="width:32mm"><col style="width:10mm"><col style="width:11mm"><col style="width:27mm"><col style="width:13mm"><col style="width:13mm"><col style="width:11mm"></colgroup><tr><th>#</th><th>Basket</th><th class="r">Coupon</th><th>Protection</th><th class="r">Tenor</th><th class="r">Weight</th>
 <th>Issuer</th><th class="r">Coupon to<br>maturity</th><th class="r">Fall to<br>protection</th><th class="r">1y low<br>% today</th></tr>{"".join(rows)}</table>
 <p class="note">Fall to protection: how far every underlying can fall from today before capital is at risk at maturity. 1y low: the weakest underlying's lowest close of the past year, as a % of today; in pink when it was at or below the protection level. Weight: share of the model portfolio, from the proposal sheet. {level_note}</p>
 </div>{_foot(story, date_long, pg)}</div>''')
@@ -274,7 +276,7 @@ def build(products, cards, pf, story, asof: dt.date, auto: list[int]) -> str:
     pg += 1
     mxc = max((c.product.coupon or 0) for c in cards) or 1
     inc = "".join(f'<div class="r"><div class="l">{c.product.number}&nbsp; {escape(theme(c.product.number))}</div>'
-                  f'<div class="b" style="width:{68 * (c.product.coupon or 0) / mxc:.1f}mm;background:{col(c.product.number)}"></div>'
+                  f'<div><div class="b" style="width:{100 * (c.product.coupon or 0) / mxc:.1f}%;background:{col(c.product.number)}"></div></div>'
                   f'<div class="t">{_pp(c.product.coupon)}&nbsp; p.a. &nbsp;·&nbsp; {_pp(c.coupon_to_maturity, 1)} over {c.product.tenor_months} months</div></div>'
                   for c in cards)
     srows = []
@@ -283,18 +285,18 @@ def build(products, cards, pf, story, asof: dt.date, auto: list[int]) -> str:
         move = "Unchanged" if s["move"] == 0 else f"{s['move'] * 100:.0f}%"
         loss = "–" if s["loss"] == 0 else f"{s['loss'] * 100:.1f}%"
         net_cls = "hit" if s["net"] < 0 else ""
-        srows.append(f'<tr><td>{move}</td><td>+{s["coupons"] * 100:.1f}%</td><td>{loss}</td>'
-                     f'<td><b class="{net_cls}">{s["net"] * 100:+.1f}%</b></td><td>{below}</td></tr>')
+        srows.append(f'<tr><td>{move}</td><td class="r">+{s["coupons"] * 100:.1f}%</td><td class="r">{loss}</td>'
+                     f'<td class="r"><b class="{net_cls}">{s["net"] * 100:+.1f}%</b></td><td style="padding-left:6mm">{below}</td></tr>')
     iss = sorted(pf["issuers"].items(), key=lambda kv: (kv[0] == "TBD", -kv[1], kv[0]))
     mxi = max(v for _, v in iss) or 1
-    ibars = "".join(f'<div class="r"><div class="l">{escape(k)}</div><div class="b" style="width:{87 * v / mxi:.1f}mm;background:{"#A9ABBA" if k == "TBD" else INK}"></div>'
+    ibars = "".join(f'<div class="r"><div class="l">{escape(k)}</div><div><div class="b" style="width:{100 * v / mxi:.1f}%;background:{"#A9ABBA" if k == "TBD" else INK}"></div></div>'
                     f'<div class="t">{pct(v)}&nbsp; of the portfolio</div></div>' for k, v in iss)
     pages.append(f'''<div class="page"><div class="in">{_head("COUPON GENERATION", logo)}
 <h1>Income per product, and what a fall would cost</h1>
 <p class="lead">Coupon per product, % p.a. of nominal, and in total if the product runs to maturity. On average {_pp(pf["coupon_invested"])} p.a. on the invested part, {_pp(pf["coupon_total"])} p.a. on the whole portfolio including cash.</p>
 <div class="ib">{inc}</div>
 <h2 class="s">At maturity, if every underlying moves by the same amount</h2>
-<table class="sx"><tr><th>Move of every<br>underlying</th><th>Coupons,<br>% of portfolio</th><th>Capital loss,<br>% of portfolio</th><th>Net result,<br>% of portfolio</th><th>Products below protection</th></tr>{"".join(srows)}</table>
+<table class="sx"><colgroup><col style="width:30mm"><col style="width:28mm"><col style="width:28mm"><col style="width:28mm"><col></colgroup><tr><th>Move of every<br>underlying</th><th class="r">Coupons,<br>% of portfolio</th><th class="r">Capital loss,<br>% of portfolio</th><th class="r">Net result,<br>% of portfolio</th><th style="padding-left:6mm">Products below protection</th></tr>{"".join(srows)}</table>
 <p class="lead">Coupons counted in full; a symmetric stress, in reality the worst name of each basket falls more.</p>
 <h2 class="s">Issuer credit: share of the portfolio per issuer</h2><div class="ib" style="margin-top:2mm">{ibars}</div>
 </div>{_foot(story, date_long, pg)}</div>''')
