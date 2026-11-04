@@ -12,7 +12,7 @@ The run goes step by step and prints what it did at each step:
   5  analyse                           (vol, correlation, 1y lows, protection, upside, swap test, KPIs)
   6  write the words                   (story file; themes written automatically are flagged)
   7  draw the pages                    (HTML, A4, SYZ layout)
-  8  print the PDF                     (and append the closing page)
+  8  print the PDF
 
 Options:
   --story FILE      the words of the deck (default: stories/thematic_proposal.json when it covers the products)

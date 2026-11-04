@@ -72,7 +72,7 @@ The console prints each step, so you can see what was understood and what was as
    naming the basket; the console lists them so the advisor can write the words.
 7. **Draw the pages**: one A4 HTML document in the SYZ layout (Nunito Sans, the house palette, the
    cover photograph and logo), with vector charts.
-8. **Print the PDF** and append the SYZ closing page.
+8. **Print the PDF.** Every logo is a vector drawing (`assets/logo.svg`, traced from the official PNG), so it stays sharp at any zoom.
 
 Then the console lists what to check before sending: the KPIs, every product whose weakest name's
 one-year low was at or below its protection, and the swap-test suggestions.
@@ -106,8 +106,8 @@ the six principles use placeholders that are filled from the analysis (`{index_w
 | `syzdeck/analytics.py` | every calculated figure |
 | `syzdeck/story.py` | the words and the principles |
 | `syzdeck/render.py`, `syzdeck/charts.py` | the pages and charts |
-| `syzdeck/pdf.py` | printing and the closing page |
-| `assets/` | cover photograph, logo, fonts, closing page |
+| `syzdeck/pdf.py` | printing the PDF |
+| `assets/` | cover photograph, logo (vector SVG and PNG), fonts, closing-page background and lettering |
 | `samples/` | a fictional four-product sheet and a tickers file to try the tool |
 
 Compliance should validate the deck before it goes to a client. No client name, account number or

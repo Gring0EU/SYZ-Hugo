@@ -2,7 +2,7 @@
 
 Page order (compact deck): cover, executive summary, the portfolio table, distance to protection,
 thematic rationale, the basket cards (three per page), income and stress, important information.
-The closing page (assets/closing.pdf) is appended to the PDF afterwards.
+The closing page is drawn last, from the original background, lettering and the vector logo.
 """
 
 from __future__ import annotations
@@ -140,9 +140,19 @@ table.pt{{margin-top:5mm}}
 .ib .t{{font-size:7pt}}
 table.sx{{margin-top:2.4mm}}
 h2.s{{margin-top:6mm}}
+/* closing page */
+.closing{{background:#FF7A0A}}
+.closing img.bg{{position:absolute;left:-179.6pt;top:0;width:1496.69pt;height:841.89pt}}
+.closing img.cl{{position:absolute;left:251.64pt;top:150pt;width:92pt;height:83.07pt}}
+.closing img.wel{{position:absolute;left:97.64pt;top:430pt;width:400pt;height:77.55pt}}
+.closing .offices{{position:absolute;left:14mm;right:14mm;top:211.6mm;display:grid;grid-template-columns:repeat(3,1fr);row-gap:9.4mm;color:#fff}}
+.closing .offices b{{display:block;font-size:9pt;margin-bottom:1.3mm}}
+.closing .offices span{{display:block;font-size:6.4pt;line-height:1.45}}
+.closing .pc{{position:absolute;left:0;right:0;top:284.6mm;text-align:center;color:#fff;font-size:6.6pt;font-weight:700;letter-spacing:.02em}}
 /* important information */
-.ii h1{{font-size:21pt;border-left:1.3mm solid {ORANGE};padding-left:3.5mm;margin-top:24mm;line-height:1.15}}
-.ii p{{font-size:8.2pt;line-height:1.6;margin:0 0 3.2mm}}
+.ii h1{{font-size:21pt;margin-top:24mm;line-height:1.15;position:relative}}
+.ii h1::before{{content:'';position:absolute;left:-4.8mm;top:.4mm;bottom:.4mm;width:1.3mm;background:{ORANGE}}}
+.ii p{{font-size:8.2pt;line-height:1.6;margin:0 0 3.2mm;text-align:justify;text-justify:inter-word;hyphens:none}}
 .ii .txt{{margin-top:11mm}}
 """
 
@@ -153,7 +163,7 @@ def _foot(story, date_long, page, last=False):
 
 
 def _head(kicker, logo):
-    return f'<img class="logo" src="data:image/png;base64,{logo}"><div class="kick">{escape(kicker)}</div>'
+    return f'<img class="logo" src="data:image/svg+xml;base64,{logo}"><div class="kick">{escape(kicker)}</div>'
 
 
 def _fall(x):
@@ -169,7 +179,7 @@ def _pp(x, d=2):
 
 
 def build(products, cards, pf, story, asof: dt.date, auto: list[int]) -> str:
-    logo = _b64(ASSETS / "logo.png")
+    logo = _b64(ASSETS / "logo.svg")
     photo = _b64(ASSETS / "cover.jpg")
     date_long = f"{asof.day} {asof.strftime('%B %Y')}"
     fam_of, fam_col = {}, {}
@@ -184,7 +194,7 @@ def build(products, cards, pf, story, asof: dt.date, auto: list[int]) -> str:
 
     # 1 cover
     pages.append(f'''<div class="page cover"><img class="photo" src="data:image/jpeg;base64,{photo}"><div class="band"></div>
-<img class="clogo" src="data:image/png;base64,{logo}"><div class="ck">{escape(story.get("kicker", ""))}</div>
+<img class="clogo" src="data:image/svg+xml;base64,{logo}"><div class="ck">{escape(story.get("kicker", ""))}</div>
 <h1>{escape(story["title"])}</h1><div class="cs">{escape(story["subtitle"])}</div>
 <div class="cf"><span>{date_long}</span><span>PRIVATE &amp; CONFIDENTIAL</span></div></div>''')
 
@@ -303,9 +313,21 @@ def build(products, cards, pf, story, asof: dt.date, auto: list[int]) -> str:
 
     # important information
     pg += 1
-    pages.append(f'''<div class="page ii"><div class="in"><img class="logo" src="data:image/png;base64,{logo}" style="right:0;top:-3.5mm">
+    pages.append(f'''<div class="page ii"><div class="in"><img class="logo" src="data:image/svg+xml;base64,{logo}" style="right:0;top:-3.5mm">
 <h1>Important Information</h1><div class="txt">{"".join(f"<p>{escape(t)}</p>" for t in DISCLAIMER)}</div>
 </div>{_foot(story, date_long, pg, last=True)}</div>''')
+
+    # closing page
+    offices = [("Geneva", ["Banque Syz SA", "Quai des Bergues 1", "CH – 1201 Geneva", "T +41 58 799 10 00"]),
+               ("Zurich", ["Banque Syz AG", "Freigutstrasse 14", "CH – 8002 Zurich", "T +41 58 799 77 37"]),
+               ("Lugano", ["Banca Syz SA", "Via Nassa 42", "CH – 6900 Lugano", "T +41 58 799 67 20"]),
+               ("Locarno", ["Banque Syz SA", "Via Cattori 4", "CH – 6601 Locarno", "T +41 58 799 66 66"]),
+               ("Istanbul", ["Banque Syz SA", "Zorlu Center, Levazim, Koru Sokagi No:2", "34340 Besiktas / Istanbul – Turkey", "T +90 212 703 77 99"]),
+               ("Johannesburg", ["Banque Syz SA", "First Floor, Future Space, 61 Katherine Street", "RSA – Sandton 2146", "T +27 (0)10 300 6040"])]
+    off = "".join(f"<div><b>{c}</b>{''.join(f'<span>{escape(l)}</span>' for l in lines)}</div>" for c, lines in offices)
+    pages.append(f'''<div class="page closing"><img class="bg" src="data:image/jpeg;base64,{_b64(ASSETS / "closing_bg.jpg")}">
+<img class="cl" src="data:image/svg+xml;base64,{logo}"><img class="wel" src="data:image/png;base64,{_b64(ASSETS / "welcome.png")}">
+<div class="offices">{off}</div><div class="pc">PRIVATE &amp; CONFIDENTIAL</div></div>''')
 
     return f'<!doctype html><html><head><meta charset="utf-8"><title>{escape(story["title"])}</title><style>{css()}</style></head><body>{"".join(pages)}</body></html>'
 

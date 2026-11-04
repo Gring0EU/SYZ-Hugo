@@ -1,4 +1,4 @@
-"""Step 8: print the HTML to an A4 PDF and append the closing page.
+"""Step 8: print the HTML to an A4 PDF.
 
 Uses the first browser engine available: Playwright for Python, Playwright for Node, or a local
 Chrome / Edge / Chromium in headless mode (Windows: Edge is always there).
@@ -65,7 +65,7 @@ def _browser(html: Path, pdf: Path) -> bool:
     return False
 
 
-def to_pdf(html: Path, pdf: Path, closing: bool = True) -> str:
+def to_pdf(html: Path, pdf: Path) -> str:
     pdf.parent.mkdir(parents=True, exist_ok=True)
     if pdf.exists():
         pdf.unlink()
@@ -86,9 +86,6 @@ def to_pdf(html: Path, pdf: Path, closing: bool = True) -> str:
     w = PdfWriter()
     for page in PdfReader(raw).pages:
         w.add_page(page)
-    if closing and (ASSETS / "closing.pdf").exists():
-        for page in PdfReader(ASSETS / "closing.pdf").pages:
-            w.add_page(page)
     w.add_metadata({"/Producer": "SYZ Advisory", "/Title": html.stem})
     with open(pdf, "wb") as fh:
         w.write(fh)
