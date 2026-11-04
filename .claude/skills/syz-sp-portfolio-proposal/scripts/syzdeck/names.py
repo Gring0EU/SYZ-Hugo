@@ -4,7 +4,7 @@ Order of matching for an underlying name:
   1. the --tickers file given by the user,
   2. a Bloomberg ticker found next to the name in the document ("NVDA UW", "NESN SW Equity"),
   3. the built-in table below (indices and the names the desk writes most often),
-  4. the Core List (data/core_list.csv),
+  4. the Core List (assets/core_list.csv),
   5. Yahoo Finance search.
 """
 

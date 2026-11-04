@@ -12,7 +12,7 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-ASSETS = Path(__file__).resolve().parent.parent / "assets"
+ASSETS = Path(__file__).resolve().parents[2] / "assets"   # <skill>/assets
 
 BROWSERS = [
     "msedge", "chrome", "google-chrome", "chromium", "chromium-browser",

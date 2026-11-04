@@ -15,7 +15,7 @@ from pathlib import Path
 from . import charts
 from .story import pct, principles
 
-ASSETS = Path(__file__).resolve().parent.parent / "assets"
+ASSETS = Path(__file__).resolve().parents[2] / "assets"   # <skill>/assets
 INK, ORANGE, GREY, MUL = "#202945", "#FF6C0E", "#8A8FA0", "#AC5D85"
 FAMILY = ["#4B5F80", "#FF6C0E", "#3BAF90", "#FFC545", "#79D6FF", "#E6A4AD", "#AC5D85", "#9DD9D2", "#FFA400"]
 CASH = "#7A7F95"
@@ -37,10 +37,10 @@ def _b64(path: Path) -> str:
 
 
 def css() -> str:
-    f = (ASSETS / "fonts").resolve().as_uri()
+    reg, bold = (_b64(ASSETS / "fonts" / f) for f in ("NunitoSans-Regular.ttf", "NunitoSans-Bold.ttf"))
     return f"""
-@font-face{{font-family:'Nunito Sans';src:url('{f}/NunitoSans-Regular.ttf')}}
-@font-face{{font-family:'Nunito Sans';font-weight:700;src:url('{f}/NunitoSans-Bold.ttf')}}
+@font-face{{font-family:'Nunito Sans';src:url(data:font/ttf;base64,{reg}) format('truetype')}}
+@font-face{{font-family:'Nunito Sans';font-weight:700;src:url(data:font/ttf;base64,{bold}) format('truetype')}}
 @page{{size:A4;margin:0}}
 *{{box-sizing:border-box}}
 html,body{{margin:0;padding:0;background:#fff}}

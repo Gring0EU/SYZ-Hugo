@@ -1,4 +1,4 @@
-"""Trace a logo PNG into a vector SVG with its own gradient: python tools/trace_logo.py assets/logo.png assets/logo.svg 1
+"""Trace a logo PNG into a vector SVG with its own gradient: python scripts/trace_logo.py assets/logo.png assets/logo.svg 1
 
 Needs `pip install potracer`. The last argument is 1 for this tracer (it treats False as the shape)."""
 import sys

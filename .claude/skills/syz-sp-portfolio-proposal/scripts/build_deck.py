@@ -15,10 +15,10 @@ The run goes step by step and prints what it did at each step:
   8  print the PDF
 
 Options:
-  --story FILE      the words of the deck (default: stories/thematic_proposal.json when it covers the products)
+  --story FILE      the words of the deck (default: assets/stories/thematic_proposal.json when it covers the products)
   --tickers FILE    checked symbols, {"NAME AS WRITTEN": "YAHOO"}
   --asof DATE       price date, YYYY-MM-DD (default: today)
-  --out FILE        output PDF (default: out/SYZ_proposal_<date>.pdf)
+  --out FILE        output PDF (default: /mnt/user-data/outputs on claude.ai, else ./out/SYZ_proposal_<date>.pdf)
   --stop-after N    stop after step N (2 = extraction only); products.json is always written
   --products FILE   start from an edited products.json instead of the documents
   --no-swap         skip the swap test
@@ -33,7 +33,9 @@ import json
 import sys
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parent
+HERE = Path(__file__).resolve().parent          # scripts/
+ROOT = HERE.parent                                # the skill folder
+ASSETS = ROOT / "assets"
 sys.path.insert(0, str(HERE))
 
 from syzdeck import analytics, ingest, market, render, story as storymod  # noqa: E402
@@ -50,15 +52,16 @@ def main(argv=None) -> int:
     ap.add_argument("--out", type=Path)
     ap.add_argument("--stop-after", type=int, default=8)
     ap.add_argument("--products", type=Path)
-    ap.add_argument("--universe", type=Path, default=HERE / "data" / "core_list.csv")
+    ap.add_argument("--universe", type=Path, default=ASSETS / "core_list.csv")
     ap.add_argument("--no-swap", action="store_true")
     ap.add_argument("--offline", action="store_true")
     a = ap.parse_args(argv)
 
     asof = dt.date.fromisoformat(a.asof) if a.asof else dt.date.today()
-    out = a.out or HERE / "out" / f"SYZ_proposal_{asof.isoformat()}.pdf"
+    default_dir = Path("/mnt/user-data/outputs") if Path("/mnt/user-data/outputs").is_dir() else Path.cwd() / "out"
+    out = a.out or default_dir / f"SYZ_proposal_{asof.isoformat()}.pdf"
     work = out.with_suffix("")
-    market.use_cache(HERE / "out" / ".market_cache.json", a.offline)
+    market.use_cache(out.parent / ".market_cache.json", a.offline)   # next to the output: the skill folder may be read-only
     core = CoreList(a.universe)
 
     if a.products:
@@ -93,7 +96,7 @@ def main(argv=None) -> int:
     market.save_cache()
 
     print("6    Writing the words")
-    default_story = HERE / "stories" / "thematic_proposal.json"
+    default_story = ASSETS / "stories" / "thematic_proposal.json"
     story_path = a.story or (default_story if _covers(default_story, real) else None)
     story = storymod.load(story_path)
     kinds = {c.product.number: (c.legs[0].kind if c.legs and all(l.kind == c.legs[0].kind for l in c.legs) else "share") for c in cards}

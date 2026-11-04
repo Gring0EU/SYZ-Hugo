@@ -3,7 +3,7 @@
 The story file holds words only: title, objective, the six principles, the theme families and, per
 product, a theme name and a one-line thesis. Every number on the pages is calculated, never read
 from here. Principles may use placeholders that are filled from the analysis, e.g.
-"{index_weight}" -> "20%". See stories/thematic_proposal.json.
+"{index_weight}" -> "20%". See assets/stories/thematic_proposal.json.
 
 Products the story file does not cover get a theme from the sheet's Theme column, the Core List or
 the kind of underlying, and a thesis listing the names. They are flagged in the hand-over so the
