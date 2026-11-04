@@ -156,8 +156,6 @@ def complete(products: list[Product], asof: dt.date, log=print) -> None:
         if not p.currency:
             ccys = {u.currency for u in p.underlyings if u.currency}
             p.sources["currency"] = "missing"
-        if p.coupon is None:
-            log(f"    WARNING product {p.number}: no coupon in the document. A coupon is never estimated: add it.")
         if p.protection is None:
             log(f"    WARNING product {p.number}: no strike or barrier found.")
         if p.tenor_months is None:

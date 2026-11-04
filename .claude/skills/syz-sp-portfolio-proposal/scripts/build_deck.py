@@ -2,7 +2,8 @@
 
     python proposal-deck/build_deck.py INPUT [INPUT ...] [options]
 
-INPUT: a proposal sheet (.xlsx / .csv), term sheets (.pdf), pricer or product pages (.html).
+INPUT: a proposal sheet (.xlsx / .csv), term sheets (.pdf, or a .zip of them), pricer or product
+pages (.html). A sheet and term sheets for the same products are merged into one record each.
 
 The run goes step by step and prints what it did at each step:
   1  recognise each document           (sheet, term sheet, pricer page)
@@ -17,6 +18,8 @@ The run goes step by step and prints what it did at each step:
 Options:
   --story FILE      the words of the deck (default: assets/stories/thematic_proposal.json when it covers the products)
   --tickers FILE    checked symbols, {"NAME AS WRITTEN": "YAHOO"}
+  --coupon C        the basket coupon given by the user: "8%" for every product without a coupon,
+                    "3=7.5%" for product 3 (repeat the option for several products)
   --asof DATE       price date, YYYY-MM-DD (default: today)
   --out FILE        output PDF (default: /mnt/user-data/outputs on claude.ai, else ./out/SYZ_proposal_<date>.pdf)
   --stop-after N    stop after step N (2 = extraction only); products.json is always written
@@ -55,6 +58,7 @@ def main(argv=None) -> int:
     ap.add_argument("--universe", type=Path, default=ASSETS / "core_list.csv")
     ap.add_argument("--no-swap", action="store_true")
     ap.add_argument("--offline", action="store_true")
+    ap.add_argument("--coupon", action="append", default=[])
     a = ap.parse_args(argv)
 
     asof = dt.date.fromisoformat(a.asof) if a.asof else dt.date.today()
@@ -79,6 +83,13 @@ def main(argv=None) -> int:
     print("3    Matching names to Yahoo symbols")
     tickers = json.loads(a.tickers.read_text(encoding="utf-8")) if a.tickers else {}
     market.resolve(real, tickers, core)
+    if not a.products:
+        n_before = len(real)
+        products = ingest.merge(products)
+        real = [p for p in products if p.product_type != "cash"]
+        if len(real) != n_before:
+            print(f"     {len(real)} product(s) after merging the sheet with the term sheets")
+    _coupons(real, a.coupon)
 
     print("4    Filling the gaps with market data")
     market.complete(real, asof)
@@ -118,6 +129,23 @@ def main(argv=None) -> int:
     print(f"     Wrote {out} ({engine})")
     _summary(cards, pf)
     return 0
+
+
+def _coupons(products, given: list[str]) -> None:
+    """Apply the basket coupon(s) the user gave: '8%' fills every product without one, '3=7.5%' sets product 3."""
+    for g in given:
+        num, _, val = g.rpartition("=")
+        c = ingest._pct(val)
+        if c is None:
+            raise SystemExit(f"--coupon {g!r}: give a rate such as 8% or 3=7.5%")
+        for p in products:
+            if (num and p.number == int(num)) or (not num and p.coupon is None):
+                if p.coupon is not None and abs(p.coupon - c) > 1e-9:
+                    print(f"     product {p.number}: coupon {p.coupon*100:.2f}% replaced by {c*100:.2f}% (given by the user)")
+                p.coupon, p.sources["coupon"] = c, "given by the user"
+    for p in products:
+        if p.coupon is None:
+            print(f"     WARNING product {p.number}: no coupon. Ask for it (--coupon {p.number}=X%); it is never estimated.")
 
 
 def _covers(path: Path, products) -> bool:

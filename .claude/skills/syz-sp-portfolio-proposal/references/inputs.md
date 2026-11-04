@@ -51,6 +51,28 @@ Both are turned into text and read by the same parser. One document = one produc
 When the table has a market-price column before the initial level (pricer pages), the header decides
 which number is the initial level.
 
+## ZIP of term sheets
+
+A `.zip` is unpacked into its own temporary folder; the PDF, HTML, Excel and CSV files inside are read
+like any other input (folders inside the archive are ignored).
+
+## Excel and term sheets together
+
+Each term sheet is matched to one Excel row: by ISIN when the Excel has an `ISIN` column, otherwise by
+the same set of underlyings (after symbol matching). Then:
+
+- the Excel's coupon, strike, barrier, step-down and names are kept; when the term sheet's coupon
+  differs, the console says so;
+- the term sheet fills the issuer, currency, ISIN, product type, fixing and redemption dates, the
+  maturity, and each underlying's Bloomberg code and initial level;
+- a term sheet that matches no row is added as a new product after the Excel's last number.
+
+## Basket coupon
+
+`--coupon 8%` gives 8% p.a. to every product still without a coupon; `--coupon 3=7.5%` sets product 3
+(and replaces a coupon read from the documents, with a console line). Repeat the option for several
+products. The source shows as "given by the user" in the products file.
+
 ## Symbols
 
 Order: `--tickers` file, the Bloomberg code in the document, the built-in table (indices, ETFs and the

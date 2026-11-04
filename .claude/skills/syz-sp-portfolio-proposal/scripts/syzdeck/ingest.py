@@ -25,6 +25,8 @@ from .names import from_bloomberg, issuer_short
 
 def kind_of(path: Path) -> str:
     ext = path.suffix.lower()
+    if ext == ".zip":
+        return "zip"
     if ext in (".xlsx", ".xlsm", ".xls"):
         return "sheet"
     if ext == ".csv":
@@ -38,9 +40,32 @@ def kind_of(path: Path) -> str:
     raise ValueError(f"{path.name}: unknown format (use Excel, CSV, PDF or HTML)")
 
 
+def unzip(path: Path, log=print) -> list[Path]:
+    """Extract a ZIP of term sheets into its own folder and return the documents it holds."""
+    import tempfile
+    import zipfile
+    out = Path(tempfile.mkdtemp(prefix="syz_ts_"))
+    found = []
+    with zipfile.ZipFile(path) as z:
+        for info in z.infolist():
+            name = Path(info.filename)
+            if info.is_dir() or name.name.startswith((".", "~$")) or "__MACOSX" in name.parts:
+                continue
+            if name.suffix.lower() not in (".pdf", ".html", ".htm", ".xlsx", ".xlsm", ".csv"):
+                continue
+            target = out / name.name                      # flatten: no paths from inside the archive
+            target.write_bytes(z.read(info))
+            found.append(target)
+    log(f"  {path.name}: ZIP, {len(found)} document(s) inside")
+    return sorted(found)
+
+
 def read(paths: list[Path], log=print) -> list[Product]:
     products: list[Product] = []
+    expanded: list[Path] = []
     for path in paths:
+        expanded += unzip(path, log) if kind_of(path) == "zip" else [path]
+    for path in expanded:
         kind = kind_of(path)
         if kind == "sheet":
             found = read_sheet(path)
@@ -52,8 +77,9 @@ def read(paths: list[Path], log=print) -> list[Product]:
         for p in found:
             p.number = len(products) + 1 if kind != "sheet" else p.number
             products.append(p)
-    # renumber when several documents are mixed
-    if len({p.source_file for p in products}) > 1:
+    # renumber when several documents are mixed and none is a sheet (a sheet keeps its numbers)
+    has_sheet = any(p.source_file and p.source_file.lower().endswith((".xlsx", ".xlsm", ".csv")) for p in products)
+    if len({p.source_file for p in products}) > 1 and not has_sheet:
         for i, p in enumerate(products, 1):
             p.number = i
     return products
@@ -364,3 +390,56 @@ def parse_terms(text: str, source: str) -> Product:
     for f in ("coupon", "protection_type", "issuer", "currency", "isin", "tenor_months"):
         p.sources.setdefault(f, "missing" if getattr(p, f) is None else "document")
     return p
+
+
+# ---------------------------------------------------------------------------------------------
+# merging a product sheet with term sheets
+
+TERMS = ("issuer", "currency", "isin", "product_type", "initial_fixing", "final_fixing", "redemption_date",
+         "frequency", "autocall_trigger")
+
+
+def merge(products: list[Product], log=print) -> list[Product]:
+    """When an Excel sheet and term sheets describe the same products, keep one record per product.
+
+    A term sheet is matched to a sheet row by ISIN, else by the same set of underlyings (symbols).
+    The sheet decides coupon, strike, barrier and names; the term sheet adds the issuer, currency,
+    ISIN, dates, initial levels and Bloomberg codes, and fills anything the sheet left empty.
+    """
+    rows = [p for p in products if p.source_file and p.source_file.lower().endswith((".xlsx", ".xlsm", ".csv"))]
+    docs = [p for p in products if p not in rows]
+    if not rows or not docs:
+        return products
+    key = lambda p: frozenset(u.symbol for u in p.underlyings if u.symbol)
+    used = set()
+    for d in docs:
+        row = next((r for r in rows if r.product_type != "cash" and d.isin and r.isin == d.isin), None) or \
+              next((r for r in rows if r.product_type != "cash" and key(r) and key(r) == key(d) and id(r) not in used), None)
+        if not row:
+            continue
+        used.add(id(row)); d.number = -1
+        for f in TERMS:
+            if getattr(row, f) in (None, "") and getattr(d, f) not in (None, ""):
+                setattr(row, f, getattr(d, f)); row.sources[f] = f"term sheet {d.source_file}"
+        for f in ("coupon", "strike", "barrier", "protection_type", "stepdown"):
+            if getattr(row, f) is None and getattr(d, f) is not None:
+                setattr(row, f, getattr(d, f)); row.sources[f] = f"term sheet {d.source_file}"
+        if row.tenor_months is None and d.tenor_months:
+            row.tenor_months, row.sources["tenor_months"] = d.tenor_months, d.sources.get("tenor_months", "term sheet")
+        if row.coupon is not None and d.coupon is not None and abs(row.coupon - d.coupon) > 1e-6:
+            log(f"     product {row.number}: coupon {row.coupon*100:.2f}% in the sheet, {d.coupon*100:.2f}% in {d.source_file}: the sheet's is used")
+        by_sym = {u.symbol: u for u in d.underlyings if u.symbol}
+        for u in row.underlyings:
+            t = by_sym.get(u.symbol)
+            if t:
+                u.bloomberg = u.bloomberg or t.bloomberg
+                u.initial_level = u.initial_level or t.initial_level
+                u.currency = u.currency or t.currency
+        row.sources["merged with"] = d.source_file
+        log(f"     product {row.number} ({' / '.join(u.name for u in row.underlyings)}) completed from {d.source_file}")
+    left = [d for d in docs if d.number != -1]
+    n = max((r.number for r in rows), default=0)
+    for d in left:
+        n += 1; d.number = n
+        log(f"     {d.source_file}: not in the sheet, added as product {n}")
+    return rows + left
