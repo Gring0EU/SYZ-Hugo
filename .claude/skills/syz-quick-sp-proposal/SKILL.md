@@ -68,7 +68,8 @@ equal 14 mm margins, no boxes or colour fills. The HTML it was printed from sits
 
 ## Rules
 
-- Coupons, protection levels, maturities, fees and amounts come from the sheet. Prices, lows,
+- Coupons, protection levels, maturities and amounts come from the sheet. Fees are never shown in
+  the PDF or the hand-over, even when the sheet has a Fees column. Prices, lows,
   changes and volatility are calculated. Levels assume a strike at today's close; the PDF says so.
 - One-year lows are history, not a backtest or a forecast. Keep the footnote, the data note and the
   "Important Information" legal page; never edit or shorten the disclaimer text. No red in the document; the lows are reported in the hand-over, not highlighted.

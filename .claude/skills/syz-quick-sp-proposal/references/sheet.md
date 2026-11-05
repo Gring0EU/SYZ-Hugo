@@ -14,7 +14,7 @@ in any order; others are ignored. Rows whose first cell is not a number (totals,
 | `Coupon` | % p.a. | `8.00%` |
 | `Downside protection` (or `Protection`, `Strike`, `Barrier`) | level, with optional wording | `70.00%`, `European barrier 65%`, `Low strike 72%` |
 | `Maturity` (or `Tenor`) | months or years | `15 months` |
-| `Fees` | % | `1.50%` |
+| `Fees` | read, never shown in the PDF | `1.50%` |
 | `Amount (€)` (or `Size`, `Nominal`) | amount; the sign in brackets gives the currency | `€ 50’000.00` |
 | `Theme` | optional theme per basket | `Global banks` |
 | `Currency` | optional, overrides the header | `CHF` |

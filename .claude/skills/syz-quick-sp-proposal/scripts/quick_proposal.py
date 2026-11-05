@@ -93,7 +93,8 @@ def read_sheet(path: Path, default_ccy: str) -> tuple[list[dict], str]:
         baskets.append({
             "sheet_n": int(float(str(r[0]))), "names_raw": names, "coupon": ingest._pct(get(c_cp)),
             "strike": ingest._pct(get(c_pr)), "kind": kind, "tenor": ingest._months(get(c_mt)),
-            "fees": ingest._pct(get(c_fe)), "amount": float(amount) if amount else None,
+            "fees": ingest._pct(get(c_fe)),   # read but never shown in the PDF
+            "amount": float(amount) if amount else None,
             "weight": ingest._pct(get(c_w)), "theme": str(get(c_th)).strip() if get(c_th) else None,
             "ccy": str(get(c_cc)).strip().upper() if get(c_cc) else ccy})
     if not baskets:
@@ -292,8 +293,7 @@ def table(b, P):
 
 def card(b, P, ccy):
     chips = [f'{ccy} {money(b["amount"])}' if b["amount"] else None, f'Coupon {pct(b["coupon"], 2)} p.a.',
-             f'{b["kind"]} {pct(b["strike"])}', f'{b["tenor"]} months' if b["tenor"] else None,
-             f'Fees {pct(b["fees"], 2)}' if b["fees"] is not None else None]
+             f'{b["kind"]} {pct(b["strike"])}', f'{b["tenor"]} months' if b["tenor"] else None]
     return (f'<section class="card"><div class="ch"><div><span class="num">{b["n"]}</span><h3>{escape(b["theme"])}</h3>'
             f'<span class="mu">{" / ".join(escape(n) for n in b["short"])}</span></div>'
             f'<div class="chips">{"".join(f"<span>{escape(c)}</span>" for c in chips if c)}</div></div>'
@@ -328,8 +328,6 @@ def build(baskets, P, ccy, title, asof, layout="thematic"):
                 + "".join(crow(b, P) for b in baskets))
     else:
         rows = "".join(row(b, P, ccy) for b in baskets)
-    fees = sorted({b["fees"] for b in baskets if b["fees"] is not None})
-    fee_txt = f"before fees ({', '.join(pct(f, 2) for f in fees)})" if fees else "before fees"
     ccys = sorted({P[s]["ccy"] for b in baskets for s in b["syms"] if s in P and P[s]["ccy"] not in (None, "?")})
     logo, reg, bold = b64(ASSETS / "logo.svg"), b64(ASSETS / "fonts" / "NunitoSans-Regular.ttf"), b64(ASSETS / "fonts" / "NunitoSans-Bold.ttf")
     asof_s = asof.strftime("%d.%m.%Y")
@@ -386,9 +384,9 @@ def build(baskets, P, ccy, title, asof, layout="thematic"):
 <div><b>{rng([round(b["strike"]*100, 2) for b in baskets], "%")}</b><span>protection levels, struck today</span></div></div>
 <div class="h2s"><h2>{"The themes" if layout == "thematic" else "The baskets"}</h2><span>{"" if layout == "thematic" else "Gauge: each underlying's lowest close of the past year, as a % of today"}</span></div>
 <div class="rows">{rows}</div>
-<div class="legend">{"Coupons " + fee_txt + ", indicative and subject to issuer pricing. Protection levels as for products struck today; the following pages show each basket over the past year." if layout == "thematic" else "Dots in each name's colour: its lowest close over the year. Pink zone: below the protection level. A dot in the pink zone means that name traded below today's protection level at some point; it is not a backtest or a forecast. Coupons " + fee_txt + ", indicative and subject to issuer pricing."}</div>
+<div class="legend">{"Coupons indicative and subject to issuer pricing. Protection levels as for products struck today; the following pages show each basket over the past year." if layout == "thematic" else "Dots in each name's colour: its lowest close over the year. Pink zone: below the protection level. A dot in the pink zone means that name traded below today's protection level at some point; it is not a backtest or a forecast. Coupons indicative and subject to issuer pricing."}</div>
 {cards}
-<p class="note"><b>Important information.</b> Daily closes from market data providers, not adjusted for dividends, up to {asof_s}. Levels assume each product is struck at today's close; actual levels are fixed on the trade date. Lowest closes show how far each name has traded below today's price; they are not a backtest of the products and not a forecast. Coupons and protection levels are indicative, {fee_txt}, and subject to issuer pricing. The products are in {ccy} on underlyings quoted in {", ".join(ccys)}. For information purposes only; not an offer or a recommendation within the meaning of FinSA. Capital is at risk. SYZ · {dt.date.today().strftime("%d.%m.%Y")}</p>
+<p class="note"><b>Important information.</b> Daily closes from market data providers, not adjusted for dividends, up to {asof_s}. Levels assume each product is struck at today's close; actual levels are fixed on the trade date. Lowest closes show how far each name has traded below today's price; they are not a backtest of the products and not a forecast. Coupons and protection levels are indicative and subject to issuer pricing. The products are in {ccy} on underlyings quoted in {", ".join(ccys)}. For information purposes only; not an offer or a recommendation within the meaning of FinSA. Capital is at risk. SYZ · {dt.date.today().strftime("%d.%m.%Y")}</p>
 <div class="ii"><img src="data:image/svg+xml;base64,{logo}"><h1><i></i>Important Information</h1><div class="txt">{"".join(f"<p>{escape(t)}</p>" for t in DISCLAIMER)}</div></div>
 </body></html>"""
 
