@@ -7,6 +7,7 @@
 | `merle/` | Merle (`B01_app.html`): term sheet PDF file naming and event emails |
 | `market-data/` | The Yahoo Finance refresh shared by the workbench and Life Syzcle; `mcp_server.py`, the free market data connector |
 | `.claude/skills/syz-sp-portfolio-proposal/` | Skill: the full structured products portfolio proposal (PDF) from a sheet, term sheets or pricer pages |
+| `.claude/skills/syz-quick-sp-proposal/` | Skill: quick one-year PDF of a basket proposal from a basket table |
 | `.claude/skills/syz-technical-review/` | Skill: one-page technical review of a stock or currency pair |
 
 ## Market data, refreshed automatically
