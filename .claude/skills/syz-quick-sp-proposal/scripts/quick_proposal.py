@@ -45,6 +45,14 @@ LINE = [ORANGE, BLUE, MINT, "#FFC545", "#79D6FF"]
 WORDS = {1: "One", 2: "Two", 3: "Three", 4: "Four", 5: "Five", 6: "Six", 7: "Seven", 8: "Eight", 9: "Nine", 10: "Ten",
          11: "Eleven", 12: "Twelve", 13: "Thirteen", 14: "Fourteen", 15: "Fifteen", 16: "Sixteen", 17: "Seventeen",
          18: "Eighteen", 19: "Nineteen", 20: "Twenty"}
+DISCLAIMER = [
+    "This communication has been sent to recipients for information purposes only and cannot be considered to constitute an advertisement, an offer or a personalised recommendation to buy or sell a financial instrument or any other investment or currency.",
+    "This communication is not directed to any person in any jurisdiction where, by reason of that person’s nationality, residence or otherwise, its dissemination or use is prohibited. It cannot be quoted, reproduced, disclosed, distributed or otherwise referred to, in whole or in part, to any third party without the Bank’s prior written consent.",
+    "This communication may contain information on past performances of a financial product, all kinds of economic and financial valuations and analyses, as well as opinions of the Bank or of third parties. Any market valuations, terms and calculation methods, yields and opinions expressed are subject to change without notice. The information and opinions contained herein have been compiled and provided in good faith, based on information obtained from sources believed to be trustworthy. However, such information has not been independently verified. No guarantee, representation, or warranty of any kind, whether express or implied, is provided by the Bank or by relevant data vendors and other sources with respect to the accuracy, reliability, currentness or exhaustiveness of the information communicated, the methodology employed or the prices contained herein.",
+    "Past performance is not a reliable indicator of current or future results. Any reference to the past performance of an investment does not guarantee its future performance. Fluctuations in exchange rates may adversely affect the value, price or income of any investment.",
+    "Nothing in the present communication constitutes investment, legal, accounting or tax advice. This information is purely objective since it does not take into consideration the personal situation (including financial knowledge and experience), the investment objectives and risk profile of any recipient. Moreover, certain financial instruments mentioned (in particular, but not exclusively, derivatives, options and futures) involve a high risk of loss and may not be suitable. Accordingly, recipients should consult their own advisors on such matters, including but not limited to the possible tax consequences of investing in any financial product mentioned herein, and make their own assessment of the suitability of such investment product.",
+    "Should a recipient make an investment on the basis of the present communication, the recipient alone shall bear the consequences thereof. In no event shall the Bank, its directors, employees, affiliates or agents be held responsible for damages of any kind arising out of the use of all or part of the information provided herein.",
+]
 CCY_SIGN = {"€": "EUR", "$": "USD", "£": "GBP", "CHF": "CHF", "EUR": "EUR", "USD": "USD", "GBP": "GBP"}
 BBG_INDEX = {"^N225": "NKY Index", "^STOXX50E": "SX5E Index", "^GSPC": "SPX Index", "^SSMI": "SMI Index", "^GDAXI": "DAX Index",
              "^FCHI": "CAC Index", "^FTSE": "UKX Index", "^HSI": "HSI Index", "^OMX": "OMX Index", "^NDX": "NDX Index", "^RUT": "RTY Index"}
@@ -365,7 +373,11 @@ def build(baskets, P, ccy, title, asof, layout="thematic"):
 .t td{{padding:5px 4px;border-bottom:1px solid rgba(32,41,69,.12)}}
 .sw{{display:inline-block;width:10px;height:3px;margin-right:5px;vertical-align:middle}}
 .ax{{font-size:9px;fill:{GREY};font-family:N}}.lab{{font-size:10.5px;font-weight:700;font-family:N}}
-.note{{font-size:7.4pt;color:{GREY};margin-top:10px;line-height:1.35;text-align:justify}}"""
+.note{{font-size:7.4pt;color:{GREY};margin-top:10px;line-height:1.35;text-align:justify}}
+.ii{{break-before:page;position:relative}}.ii img{{position:absolute;right:0;top:0;height:46px}}
+.ii h1{{font-size:21pt;margin:24mm 0 0;line-height:1.15;display:flex;align-items:center;gap:3.5mm}}
+.ii h1 i{{display:block;width:1.3mm;align-self:stretch;margin:.4mm 0;background:{ORANGE}}}
+.ii .txt{{margin-top:11mm}}.ii p{{font-size:8.2pt;line-height:1.6;margin:0 0 3.2mm;text-align:justify;hyphens:none}}"""
     return f"""<!doctype html><html><head><meta charset="utf-8"><title>{escape(title)}</title><style>{css}</style></head><body>
 <div class="p1h"><div><div class="k">STRUCTURED PRODUCTS · PROPOSAL</div><h1>{escape(title)}</h1>
 <div class="s">One-year view of the underlyings · prices as of {asof_s}</div></div><img src="data:image/svg+xml;base64,{logo}" style="height:46px"></div>
@@ -377,6 +389,7 @@ def build(baskets, P, ccy, title, asof, layout="thematic"):
 <div class="legend">{"Coupons " + fee_txt + ", indicative and subject to issuer pricing. Protection levels as for products struck today; the following pages show each basket over the past year." if layout == "thematic" else "Dots in each name's colour: its lowest close over the year. Pink zone: below the protection level. A dot in the pink zone means that name traded below today's protection level at some point; it is not a backtest or a forecast. Coupons " + fee_txt + ", indicative and subject to issuer pricing."}</div>
 {cards}
 <p class="note"><b>Important information.</b> Daily closes from market data providers, not adjusted for dividends, up to {asof_s}. Levels assume each product is struck at today's close; actual levels are fixed on the trade date. Lowest closes show how far each name has traded below today's price; they are not a backtest of the products and not a forecast. Coupons and protection levels are indicative, {fee_txt}, and subject to issuer pricing. The products are in {ccy} on underlyings quoted in {", ".join(ccys)}. For information purposes only; not an offer or a recommendation within the meaning of FinSA. Capital is at risk. SYZ · {dt.date.today().strftime("%d.%m.%Y")}</p>
+<div class="ii"><img src="data:image/svg+xml;base64,{logo}"><h1><i></i>Important Information</h1><div class="txt">{"".join(f"<p>{escape(t)}</p>" for t in DISCLAIMER)}</div></div>
 </body></html>"""
 
 

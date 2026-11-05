@@ -61,7 +61,8 @@ header gives EUR). `--asof YYYY-MM-DD`. `--out FILE`. `--offline`.
 ## Output
 
 `SYZ_quick_proposal_<date>.pdf`, A4: page 1 with the headline figures and the themes (or the gauge
-rows), then two baskets per page. Nunito Sans, vector SYZ logo, house palette without red (the
+rows), then two baskets per page, then the "Important Information" page with the bank's full legal
+disclaimer. Nunito Sans, vector SYZ logo, house palette without red (the
 protection is a dark dashed line over a light grey zone, each 1y low a dot in its name's colour),
 equal 14 mm margins, no boxes or colour fills. The HTML it was printed from sits next to it.
 
@@ -69,8 +70,8 @@ equal 14 mm margins, no boxes or colour fills. The HTML it was printed from sits
 
 - Coupons, protection levels, maturities, fees and amounts come from the sheet. Prices, lows,
   changes and volatility are calculated. Levels assume a strike at today's close; the PDF says so.
-- One-year lows are history, not a backtest or a forecast. Keep the footnote and the important
-  information. No red in the document; the lows are reported in the hand-over, not highlighted.
+- One-year lows are history, not a backtest or a forecast. Keep the footnote, the data note and the
+  "Important Information" legal page; never edit or shorten the disclaimer text. No red in the document; the lows are reported in the hand-over, not highlighted.
 - Protection given as a plain % is labelled "Protection"; the words "barrier" or "strike" in the
   sheet give "European barrier", "American barrier" or "Low strike".
 
