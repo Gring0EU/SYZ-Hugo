@@ -1,6 +1,6 @@
 ---
 name: syz-quick-sp-proposal
-description: Builds a quick SYZ structured products proposal, a short one-year PDF from a basket sheet. Page 1 gives the headline figures (average coupon, total amount, maturities, protection levels) and one row per basket with theme, underlyings, coupon, protection, tenor, amount and a gauge of each underlying's lowest close of the past year against the protection; above 8 baskets the rows turn compact so about 18 fit on the page. Then two baskets per page with a one-year chart rebased to 100 and a table per underlying (Bloomberg code, last close, protection price, 1y low, 1y change, volatility). Use when asked for a quick SP proposal, a 1y PDF or one-year view of baskets, a basket proposal from an Excel table (Basket, Underlying 1-3, Coupon, Downside protection, Maturity, Fees, Amount), or to redo such a PDF with other baskets, numbers or themes.
+description: Builds a quick SYZ structured products proposal, a short one-year PDF from a basket sheet. Page 1 gives the headline figures (average coupon, total amount, maturities, protection levels) and presents the themes, each with a one-line thesis, its underlyings, coupon, protection, tenor and amount (an optional gauge layout shows each underlying's one-year low against the protection instead). Then two baskets per page with a one-year chart rebased to 100 and a table per underlying (Bloomberg code, last close, protection price, 1y low, 1y change, volatility), in the house palette without red. Use when asked for a quick SP proposal, a 1y PDF or one-year view of baskets, a basket proposal from an Excel table (Basket, Underlying 1-3, Coupon, Downside protection, Maturity, Fees, Amount), or to redo such a PDF with other baskets, numbers or themes.
 ---
 
 # SYZ quick structured product proposal
@@ -29,7 +29,8 @@ Dependencies: `pip install -r scripts/requirements.txt`. The PDF is printed by P
 installed, otherwise Chrome or Edge in headless mode; without one the script says so and the HTML
 next to the PDF can be printed from any browser.
 
-Options: `--themes FILE` theme per basket. `--tickers FILE` checked symbols. `--title TEXT`
+Options: `--themes FILE` theme and thesis per basket. `--layout thematic|gauge` page 1 (default
+thematic; gauge = one row per basket with the one-year lows, compact above 8 baskets). `--tickers FILE` checked symbols. `--title TEXT`
 (default "Six thematic baskets"). `--currency CCY` when the sheet does not say (the `Amount (€)`
 header gives EUR). `--asof YYYY-MM-DD`. `--out FILE`. `--offline`.
 
@@ -39,9 +40,11 @@ header gives EUR). `--asof YYYY-MM-DD`. `--out FILE`. `--offline`.
    of [references/sheet.md](references/sheet.md). Keep the values exactly; a missing coupon or
    protection stops the run: ask for it, never estimate it.
 2. **Anonymise.** No client name or account in the sheet or file names.
-3. **Themes.** Write `themes.json` with a short theme per basket, keyed by the sheet's basket numbers:
-   `{"1": "Global equity core", "3": "Digital platforms"}`. Without it the script uses the sheet's
-   Theme column, the Core List theme, or "Global equity indices", and lists the baskets to complete.
+3. **Themes.** Write `themes.json` with a theme and a one-line thesis per basket, keyed by the sheet's
+   basket numbers: `{"1": {"theme": "Global equity core", "thesis": "The three largest developed
+   markets in one basket: broad market risk, no single-company risk."}}`. The thesis says what the
+   basket is a bet on, in client words: no figures, no promises. Without it the script uses the
+   sheet's Theme column, the Core List theme or "Global equity indices", and lists the baskets to complete.
 4. **Build:**
    ```bash
    python scripts/quick_proposal.py baskets.xlsx --themes themes.json
@@ -57,16 +60,17 @@ header gives EUR). `--asof YYYY-MM-DD`. `--out FILE`. `--offline`.
 
 ## Output
 
-`SYZ_quick_proposal_<date>.pdf`, A4: page 1 with the headline figures and the basket rows (airy up to
-8 baskets, one line each above), then two baskets per page. Nunito Sans, vector SYZ logo, house
-palette, equal 14 mm margins, no boxes or colour fills. The HTML it was printed from sits next to it.
+`SYZ_quick_proposal_<date>.pdf`, A4: page 1 with the headline figures and the themes (or the gauge
+rows), then two baskets per page. Nunito Sans, vector SYZ logo, house palette without red (the
+protection is a dark dashed line over a light grey zone, each 1y low a dot in its name's colour),
+equal 14 mm margins, no boxes or colour fills. The HTML it was printed from sits next to it.
 
 ## Rules
 
 - Coupons, protection levels, maturities, fees and amounts come from the sheet. Prices, lows,
   changes and volatility are calculated. Levels assume a strike at today's close; the PDF says so.
-- A dot in the pink zone is history, not a backtest or a forecast. Keep the footnote and the
-  important information.
+- One-year lows are history, not a backtest or a forecast. Keep the footnote and the important
+  information. No red in the document; the lows are reported in the hand-over, not highlighted.
 - Protection given as a plain % is labelled "Protection"; the words "barrier" or "strike" in the
   sheet give "European barrier", "American barrier" or "Low strike".
 
@@ -75,8 +79,8 @@ palette, equal 14 mm margins, no boxes or colour fills. The HTML it was printed 
 **Input:** "Could you create a 1y PDF" with six baskets numbered 1, 3, 5, 9, 11, 14 (Nikkei/Euro Stoxx/
 S&P 500 at 7% and 67%, Alphabet/Amazon/Microsoft at 8% and 75%, ...), EUR 315'000 in total.
 
-**Steps:** sheet saved as `baskets.xlsx`; `themes.json` with the six themes; `python scripts/quick_proposal.py
-baskets.xlsx --themes themes.json`.
+**Steps:** sheet saved as `baskets.xlsx`; `themes.json` with the six themes and theses;
+`python scripts/quick_proposal.py baskets.xlsx --themes themes.json`.
 
 **Output:** `SYZ_quick_proposal_2026-11-05.pdf`, 4 pages, baskets renumbered 1 to 6. Then:
 

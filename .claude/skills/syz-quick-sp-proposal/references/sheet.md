@@ -29,10 +29,13 @@ Basket,Underlying 1,Underlying 2,Underlying 3,Coupon,Downside protection,Maturit
 ## Themes file
 
 ```json
-{"1": "Global equity core", "3": "Digital platforms", "5": "AI semiconductors"}
+{"1": {"theme": "Global equity core", "thesis": "The three largest developed markets in one basket: broad market risk, no single-company risk."},
+ "3": {"theme": "Digital platforms", "thesis": "Cash-rich mega-caps monetising AI across search, e-commerce and the leading cloud platforms."}}
 ```
 
-Keys are the sheet's basket numbers (the renumbered ones also work). Two to five words each.
+Keys are the sheet's basket numbers (the renumbered ones also work). Theme: two to five words.
+Thesis: one sentence, under about 130 characters, in client words; no figures, targets or promises.
+A plain string (`{"1": "Global equity core"}`) gives the theme without a thesis.
 
 ## Tickers file
 

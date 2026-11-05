@@ -2,9 +2,9 @@
 
     python scripts/quick_proposal.py <sheet.xlsx|.csv> [options]
 
-Page 1: headline figures and one row per basket (theme, names, coupon, protection, tenor, amount, a
-gauge with each name's lowest close of the past year against the protection). Up to 8 baskets the
-rows are airy; above 8 they become one line each, so about 18 baskets still fit on the page.
+Page 1: headline figures and the themes: per basket its theme, a one-line thesis, the underlyings,
+coupon, protection, tenor and amount (--layout gauge gives one row per basket with a gauge of the
+1y lows instead; above 8 baskets those rows turn compact).
 Then two baskets per page: one-year chart rebased to 100 today, protection line, and a table per
 underlying (Bloomberg code, last close, protection price, 1y low, 1y change, volatility).
 
@@ -16,6 +16,8 @@ Options:
   --asof DATE      price date YYYY-MM-DD (default today)
   --out FILE       the PDF (default /mnt/user-data/outputs on claude.ai, else ./out)
   --offline        cached prices only
+  --layout L       page 1: "thematic" (default: each theme with its thesis, names and terms)
+                   or "gauge" (one row per basket with a gauge of the 1y lows against the protection)
 """
 
 from __future__ import annotations
@@ -208,9 +210,9 @@ def chart(b, P, w=680, h=250):
             out.append(f'<text x="{X(i):.1f}" y="{h-8}" text-anchor="middle" class="ax">{dt.date.fromisoformat(d).strftime("%b %y")}</text>')
     ys = Y(b["strike"])
     out += [f'<line x1="{L}" x2="{w-R}" y1="{Y(1):.1f}" y2="{Y(1):.1f}" stroke="{GREY}" stroke-dasharray="4 3"/>',
-            f'<rect x="{L}" y="{ys:.1f}" width="{w-L-R}" height="{h-B-ys:.1f}" fill="{RED}" fill-opacity=".06"/>',
-            f'<line x1="{L}" x2="{w-R}" y1="{ys:.1f}" y2="{ys:.1f}" stroke="{RED}" stroke-width="1.4" stroke-dasharray="6 3"/>',
-            f'<text x="{w-R+6}" y="{ys+4:.1f}" class="lab" fill="{RED}">{b["kind"]} {pct(b["strike"])}</text>'
+            f'<rect x="{L}" y="{ys:.1f}" width="{w-L-R}" height="{h-B-ys:.1f}" fill="{INK}" fill-opacity=".045"/>',
+            f'<line x1="{L}" x2="{w-R}" y1="{ys:.1f}" y2="{ys:.1f}" stroke="{INK}" stroke-width="1.2" stroke-dasharray="6 3"/>',
+            f'<text x="{w-R+6}" y="{ys+4:.1f}" class="lab" fill="{INK}">{b["kind"]} {pct(b["strike"])}</text>'
             f'<text x="{w-R+6}" y="{Y(1)+4:.1f}" class="lab" fill="{GREY}">Today 100</text>']
     for j, s in enumerate(b["syms"]):
         if s not in P:
@@ -218,7 +220,7 @@ def chart(b, P, w=680, h=250):
         d = P[s]
         pts = " ".join(f"{X(ix[t]):.1f},{Y(c/d['last']):.1f}" for t, c in zip(d["dates"], d["close"]))
         out.append(f'<polyline points="{pts}" fill="none" stroke="{LINE[j % len(LINE)]}" stroke-width="1.6" stroke-linejoin="round"/>')
-        col = RED if d["low"] <= b["strike"] else LINE[j % len(LINE)]
+        col = LINE[j % len(LINE)]
         out.append(f'<circle cx="{X(ix[d["low_date"]]):.1f}" cy="{Y(d["low"]):.1f}" r="3.2" fill="{col}" stroke="#fff" stroke-width="1"/>')
     out.append("</svg>")
     return "".join(out)
@@ -254,6 +256,14 @@ def crow(b, P):
             f'<div class="gz">{gauge(b, P, w=230, h=30, axis=False)}</div><div class="sx">{status}</div></div>')
 
 
+def theme_block(b, ccy):
+    terms = " · ".join(x for x in (f'{b["kind"]} {pct(b["strike"])}', f'{b["tenor"]} months' if b["tenor"] else "",
+                                   f'{ccy} {money(b["amount"])}' if b["amount"] else "") if x)
+    thesis = f'<p class="tx">{escape(b["thesis"])}</p>' if b.get("thesis") else ""
+    return (f'<div class="tb"><div class="tt"><span class="num">{b["n"]}</span><b>{escape(b["theme"])}</b></div>{thesis}'
+            f'<div class="tn">{names_html(b)}</div><div class="tk"><span class="c">{pct(b["coupon"], 2)} p.a.</span> · {terms}</div></div>')
+
+
 def table(b, P):
     r = ['<table class="t"><tr><th>Underlying</th><th>Ccy</th><th>Last close</th><th>Protection price</th><th>Fall to protection</th>'
          '<th>Lowest close 1Y</th><th>1Y change</th><th>Vol 1Y</th></tr>']
@@ -267,7 +277,7 @@ def table(b, P):
         r.append(f'<tr><td><span class="sw" style="background:{LINE[j % len(LINE)]}"></span><b>{escape(n)}</b> <span class="mu">{bbg(s, d["exchange"])}</span></td>'
                  f'<td>{d["ccy"]}</td><td>{f2(d["last"])} <span class="mu">{d["last_date"][8:10]}.{d["last_date"][5:7]}</span></td>'
                  f'<td><b>{f2(d["last"] * b["strike"])}</b></td><td>{pct(b["strike"] - 1)}</td>'
-                 f'<td class="{"hit" if hit else ""}">{pct(d["low"], 1)} <span class="mu">{ld}</span></td>'
+                 f'<td>{pct(d["low"], 1)} <span class="mu">{ld}</span></td>'
                  f'<td>{d["perf"]*100:+.1f}%</td><td>{pct(d["vol"], 1)}</td></tr>')
     return "".join(r) + "</table>"
 
@@ -279,13 +289,13 @@ def card(b, P, ccy):
     return (f'<section class="card"><div class="ch"><div><span class="num">{b["n"]}</span><h3>{escape(b["theme"])}</h3>'
             f'<span class="mu">{" / ".join(escape(n) for n in b["short"])}</span></div>'
             f'<div class="chips">{"".join(f"<span>{escape(c)}</span>" for c in chips if c)}</div></div>'
-            f'<p class="cap">Daily closes over one year, rebased to 100 at today\'s close. Red dashed line: the protection level, '
+            f'<p class="cap">Daily closes over one year, rebased to 100 at today\'s close. Dashed line: the protection level, '
             f'as for a product struck today. Dots: each name\'s lowest close.</p>{chart(b, P)}{table(b, P)}</section>')
 
 
 # ---------------------------------------------------------------------------------------------
 
-def build(baskets, P, ccy, title, asof):
+def build(baskets, P, ccy, title, asof, layout="thematic"):
     n = len(baskets)
     amounts = [b["amount"] for b in baskets]
     if all(amounts):
@@ -301,7 +311,10 @@ def build(baskets, P, ccy, title, asof):
     compact = n > 8
     pad = max(2.5, min(6.4, (190 / n - 19) / 2))
     cpad = max(0.8, min(2.4, (178 / n - 9.5) / 2))
-    if compact:
+    tgap = max(5, min(14, 150 / max(1, math.ceil(n / 2)) - 22))
+    if layout == "thematic":
+        rows = '<div class="tgrid">' + "".join(theme_block(b, ccy) for b in baskets) + "</div>"
+    elif compact:
         rows = ('<div class="crow ch"><span></span><div>Basket</div><div>Coupon p.a.</div><div>Protection · tenor</div>'
                 '<div class="axis"><span>50%</span><span>today</span></div><div>Below protection over 1y</div></div>'
                 + "".join(crow(b, P) for b in baskets))
@@ -336,6 +349,12 @@ def build(baskets, P, ccy, title, asof):
 .crow .cp{{color:{ORANGE};font-weight:700;font-size:11pt}}.crow .pr{{font-size:7.2pt;color:{GREY}}}.crow .sx{{font-size:6.8pt;font-weight:700;line-height:1.25}}
 .crow.ch{{font-size:6.6pt;color:{GREY};padding:0 0 1.2mm}}.crow.ch .axis{{display:flex;justify-content:space-between;padding:0 1.5mm 0 1mm}}
 .ok{{color:{MINT};font-weight:700}}.warn{{color:{MUL}}}
+.tgrid{{display:grid;grid-template-columns:1fr 1fr;column-gap:10mm;row-gap:{tgap:.1f}mm;margin-top:2mm}}
+.tb .tt{{display:flex;align-items:center;gap:2.6mm}}.tb .tt b{{font-size:12pt}}
+.tb .num{{width:6.4mm;height:6.4mm;font-size:8pt;flex:none}}
+.tb .tx{{margin:2.2mm 0 0 9mm;font-size:8.6pt;line-height:1.45}}
+.tb .tn{{margin:2mm 0 0 9mm;font-size:7.8pt;font-weight:700}}
+.tb .tk{{margin:1.4mm 0 0 9mm;font-size:7.6pt;color:{GREY}}}.tb .tk .c{{color:{ORANGE};font-weight:700;font-size:9pt}}
 .gl{{font-size:9px;font-weight:700;font-family:N}}.ga{{font-size:8px;fill:{GREY};font-family:N}}
 .legend{{font-size:7pt;color:{GREY};margin-top:5mm;line-height:1.5}}
 .pb{{break-before:page}}.card{{break-inside:avoid;margin-bottom:16px}}
@@ -343,7 +362,7 @@ def build(baskets, P, ccy, title, asof):
 .chips span{{border:1px solid rgba(32,41,69,.3);border-radius:10px;padding:2px 8px;margin-left:4px;font-size:8pt}}
 .cap{{color:{BLUE};font-size:7.8pt;margin:6px 0 2px}}.mu{{color:{GREY};font-size:7.6pt}}
 .t{{width:100%;border-collapse:collapse;margin-top:6px;font-size:8.3pt}}.t th{{text-align:left;font-size:7.4pt;color:{BLUE};font-weight:700;border-bottom:1px solid rgba(32,41,69,.4);padding:4px}}
-.t td{{padding:5px 4px;border-bottom:1px solid rgba(32,41,69,.12)}}.hit{{color:{RED};font-weight:700;background:#C628280F}}
+.t td{{padding:5px 4px;border-bottom:1px solid rgba(32,41,69,.12)}}
 .sw{{display:inline-block;width:10px;height:3px;margin-right:5px;vertical-align:middle}}
 .ax{{font-size:9px;fill:{GREY};font-family:N}}.lab{{font-size:10.5px;font-weight:700;font-family:N}}
 .note{{font-size:7.4pt;color:{GREY};margin-top:10px;line-height:1.35;text-align:justify}}"""
@@ -353,9 +372,9 @@ def build(baskets, P, ccy, title, asof):
 <div class="band"><div><b class="o">{pct(avg, 2)}</b><span>{avg_lab}</span></div>{size_kpi}
 <div><b>{rng([b["tenor"] for b in baskets], " m")}</b><span>maturities</span></div>
 <div><b>{rng([round(b["strike"]*100, 2) for b in baskets], "%")}</b><span>protection levels, struck today</span></div></div>
-<div class="h2s"><h2>The baskets</h2><span>Gauge: each underlying's lowest close of the past year, as a % of today</span></div>
+<div class="h2s"><h2>{"The themes" if layout == "thematic" else "The baskets"}</h2><span>{"" if layout == "thematic" else "Gauge: each underlying's lowest close of the past year, as a % of today"}</span></div>
 <div class="rows">{rows}</div>
-<div class="legend">Dots in each name's colour: its lowest close over the year. Pink zone: below the protection level. A dot in the pink zone means that name traded below today's protection level at some point; it is not a backtest or a forecast. Coupons {fee_txt}, indicative and subject to issuer pricing.</div>
+<div class="legend">{"Coupons " + fee_txt + ", indicative and subject to issuer pricing. Protection levels as for products struck today; the following pages show each basket over the past year." if layout == "thematic" else "Dots in each name's colour: its lowest close over the year. Pink zone: below the protection level. A dot in the pink zone means that name traded below today's protection level at some point; it is not a backtest or a forecast. Coupons " + fee_txt + ", indicative and subject to issuer pricing."}</div>
 {cards}
 <p class="note"><b>Important information.</b> Daily closes from market data providers, not adjusted for dividends, up to {asof_s}. Levels assume each product is struck at today's close; actual levels are fixed on the trade date. Lowest closes show how far each name has traded below today's price; they are not a backtest of the products and not a forecast. Coupons and protection levels are indicative, {fee_txt}, and subject to issuer pricing. The products are in {ccy} on underlyings quoted in {", ".join(ccys)}. For information purposes only; not an offer or a recommendation within the meaning of FinSA. Capital is at risk. SYZ · {dt.date.today().strftime("%d.%m.%Y")}</p>
 </body></html>"""
@@ -371,6 +390,7 @@ def main(argv=None) -> int:
     ap.add_argument("--asof")
     ap.add_argument("--out", type=Path)
     ap.add_argument("--offline", action="store_true")
+    ap.add_argument("--layout", choices=("thematic", "gauge"), default="thematic")
     a = ap.parse_args(argv)
 
     asof = dt.date.fromisoformat(a.asof) if a.asof else dt.date.today()
@@ -405,6 +425,9 @@ def main(argv=None) -> int:
         b["syms"] = [u.symbol for u in p.underlyings]
         b["short"] = [u.short_name or u.name for u in p.underlyings]
         th = themes.get(str(b["sheet_n"])) or themes.get(str(b["n"])) or b["theme"]
+        b["thesis"] = ""
+        if isinstance(th, dict):
+            th, b["thesis"] = th.get("theme"), th.get("thesis", "")
         if not th:
             found = [core.theme_of(s) for s in b["syms"] if s]
             found = [t for t in found if t]
@@ -426,7 +449,7 @@ def main(argv=None) -> int:
     print("4  Drawing the pages")
     title = a.title or (f"{WORDS.get(len(baskets), len(baskets))} thematic baskets" if len(baskets) != 1 else "One thematic basket")
     html = out.with_suffix(".html")
-    html.write_text(build(baskets, P, ccy, title, asof), encoding="utf-8")
+    html.write_text(build(baskets, P, ccy, title, asof, a.layout), encoding="utf-8")
     from syzdeck.pdf import to_pdf
     engine = to_pdf(html, out)
     print(f"   Wrote {out} ({engine})")
